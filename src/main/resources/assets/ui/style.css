@@ -1,0 +1,83 @@
+@font-face {
+    font-family: 'That Sounds Great';
+    src: url('fonts/thatsoundsgreat.ttf');
+}
+
+.root {
+    -fx-font-family: "That Sounds Great";
+}
+
+.background {
+    -fx-background-image: url("images/background.png");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+}
+
+
+.content-box {
+    -fx-spacing: 30;
+    -fx-alignment: center;
+}
+
+.game-title {
+    -fx-font-size: 72px;
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-fill: linear-gradient(to right, #FF5722, #FFC107, #4CAF50, #2196F3, #FF9800, #F44336);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 2);
+}
+
+.button-play {
+    -base-color: #4CAF50;
+}
+
+.button-ranking {
+    -base-color: #FFC107;
+}
+
+.button-options {
+    -base-color: #2196F3;
+}
+
+.button-exit {
+    -base-color: #f44336;
+}
+
+.game-button {
+    -fx-font-family: "That Sounds Great";
+    -fx-font-size: 28px;
+    -fx-pref-width: 260px;
+    -fx-pref-height: 70px;
+    -fx-background-color: -base-color;
+    -fx-border-color: derive(-base-color, 30%) derive(-base-color, -30%) derive(-base-color, -30%) derive(-base-color, 30%);
+    -fx-border-width: 4;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0.0, 0, 1),
+    innershadow(three-pass-box, rgba(255,255,255,0.4), 2, 0.0, 0, 0);
+    -fx-padding: 10 20;
+    -fx-translate-y: 0;
+}
+
+
+.game-button:pressed {
+    -fx-background-color: derive(-base-color, -10%);
+    -fx-border-color: derive(-base-color, -30%) derive(-base-color, 30%) derive(-base-color, 30%) derive(-base-color, -30%);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 3, 0.0, 0, 1),
+    innershadow(three-pass-box, rgba(0,0,0,0.2), 2, 0.0, 0, 0);
+    -fx-padding: 12 20 8 20;
+    -fx-translate-y: 1;
+}
+
+.game-button:focused {
+    -fx-background-color: derive(-base-color, 20%);
+    -fx-text-fill: #ffffff;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.4), 20, 0.2, 0, 0),
+    dropshadow(three-pass-box, rgba(0,0,0,0.8), 12, 0.0, 0, 3);
+    -fx-translate-y: -4;
+}
+
+
