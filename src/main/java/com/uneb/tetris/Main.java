@@ -5,13 +5,9 @@ import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
 import com.uneb.tetris.core.GameInitializer;
 import com.uneb.tetris.core.GameMediator;
-import com.uneb.tetris.ui.UiManager;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import javafx.scene.text.Font;
 
-import java.io.IOException;
+import java.util.Objects;
 
 public class Main extends GameApplication {
     private GameMediator mediator;
@@ -31,6 +27,7 @@ public class Main extends GameApplication {
 
     @Override
     protected void initGame() {
+        Font.loadFont(Objects.requireNonNull(getClass().getResource("/assets/ui/fonts/thatsoundsgreat.ttf")).toExternalForm(), 10);
         mediator = GameInitializer.create(FXGL.getGameScene());
     }
 
