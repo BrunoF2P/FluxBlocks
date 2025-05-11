@@ -4,9 +4,10 @@ open module com.uneb.tetris {
     requires javafx.media;
     requires javafx.graphics;
 
-    requires com.almasb.fxgl.all;
+    requires transitive com.almasb.fxgl.all;
+    requires transitive com.almasb.fxgl.core;
+    requires transitive com.almasb.fxgl.entity;
 
-    exports com.uneb.tetris;
     exports com.uneb.tetris.core;
     exports com.uneb.tetris.ui;
     exports com.uneb.tetris.ui.components;
