@@ -1,7 +1,9 @@
 package com.uneb.tetris.core;
 
 import com.almasb.fxgl.app.scene.GameScene;
+import com.almasb.fxgl.dsl.FXGL;
 import com.uneb.tetris.ui.UIManager;
+import javafx.util.Duration;
 
 public final class GameInitializer {
     private GameInitializer() {}
@@ -9,12 +11,12 @@ public final class GameInitializer {
     public static GameMediator create(GameScene gameScene) {
         GameMediator mediator = new GameMediator();
 
-        UIManager uiManager = new UIManager(gameScene, mediator);
+        new UIManager(gameScene, mediator);
 
-        mediator.emit(GameEvents.UiEvents.START, null);
+        FXGL.getGameTimer().runOnceAfter(() -> {
+            mediator.emit(GameEvents.UiEvents.START, null);
+        }, Duration.millis(100));
 
         return mediator;
     }
-
-
 }
