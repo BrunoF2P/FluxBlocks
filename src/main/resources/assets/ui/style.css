@@ -1,10 +1,11 @@
+/* === GLOBAL === */
 @font-face {
     font-family: 'That Sounds Great';
     src: url('fonts/thatsoundsgreat.ttf');
 }
 
 .root {
-    -fx-font-family: "That Sounds Great";
+    -fx-font-family: "That Sounds Great", sans-serif;
 }
 
 .background {
@@ -14,12 +15,23 @@
     -fx-background-repeat: no-repeat;
 }
 
-
+/* === LAYOUT CONTAINERS === */
 .content-box {
     -fx-spacing: 30;
     -fx-alignment: center;
 }
 
+.game-screen,
+.game-bg {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            #0f2027,
+            #203a43,
+            #2c5364
+    );
+}
+
+/* === TYPOGRAPHY === */
 .game-title {
     -fx-font-size: 72px;
     -fx-font-family: 'That Sounds Great', sans-serif;
@@ -27,6 +39,37 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 2);
 }
 
+.score-text,
+.info-text,
+.level-text {
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 1, 0.2, 1, 1);
+}
+
+.score-text {
+    -fx-font-size: 28px;
+    -fx-fill: #fcd34d;
+}
+
+.info-text {
+    -fx-font-size: 20px;
+    -fx-fill: #a0aec0;
+}
+
+.level-text {
+    -fx-font-size: 32px;
+    -fx-fill: #fcd34d;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0.2, 0, 1);
+}
+
+#lines-label {
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-font-size: 16px;
+    -fx-fill: #a0aec0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 1, 0.1, 1, 1);
+}
+
+/* === BOTOES=== */
 .button-play {
     -base-color: #4CAF50;
 }
@@ -44,19 +87,19 @@
 }
 
 .game-button {
-    -fx-font-family: "That Sounds Great";
+    -fx-font-family: "That Sounds Great", sans-serif; /* Consistent font */
     -fx-font-size: 28px;
     -fx-pref-width: 260px;
     -fx-pref-height: 70px;
     -fx-background-color: -base-color;
     -fx-border-color: derive(-base-color, 30%) derive(-base-color, -30%) derive(-base-color, -30%) derive(-base-color, 30%);
-    -fx-border-width: 4;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
+    -fx-border-width: 4px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
     -fx-text-fill: white;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0.0, 0, 1),
     innershadow(three-pass-box, rgba(255,255,255,0.4), 2, 0.0, 0, 0);
-    -fx-padding: 10 20;
+    -fx-padding: 10px 20px;
     -fx-translate-y: 0;
 }
 
@@ -66,18 +109,164 @@
     -fx-border-color: derive(-base-color, -30%) derive(-base-color, 30%) derive(-base-color, 30%) derive(-base-color, -30%);
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 3, 0.0, 0, 1),
     innershadow(three-pass-box, rgba(0,0,0,0.2), 2, 0.0, 0, 0);
-    -fx-padding: 12 20 8 20;
-    -fx-translate-y: 1;
+    -fx-padding: 12px 20px 8px 20px;
+    -fx-translate-y: 1px;
 }
 
-.game-button:focused {
-    -fx-background-color: derive(-base-color, 20%);
+.game-button:focused,
+.game-button:hover {
+    -fx-background-color: derive(-base-color, 15%);
     -fx-text-fill: #ffffff;
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
-    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.4), 20, 0.2, 0, 0),
-    dropshadow(three-pass-box, rgba(0,0,0,0.8), 12, 0.0, 0, 3);
-    -fx-translate-y: -4;
+    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.3), 15, 0.15, 0, 0),
+    dropshadow(three-pass-box, rgba(0,0,0,0.7), 10, 0.0, 0, 2);
+    -fx-translate-y: -2px;
+}
+
+/* === GAME BOARD === */
+.game-board,
+.game-board-background {
+    -fx-padding: 5px;
+    -fx-background-color: linear-gradient(
+            to bottom,
+            #1e2b38,
+            #14202c
+    );
+    -fx-border-width: 10px;
+    -fx-border-style: solid;
+    -fx-border-color: #2c3e50;
+    -fx-border-radius: 9px;
+    -fx-background-radius: 15px;
 }
 
 
+
+.game-board-cell {
+    -fx-fill: #15202b;
+    -fx-stroke: rgba(255, 255, 255, 0.05);
+    -fx-stroke-width: 2px;
+    -fx-arc-width: 7px;
+    -fx-arc-height: 7px;
+    -fx-transition: -fx-fill 0.2s ease;
+}
+
+.game-board-cell.filled {
+    -fx-stroke: rgba(0, 0, 0, 0.2);
+    -fx-stroke-width: 2px;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 1, 1);
+}
+
+.board-cell.cell-empty {
+    -fx-fill: #15202b;
+}
+
+.next-piece-grid {
+    -fx-alignment: center;
+    -fx-padding: 5px;
+}
+
+
+.cell-empty {
+    -fx-fill: transparent;
+}
+
+.cell-filled {
+    -fx-stroke: rgba(0, 0, 0, 0.5);
+    -fx-stroke-width: 1;
+}
+
+.tetromino-1 {
+    -fx-fill: #00f0f0;
+}
+
+.tetromino-2 {
+    -fx-fill: #1a75ff;
+}
+
+.tetromino-3 {
+    -fx-fill: #ff8c00;
+}
+
+.tetromino-4 {
+    -fx-fill: #ffd700;
+}
+
+.tetromino-5 {
+    -fx-fill: #32cd32;
+}
+
+.tetromino-6 {
+    -fx-fill: #bf3eff;
+}
+
+.tetromino-7 {
+    -fx-fill: #ff3030;
+}
+
+.tetromino-8 {
+    -fx-fill: rgba(255, 255, 255, 0.15);
+    -fx-stroke: rgba(255, 255, 255, 0.3);
+}
+
+/* === SIDE PANEL === */
+.side-panel {
+    -fx-padding: 20px;
+    -fx-background-color: rgba(44, 62, 80, 0.7);
+    -fx-border-width: 2px;
+    -fx-border-style: solid;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 12, 0.3, 0, 6);
+    -fx-alignment: top-center;
+    -fx-pref-width: 220px;
+}
+
+.info-box {
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px;
+    -fx-alignment: center;
+}
+
+.next-piece-preview {
+    -fx-pref-width: 120px;
+    -fx-pref-height: 120px;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 5px;
+    -fx-alignment: center;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-width: 1px;
+}
+
+/* === PROGRESSO DE NIVEL === */
+.level-progress-container {
+    -fx-alignment: center;
+}
+
+.level-progress {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 2px;
+    -fx-border-radius: 60px;
+    -fx-background-radius: 60px;
+}
+
+#progress-arc {
+    -fx-stroke: linear-gradient(to bottom, #4CAF50, #8BC34A);
+    -fx-stroke-width: 8px;
+    -fx-stroke-line-cap: round;
+    -fx-fill: transparent;
+}
+
+.progress-track-circle {
+    -fx-fill: transparent;
+    -fx-stroke: rgba(255, 255, 255, 0.1);
+    -fx-stroke-width: 8px;
+}
