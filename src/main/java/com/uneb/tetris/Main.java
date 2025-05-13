@@ -22,7 +22,7 @@ public class Main extends GameApplication {
         settings.setPreserveResizeRatio(true);
         settings.setFullScreenAllowed(true);
         settings.setFullScreenFromStart(false);
-
+        settings.setAppIcon("ui/icons/mipmap-mdpi/ic_game.png");
     }
 
     @Override
