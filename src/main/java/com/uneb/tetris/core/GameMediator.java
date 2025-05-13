@@ -22,12 +22,12 @@ public class GameMediator {
 
     public <T> void emit(EventType<T> type, T payload) {
         List<PrioritizedListener<?>> list = listeners.get(type);
-        if (list != null) {
-            for (PrioritizedListener<?> pl : list) {
-                @SuppressWarnings("unchecked")
-                Listener<T> typedListener = (Listener<T>) pl.listener;
-                typedListener.onEvent(payload);
-            }
+        if (list == null || list.isEmpty()) return;
+
+        for (PrioritizedListener<?> prioritizedListener : list) {
+            @SuppressWarnings("unchecked")
+            Listener<T> typedListener = (Listener<T>) prioritizedListener.listener;
+            typedListener.onEvent(payload);
         }
     }
 
