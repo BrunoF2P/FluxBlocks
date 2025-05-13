@@ -19,8 +19,8 @@ public class MenuScreen {
     private final StackPane root;
 
 
-    private final double screenWidth = 1280;
-    private final double screenHeight = 720;
+    private final double screenWidth = 1368;
+    private final double screenHeight = 768;
 
     public MenuScreen(GameMediator mediator) {
         this.mediator = mediator;

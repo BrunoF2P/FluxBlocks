@@ -14,8 +14,8 @@ public class Main extends GameApplication {
 
     @Override
     protected void initSettings(GameSettings settings) {
-        settings.setWidth(1280);
-        settings.setHeight(720);
+        settings.setWidth(1368);
+        settings.setHeight(768);
         settings.setTitle("Tetris");
         settings.setVersion("1.0");
         settings.setScaleAffectedOnResize(true);
