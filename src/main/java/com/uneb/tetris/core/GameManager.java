@@ -29,6 +29,9 @@ public class GameManager {
     private KeyCode lastHorizontalKeyPressed = null;
     private int score = 0;
     private int level = 1;
+    private int linesCleared = 0;
+    private final int LINES_PER_LEVEL = 10;
+    private final double INITIAL_SPEED = 1000.0;
 
     public GameManager(GameMediator mediator) {
         this.mediator = mediator;
@@ -47,13 +50,13 @@ public class GameManager {
         mediator.receiver(GameEvents.GameplayEvents.GAME_OVER, unused -> handleGameOver());
         mediator.receiver(GameEvents.GameplayEvents.PAUSE, unused -> togglePause());
         mediator.receiver(GameEvents.GameplayEvents.SCORE_UPDATED, this::updateScore);
+        mediator.receiver(GameEvents.GameplayEvents.LINE_CLEARED, this::handleLinesCleared);
 
         mediator.emit(GameEvents.UiEvents.NEXT_PIECE_UPDATE, pieceManager.getNextPiece());
     }
 
     private void setupGameLoop() {
-        double initialSpeed = 1000.0;
-        gameLoop = new Timeline(new KeyFrame(Duration.millis(initialSpeed), e -> {
+        gameLoop = new Timeline(new KeyFrame(Duration.millis(INITIAL_SPEED), e -> {
             if (!isPaused && !isGameOver) {
                 pieceManager.moveDown();
             }
@@ -264,25 +267,39 @@ public class GameManager {
         score += points;
         mediator.emit(GameEvents.UiEvents.SCORE_UPDATE, score);
     }
-    
-    private void levelUp(int newLevel) {
-        level = newLevel;
 
-        double speedFactor = Math.pow(0.8, level - 1);
-        double newSpeed = 1000.0 * speedFactor;
+    private void handleLinesCleared(int lines) {
+        linesCleared += lines;
 
-        gameLoop.stop();
-        gameLoop = new Timeline(
-                new KeyFrame(Duration.millis(newSpeed), e -> {
-                    if (!isPaused && !isGameOver) {
-                        pieceManager.moveDown();
-                    }
-                })
-        );
-        gameLoop.setCycleCount(Animation.INDEFINITE);
-        gameLoop.play();
+        while (linesCleared >= LINES_PER_LEVEL) {
+            linesCleared -= LINES_PER_LEVEL;
+            levelUp();
+        }
+    }
+
+
+    private void levelUp() {
+        level++;
+
+        double newSpeed = calculateLevelSpeed(level);
+        updateGameLoopSpeed(newSpeed);
 
         mediator.emit(GameEvents.UiEvents.LEVEL_UPDATE, level);
+    }
+
+    private double calculateLevelSpeed(int currentLevel) {
+        return INITIAL_SPEED * Math.pow(0.8, currentLevel - 1);
+    }
+
+    private void updateGameLoopSpeed(double newSpeedMs) {
+        gameLoop.stop();
+        gameLoop = new Timeline(new KeyFrame(Duration.millis(newSpeedMs), e -> {
+            if (!isPaused && !isGameOver) {
+                pieceManager.moveDown();
+            }
+        }));
+        gameLoop.setCycleCount(Animation.INDEFINITE);
+        gameLoop.play();
     }
 
     private void updateGameTime() {
