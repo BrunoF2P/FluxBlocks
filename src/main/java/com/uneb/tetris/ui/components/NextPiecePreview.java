@@ -5,46 +5,86 @@ import com.uneb.tetris.core.GameMediator;
 import com.uneb.tetris.piece.Cell;
 import com.uneb.tetris.piece.Tetromino;
 import javafx.geometry.Pos;
-import javafx.scene.layout.GridPane;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Componente visual responsável por exibir a próxima peça que será inserida no tabuleiro.
+ * Utiliza um {@link StackPane} para desenhar dinamicamente a prévia com base na peça recebida via eventos do {@link GameMediator}.
+ * <p>
+ * @author Bruno Bispo
+ */
 public class NextPiecePreview {
+
+    /**
+     * Mapeamento de tipo de peça para cor correspondente.
+     */
+    private static final Map<Integer, Color> COLOR_CACHE = new HashMap<>();
+    static {
+        COLOR_CACHE.put(1, Color.web("#00f0f0")); // I - Ciano
+        COLOR_CACHE.put(2, Color.web("#1a75ff")); // J - Azul
+        COLOR_CACHE.put(3, Color.web("#ff8c00")); // L - Laranja
+        COLOR_CACHE.put(4, Color.web("#ffd700")); // O - Amarelo
+        COLOR_CACHE.put(5, Color.web("#32cd32")); // S - Verde
+        COLOR_CACHE.put(6, Color.web("#bf3eff")); // T - Roxo
+        COLOR_CACHE.put(7, Color.web("#ff3030")); // Z - Vermelho
+        COLOR_CACHE.put(8, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
+    }
+
     private final GameMediator mediator;
     private final StackPane container;
-    private final GridPane gridPane;
     private final int cellSize = 30;
 
+    /**
+     * Construtor do componente de pré-visualização da próxima peça.
+     *
+     * @param mediator  Instância do {@link GameMediator} responsável por gerenciar os eventos do jogo.
+     * @param container Componente gráfico onde a peça será desenhada.
+     */
     public NextPiecePreview(GameMediator mediator, StackPane container) {
         this.mediator = mediator;
         this.container = container;
-        this.gridPane = new GridPane();
-
         initializePreview();
     }
 
+    /**
+     * Inicializa o componente, registrando os eventos necessários.
+     * Deve ser chamado após a injeção do componente na hierarquia da UI.
+     */
     public void initialize() {
         registerEvents();
     }
 
+    /**
+     * Define o alinhamento central do container para a renderização da próxima peça.
+     */
     private void initializePreview() {
-        gridPane.setAlignment(Pos.CENTER);
-        container.getChildren().add(gridPane);
-
-        gridPane.setHgap(1);
-        gridPane.setVgap(1);
-        gridPane.getStyleClass().add("next-piece-grid");
-
+        container.setAlignment(Pos.CENTER);
     }
 
+    /**
+     * Registra o listener para o evento de atualização da próxima peça.
+     */
     private void registerEvents() {
         mediator.receiver(GameEvents.UiEvents.NEXT_PIECE_UPDATE, this::updateNextPiecePreview);
     }
 
-
+    /**
+     * Atualiza a renderização da próxima peça na área de preview.
+     *
+     * @param nextPiece Instância da {@link Tetromino} que será exibida. Pode ser {@code null}.
+     */
     public void updateNextPiecePreview(Tetromino nextPiece) {
-        gridPane.getChildren().clear();
+        container.getChildren().clear();
 
-        if (nextPiece == null) return;
+        if (nextPiece == null) {
+            return;
+        }
 
         int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
         int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
@@ -59,17 +99,57 @@ public class NextPiecePreview {
         int pieceWidth = maxX - minX + 1;
         int pieceHeight = maxY - minY + 1;
 
-        int offsetX = (6 - pieceWidth) / 2;
-        int offsetY = (6 - pieceHeight) / 2;
+        Canvas previewCanvas = new Canvas(pieceWidth * cellSize, pieceHeight * cellSize);
+        GraphicsContext gc = previewCanvas.getGraphicsContext2D();
 
         for (Cell cell : nextPiece.getCells()) {
-            int x = offsetX + (cell.getRelativeX() - minX);
-            int y = offsetY + (cell.getRelativeY() - minY);
-
-            BoardCell cellView = new BoardCell(cellSize);
-            cellView.update(cell.getType());
-
-            gridPane.add(cellView, x, y);
+            int x = cell.getRelativeX() - minX;
+            int y = cell.getRelativeY() - minY;
+            drawCell(gc, x, y, cell.getType());
         }
+
+        container.getChildren().add(previewCanvas);
+    }
+
+    /**
+     * Desenha uma célula individual da peça no {@link GraphicsContext}.
+     *
+     * @param gc   Contexto gráfico para renderização.
+     * @param x    Coordenada X relativa da célula.
+     * @param y    Coordenada Y relativa da célula.
+     * @param type Tipo da célula (identificador da peça).
+     */
+    private void drawCell(GraphicsContext gc, int x, int y, int type) {
+        int spacing = 1;
+        int innerSize = cellSize - (spacing * 2);
+
+        Color tetroColor = getTetrominoColor(type);
+
+        gc.setFill(tetroColor);
+        gc.fillRoundRect(
+                x * cellSize + spacing,
+                y * cellSize + spacing,
+                innerSize,
+                innerSize,
+                10, 10);
+
+        gc.setStroke(Color.web("#ffffff", 0.3));
+        gc.setLineWidth(0.5);
+        gc.strokeRoundRect(
+                x * cellSize + spacing,
+                y * cellSize + spacing,
+                innerSize,
+                innerSize,
+                10, 10);
+    }
+
+    /**
+     * Retorna a cor associada ao tipo de peça especificado.
+     *
+     * @param type Tipo da peça.
+     * @return Cor correspondente ou {@link Color#TRANSPARENT} se inexistente.
+     */
+    private Color getTetrominoColor(int type) {
+        return COLOR_CACHE.getOrDefault(type, Color.TRANSPARENT);
     }
 }

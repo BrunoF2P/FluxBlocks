@@ -17,24 +17,64 @@ import javafx.scene.text.Text;
 
 import java.util.Objects;
 
+/**
+ * Classe responsável pela interface gráfica principal do jogo Tetris.
+ * Gerencia a exibição do tabuleiro, pontuação, nível, tempo e próxima peça.
+ *
+ * <p>A tela é dividida em três painéis principais:
+ * <ul>
+ *   <li>Painel Esquerdo: Exibe o nível atual e progresso</li>
+ *   <li>Painel Central: Contém o tabuleiro do jogo</li>
+ *   <li>Painel Direito: Mostra a próxima peça, pontuação e tempo</li>
+ * </ul>
+ *
+ * @author Bruno Bispo
+ */
 public class GameScreen {
+    /** Contêiner principal da interface. */
     private final StackPane root;
+
+    /** Layout organizador dos painéis. */
     private final BorderPane layout;
+
+    /** Tela do tabuleiro de jogo. */
     private final GameBoardScreen gameBoardScreen;
+
+    /** Mediador de eventos do jogo. */
     private final GameMediator mediator;
+
+    /** Contêiner para visualização da próxima peça. */
     private final StackPane nextPiecePreview;
+
+    /** Componente que renderiza a próxima peça. */
     private NextPiecePreview nextPieceComponent;
 
+    /** Largura da tela do jogo. */
     private final double screenWidth = 1368;
+
+    /** Altura da tela do jogo. */
     private final double screenHeight = 768;
 
-    // Track game state
+    /** Nível atual do jogador. */
     private int currentLevel = 1;
+
+    /** Número total de linhas eliminadas. */
     private int linesCleared = 0;
+
+    /** Número de linhas necessárias para avançar de nível. */
     private final int LINES_PER_LEVEL = 10;
+
+    /** Pontuação atual do jogador. */
     private int score = 0;
+
+    /** Tempo de jogo no formato "MM:SS". */
     private String gameTime = "00:00";
 
+    /**
+     * Constrói uma nova tela de jogo e configura os elementos de UI.
+     *
+     * @param mediator Instância do GameMediator utilizada para orquestrar a comunicação entre os componentes visuais e lógicos do jogo.
+     */
     public GameScreen(GameMediator mediator) {
         this.mediator = mediator;
         this.layout = new BorderPane();
@@ -50,21 +90,31 @@ public class GameScreen {
         setupNextPiecePreview();
     }
 
-
+    /**
+     * Inicializa a tela do jogo registrando os eventos necessários.
+     * Deve ser chamado após a construção da tela.
+     */
     public void initialize() {
         registerEvents();
     }
 
+    /**
+     * Configura o componente de visualização da próxima peça.
+     * Inicializa o componente NextPiecePreview e o associa ao contêiner.
+     */
     private void setupNextPiecePreview() {
         this.nextPieceComponent = new NextPiecePreview(mediator, nextPiecePreview);
         this.nextPieceComponent.initialize();
-
     }
 
+    /**
+     * Registra os receptores de eventos para atualizar a interface.
+     * Gerencia eventos como linhas eliminadas, pontuação, tempo e mudança de nível.
+     */
     private void registerEvents() {
         mediator.receiver(GameEvents.GameplayEvents.LINE_CLEARED, lines -> {
             linesCleared += lines;
-            updateGameState();
+            updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
         });
         mediator.receiver(GameEvents.UiEvents.SCORE_UPDATE, this::updateScore);
         mediator.receiver(GameEvents.UiEvents.TIME_UPDATE, this::updateTime);
@@ -74,20 +124,10 @@ public class GameScreen {
         });
     }
 
-    public Pane getNextPiecePreviewPane() {
-        return nextPiecePreview;
-    }
-
-    private void updateGameState() {
-        if (linesCleared >= LINES_PER_LEVEL) {
-            currentLevel++;
-            linesCleared -= LINES_PER_LEVEL;
-            mediator.emit(GameEvents.UiEvents.LEVEL_UPDATE, currentLevel);
-        }
-        updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
-        updateScore(score);
-    }
-
+    /**
+     * Configura o layout principal da tela de jogo.
+     * Organiza os painéis esquerdo, central e direito na interface.
+     */
     private void setupLayout() {
         StackPane centerContainer = new StackPane(gameBoardScreen.getNode());
         centerContainer.setAlignment(Pos.CENTER);
@@ -105,6 +145,12 @@ public class GameScreen {
         root.getChildren().addAll(createBackground(), layout);
     }
 
+    /**
+     * Cria o painel esquerdo da interface.
+     * Contém informações sobre o nível atual e o número de linhas eliminadas.
+     *
+     * @return Um contêiner VBox com os componentes do painel esquerdo
+     */
     private VBox createLeftPanel() {
         VBox panel = new VBox(10);
         panel.getStyleClass().add("side-panel");
@@ -128,6 +174,12 @@ public class GameScreen {
         return panel;
     }
 
+    /**
+     * Cria o painel direito da interface.
+     * Contém a visualização da próxima peça, pontuação e tempo de jogo.
+     *
+     * @return Um contêiner VBox com os componentes do painel direito
+     */
     private VBox createRightPanel() {
         VBox panel = new VBox();
         panel.getStyleClass().add("side-panel");
@@ -185,6 +237,13 @@ public class GameScreen {
         return panel;
     }
 
+    /**
+     * Cria o componente visual de progresso do nível.
+     * Consiste em um círculo que mostra o progresso para o próximo nível.
+     *
+     * @param currentLevel Nível atual do jogo
+     * @return Um contêiner StackPane com os elementos visuais do indicador de progresso
+     */
     private StackPane createLevelProgress(int currentLevel) {
         Circle backgroundCircle = new Circle(50);
         backgroundCircle.getStyleClass().add("progress-track-circle");
@@ -207,8 +266,17 @@ public class GameScreen {
         return progressPane;
     }
 
+    /**
+     * Atualiza o progresso do nível atual, incluindo a barra de progresso circular
+     * e o número de linhas completadas.
+     *
+     * @param currentLevel Nível atual do jogo
+     * @param linesCleared Número total de linhas completadas
+     * @param LINES_PER_LEVEL Número de linhas necessárias para subir de nível
+     */
     public void updateLevelProgress(int currentLevel, int linesCleared, int LINES_PER_LEVEL) {
-        double progress = 360 * ((double)linesCleared / LINES_PER_LEVEL);
+        int linesInCurrentLevel = linesCleared % LINES_PER_LEVEL;
+        double progress = 360 * ((double) linesInCurrentLevel / LINES_PER_LEVEL);
 
         Arc progressArc = (Arc) root.lookup("#progress-arc");
         if (progressArc != null) {
@@ -226,6 +294,11 @@ public class GameScreen {
         }
     }
 
+    /**
+     * Atualiza a pontuação exibida na interface.
+     *
+     * @param score Nova pontuação a ser exibida
+     */
     public void updateScore(int score) {
         this.score = score;
         Text scoreText = (Text) root.lookup("#score-text");
@@ -234,6 +307,11 @@ public class GameScreen {
         }
     }
 
+    /**
+     * Atualiza o tempo de jogo exibido na interface.
+     *
+     * @param time Tempo de jogo no formato "MM:SS"
+     */
     public void updateTime(String time) {
         this.gameTime = time;
         Text timeText = (Text) root.lookup("#time-text");
@@ -242,6 +320,11 @@ public class GameScreen {
         }
     }
 
+    /**
+     * Cria o plano de fundo da tela do jogo.
+     *
+     * @return Um painel Pane configurado como fundo da tela
+     */
     private Pane createBackground() {
         Pane bg = new Pane();
         bg.getStyleClass().add("game-bg");
@@ -249,6 +332,12 @@ public class GameScreen {
         return bg;
     }
 
+    /**
+     * Retorna o nó raiz da interface gráfica do jogo.
+     * Este nó contém todos os elementos visuais da tela.
+     *
+     * @return O componente raiz da interface
+     */
     public Parent getNode() {
         return root;
     }
