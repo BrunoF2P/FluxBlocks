@@ -18,6 +18,12 @@ public final class GameEvents {
         public static final EventType<Void> GAME_STARTED = new EventType<>() {};
         public static final EventType<Boolean> GAME_PAUSED = new EventType<>() {};
         public static final EventType<Integer> GAME_OVER = new EventType<>() {};
+        public static final EventType<Void> COLLISION_LEFT = new EventType<>() {};
+        public static final EventType<Void> COLLISION_RIGHT = new EventType<>() {};
+        public static final EventType<Void> PIECE_LANDED_SOFT = new EventType<>() {};
+        public static final EventType<Void> PIECE_LANDED_NORMAL = new EventType<>() {};
+        public static final EventType<Void> PIECE_LANDED_HARD = new EventType<>(){};
+
     }
     public static final class GameplayEvents {
         private GameplayEvents() {}

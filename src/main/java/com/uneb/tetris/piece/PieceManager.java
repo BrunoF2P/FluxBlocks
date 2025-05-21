@@ -57,7 +57,7 @@ public class PieceManager {
 
         this.collisionDetector = new CollisionDetector(board);
         this.lockDelayManager = new LockDelayManager();
-        this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayManager);
+        this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayManager, mediator);
         this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayManager);
         this.shadowCalculator = new ShadowPieceCalculator(collisionDetector);
         this.renderer = new PieceRenderer(board, shadowCalculator);
@@ -113,7 +113,7 @@ public class PieceManager {
      */
     private void checkLockDelay() {
         if (lockDelayManager.isLockPending() && lockDelayManager.isLockDelayExpired()) {
-            lockPiece();
+            lockPiece(false);
         }
     }
 
@@ -150,8 +150,9 @@ public class PieceManager {
 
     /**
      * Fixa a peça atual na posição e gera uma nova peça.
+     * @param isHardDrop Indica se o encaixe foi resultado de um hard drop.
      */
-    public void lockPiece() {
+    public void lockPiece(boolean isHardDrop) {
         if (currentPiece == null || board == null) {
             return;
         }
@@ -162,8 +163,17 @@ public class PieceManager {
             }
         });
 
+        if (isHardDrop) {
+            mediator.emit(GameEvents.UiEvents.PIECE_LANDED_HARD, null);
+        } else if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
+            mediator.emit(GameEvents.UiEvents.PIECE_LANDED_SOFT, null);
+        } else {
+            mediator.emit(GameEvents.UiEvents.PIECE_LANDED_NORMAL, null);
+        }
+
+
         if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
-            int softDropScore = scoreCalculator.calculateSoftDropScore();
+            int softDropScore = scoreCalculator.calculateSoftDropScore(); // Supondo que este método exista
             mediator.emit(GameEvents.GameplayEvents.SCORE_UPDATED, softDropScore);
         }
 
@@ -203,13 +213,15 @@ public class PieceManager {
     public void moveDown() {
         if (currentPiece == null) return;
 
-        if (!movementHandler.moveDown(currentPiece)) {
+        if (!movementHandler.moveDown(currentPiece)) { // Se não conseguiu mover para baixo
             if (!lockDelayManager.isLockPending()) {
                 lockDelayManager.startLockDelay(currentPiece);
             }
+            // Não emitimos evento de soft landing aqui, pois `lockPiece` cuidará disso
+            // para diferenciar de um lock normal.
             return;
         }
-
+        // Se moveu, apenas atualiza o tabuleiro. O "shake" ocorrerá ao encaixar.
         updateBoardWithCurrentPiece();
     }
 
@@ -220,14 +232,14 @@ public class PieceManager {
         if (currentPiece == null) return;
 
         int distance = movementHandler.hardDrop(currentPiece);
-        updateBoardWithCurrentPiece();
+        updateBoardWithCurrentPiece(); // Atualiza visualmente a peça na posição final
 
         if (distance > 0) {
             int hardDropScore = scoreCalculator.calculateHardDropScore(distance);
             mediator.emit(GameEvents.GameplayEvents.SCORE_UPDATED, hardDropScore);
         }
 
-        lockPiece();
+        lockPiece(true); // Chama lockPiece indicando que foi um hard drop
     }
 
     /**

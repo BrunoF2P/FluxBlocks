@@ -1,5 +1,7 @@
 package com.uneb.tetris.piece.movement;
 
+import com.uneb.tetris.core.GameEvents;
+import com.uneb.tetris.core.GameMediator;
 import com.uneb.tetris.piece.Tetromino;
 import com.uneb.tetris.piece.collision.CollisionDetector;
 import com.uneb.tetris.piece.timing.LockDelayManager;
@@ -10,6 +12,7 @@ import com.uneb.tetris.piece.timing.LockDelayManager;
 public class PieceMovementHandler {
     private final CollisionDetector collisionDetector;
     private final LockDelayManager lockDelayManager;
+    private final GameMediator mediator;
 
     /** Flag que indica se o jogador está realizando soft drop */
     private boolean isSoftDropping = false;
@@ -22,10 +25,12 @@ public class PieceMovementHandler {
      *
      * @param collisionDetector Detector de colisões para verificar posições válidas
      * @param lockDelayManager Gerenciador de atraso de bloqueio
+     * @param mediator O mediador para comunicação entre componentes do jogo
      */
-    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayManager lockDelayManager) {
+    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayManager lockDelayManager, GameMediator mediator) { // Modificado
         this.collisionDetector = collisionDetector;
         this.lockDelayManager = lockDelayManager;
+        this.mediator = mediator;
     }
 
     /**
@@ -41,6 +46,8 @@ public class PieceMovementHandler {
         if (moved) {
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
             lockDelayManager.resetLockDelay(piece, isAtRest);
+        } else {
+            mediator.emit(GameEvents.UiEvents.COLLISION_LEFT, null);
         }
 
         return moved;
@@ -58,6 +65,8 @@ public class PieceMovementHandler {
         if (moved) {
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
             lockDelayManager.resetLockDelay(piece, isAtRest);
+        } else {
+            mediator.emit(GameEvents.UiEvents.COLLISION_RIGHT, null);
         }
 
         return moved;

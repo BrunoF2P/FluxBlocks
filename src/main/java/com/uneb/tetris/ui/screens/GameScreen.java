@@ -3,6 +3,7 @@ package com.uneb.tetris.ui.screens;
 import com.uneb.tetris.core.GameEvents;
 import com.uneb.tetris.core.GameMediator;
 import com.uneb.tetris.ui.components.NextPiecePreview;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -14,6 +15,7 @@ import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 
 import java.util.Objects;
 
@@ -70,6 +72,13 @@ public class GameScreen {
     /** Tempo de jogo no formato "MM:SS". */
     private String gameTime = "00:00";
 
+    /** Contêiner para o tabuleiro do jogo, que será animado. */
+    private StackPane centerContainer;
+
+    /** Flag para controlar se uma animação está ativa. */
+    private boolean isAnimationPlaying = false;
+
+
     /**
      * Constrói uma nova tela de jogo e configura os elementos de UI.
      *
@@ -122,6 +131,15 @@ public class GameScreen {
             currentLevel = level;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
         });
+        mediator.receiver(GameEvents.UiEvents.COLLISION_LEFT, data -> {
+            playCollisionAnimation(false);
+        });
+        mediator.receiver(GameEvents.UiEvents.COLLISION_RIGHT, data -> {
+            playCollisionAnimation(true);
+        });
+        mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_SOFT, data -> playLandedAnimation(5.0, Duration.millis(60)));
+        mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_NORMAL, data -> playLandedAnimation(8.0, Duration.millis(70)));
+        mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_HARD, data -> playLandedAnimation(12.0, Duration.millis(80)));
     }
 
     /**
@@ -129,9 +147,9 @@ public class GameScreen {
      * Organiza os painéis esquerdo, central e direito na interface.
      */
     private void setupLayout() {
-        StackPane centerContainer = new StackPane(gameBoardScreen.getNode());
-        centerContainer.setAlignment(Pos.CENTER);
-        layout.setCenter(centerContainer);
+        this.centerContainer = new StackPane(gameBoardScreen.getNode());
+        this.centerContainer.setAlignment(Pos.CENTER);
+        layout.setCenter(this.centerContainer);
 
         VBox leftPanel = createLeftPanel();
         VBox rightPanel = createRightPanel();
@@ -144,6 +162,60 @@ public class GameScreen {
 
         root.getChildren().addAll(createBackground(), layout);
     }
+
+    /**
+     * Executa uma animação de "shake" lateral no contêiner do tabuleiro.
+     *
+     * @param moveRight Define a direção do movimento inicial da animação.
+     *                  Se {@code true}, move para a direita; se {@code false}, move para a esquerda.
+     */
+    private void playCollisionAnimation(boolean moveRight) {
+        if (isAnimationPlaying) {
+            return;
+        }
+        isAnimationPlaying = true;
+
+        final double SHAKE_AMOUNT = 10.0;
+        final Duration ANIMATION_DURATION = Duration.millis(75);
+
+        TranslateTransition tt = new TranslateTransition(ANIMATION_DURATION, centerContainer);
+        tt.setByX(moveRight ? SHAKE_AMOUNT : -SHAKE_AMOUNT);
+        tt.setCycleCount(2);
+        tt.setAutoReverse(true);
+
+        tt.setOnFinished(event -> {
+            centerContainer.setTranslateX(0);
+            isAnimationPlaying = false;
+        });
+
+        tt.play();
+    }
+
+    /**
+     * Executa uma animação de "shake" vertical (para baixo) no contêiner do tabuleiro.
+     *
+     * @param intensity A distância do "shake" em pixels (para baixo).
+     * @param duration A duração de cada parte do "shake" (ida ou volta).
+     */
+    private void playLandedAnimation(double intensity, Duration duration) {
+        if (isAnimationPlaying) {
+            return;
+        }
+        isAnimationPlaying = true;
+
+        TranslateTransition tt = new TranslateTransition(duration, centerContainer);
+        tt.setByY(intensity);
+        tt.setCycleCount(2);
+        tt.setAutoReverse(true);
+
+        tt.setOnFinished(event -> {
+            centerContainer.setTranslateY(0);
+            isAnimationPlaying = false;
+        });
+
+        tt.play();
+    }
+
 
     /**
      * Cria o painel esquerdo da interface.
