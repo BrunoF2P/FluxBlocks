@@ -23,65 +23,32 @@ public class Tetromino implements Shape {
         public int getValue() {
             return value;
         }
+
+        public static Type fromOrdinal(int ordinal) {
+            for (Type type : values()) {
+                if (type.ordinal() == ordinal) {
+                    return type;
+                }
+            }
+            return EMPTY;
+        }
     }
 
     private int centerX;
     private int centerY;
-    private final List<Cell> cells = new ArrayList<>();
+    private final List<Cell> cells;
+    private final int typeValue;
     private final Type type;
 
-    public Tetromino(Type type) {
-        this.type = type;
-        initializeCells();
-    }
-
-    private void initializeCells() {
-        cells.clear();
-
-        switch (type) {
-            case I -> {
-                cells.add(new Cell(-1, 0, type.getValue()));
-                cells.add(new Cell(0, 0, type.getValue()));
-                cells.add(new Cell(1, 0, type.getValue()));
-                cells.add(new Cell(2, 0, type.getValue()));
-            }
-            case J -> {
-                cells.add(new Cell(-1, -1, type.getValue()));
-                cells.add(new Cell(-1, 0, type.getValue()));
-                cells.add(new Cell(0, 0, type.getValue()));
-                cells.add(new Cell(1, 0, type.getValue()));
-            }
-            case L -> {
-                cells.add(new Cell(1, -1, type.getValue()));
-                cells.add(new Cell(-1, 0, type.getValue()));
-                cells.add(new Cell(0, 0, type.getValue()));
-                cells.add(new Cell(1, 0, type.getValue()));
-            }
-            case O -> {
-                cells.add(new Cell(0, 0, type.getValue()));
-                cells.add(new Cell(1, 0, type.getValue()));
-                cells.add(new Cell(0, 1, type.getValue()));
-                cells.add(new Cell(1, 1, type.getValue()));
-            }
-            case S -> {
-                cells.add(new Cell(0, -1, type.getValue()));
-                cells.add(new Cell(1, -1, type.getValue()));
-                cells.add(new Cell(-1, 0, type.getValue()));
-                cells.add(new Cell(0, 0, type.getValue()));
-            }
-            case T -> {
-                cells.add(new Cell(0, -1, type.getValue()));
-                cells.add(new Cell(-1, 0, type.getValue()));
-                cells.add(new Cell(0, 0, type.getValue()));
-                cells.add(new Cell(1, 0, type.getValue()));
-            }
-            case Z -> {
-                cells.add(new Cell(-1, -1, type.getValue()));
-                cells.add(new Cell(0, -1, type.getValue()));
-                cells.add(new Cell(0, 0, type.getValue()));
-                cells.add(new Cell(1, 0, type.getValue()));
-            }
-        }
+    /**
+     * Construtor que recebe uma lista de células e o valor do tipo.
+     * Este construtor é chamado pela TetrominoFactory.
+     */
+    public Tetromino(List<Cell> cells, int typeValue) {
+        this.cells = new ArrayList<>(cells);
+        this.typeValue = typeValue;
+        this.type = Type.fromOrdinal(typeValue);
+        updateCellPositions();
     }
 
     @Override
@@ -134,7 +101,7 @@ public class Tetromino implements Shape {
 
     @Override
     public int getType() {
-        return type.getValue();
+        return typeValue;
     }
 
     @Override

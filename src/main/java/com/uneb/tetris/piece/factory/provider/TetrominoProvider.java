@@ -1,0 +1,7 @@
+package com.uneb.tetris.piece.factory.provider;
+
+import com.uneb.tetris.piece.Tetromino;
+
+public interface TetrominoProvider {
+    Tetromino next();
+}

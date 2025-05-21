@@ -15,4 +15,5 @@ open module com.uneb.tetris {
     exports com.uneb.tetris.event;
     exports com.uneb.tetris.board;
     exports com.uneb.tetris.piece;
+    exports com.uneb.tetris.piece.factory;
 }
