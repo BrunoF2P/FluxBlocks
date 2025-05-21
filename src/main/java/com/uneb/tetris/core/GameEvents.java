@@ -30,6 +30,11 @@ public final class GameEvents {
         public static final EventType<Void> GAME_OVER = new EventType<>() {};
         public static final EventType<Void> PAUSE = new EventType<>() {};
         public static final EventType<Integer> SCORE_UPDATED = new EventType<>() {};
+        public static final EventType<Double> UPDATE_SPEED = new EventType<>() {};
+        public static final EventType<Void> RESTART = new EventType<>() {};
+        public static final EventType<Void> RESTART_GAME = new EventType<>() {};
+        public static final EventType<Void> AUTO_MOVE_DOWN = new EventType<>() {};
+        public static final EventType<Void> LOCK_PIECE = new EventType<>() {};
     }
 
     public static final class InputEvents {
