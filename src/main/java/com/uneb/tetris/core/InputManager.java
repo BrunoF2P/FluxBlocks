@@ -110,6 +110,7 @@ public class InputManager {
             protected void onActionEnd() {
                 leftKeyPressed = false;
                 isFirstMove = true;
+                mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
                 if (!rightKeyPressed) {
                     lastHorizontalKeyPressed = null;
                 } else {
@@ -153,6 +154,7 @@ public class InputManager {
             protected void onActionEnd() {
                 rightKeyPressed = false;
                 isFirstMove = true;
+                mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
                 if (!leftKeyPressed) {
                     lastHorizontalKeyPressed = null;
                 } else {
@@ -209,12 +211,12 @@ public class InputManager {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
-
                 mediator.emit(GameEvents.GameplayEvents.ROTATE, null);
             }
 
             @Override
             protected void onActionEnd() {
+                if (isGameNotPlayable()) return;
                 mediator.emit(GameEvents.InputEvents.ROTATE_RESET, null);
             }
         }, KeyCode.UP);
@@ -227,7 +229,6 @@ public class InputManager {
         FXGL.getInput().addAction(new UserAction("Hard Drop") {
             @Override
             protected void onActionBegin() {
-                // Falha rápida se o jogo não estiver em estado jogável
                 if (isGameNotPlayable()) return;
 
                 mediator.emit(GameEvents.GameplayEvents.DROP, null);

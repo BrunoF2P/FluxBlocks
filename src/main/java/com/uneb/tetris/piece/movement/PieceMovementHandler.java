@@ -27,7 +27,7 @@ public class PieceMovementHandler {
      * @param lockDelayManager Gerenciador de atraso de bloqueio
      * @param mediator O mediador para comunicação entre componentes do jogo
      */
-    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayManager lockDelayManager, GameMediator mediator) { // Modificado
+    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayManager lockDelayManager, GameMediator mediator) {
         this.collisionDetector = collisionDetector;
         this.lockDelayManager = lockDelayManager;
         this.mediator = mediator;
@@ -44,12 +44,13 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, -1, 0);
 
         if (moved) {
+            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
             lockDelayManager.resetLockDelay(piece, isAtRest);
         } else {
-            mediator.emit(GameEvents.UiEvents.COLLISION_LEFT, null);
+            mediator.emit(GameEvents.UiEvents.PIECE_PUSHING_WALL_LEFT, null);
         }
-
         return moved;
     }
 
@@ -63,12 +64,13 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, 1, 0);
 
         if (moved) {
+            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
             lockDelayManager.resetLockDelay(piece, isAtRest);
         } else {
-            mediator.emit(GameEvents.UiEvents.COLLISION_RIGHT, null);
+            mediator.emit(GameEvents.UiEvents.PIECE_PUSHING_WALL_RIGHT, null);
         }
-
         return moved;
     }
 
@@ -87,8 +89,9 @@ public class PieceMovementHandler {
         if (moved) {
             lockDelayManager.resetLockDelay(piece, collisionDetector.isAtRestingPosition(piece));
             softDropDistance++;
+            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
         }
-
         return moved;
     }
 
@@ -105,6 +108,8 @@ public class PieceMovementHandler {
         while (tryMove(piece, 0, 1)) {
             distance++;
         }
+        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
 
         resetSoftDropTracking();
         return distance;
@@ -128,7 +133,6 @@ public class PieceMovementHandler {
         if (!isValid) {
             piece.setPosition(originalX, originalY);
         }
-
         return isValid;
     }
 
@@ -156,5 +160,14 @@ public class PieceMovementHandler {
      */
     public int getSoftDropDistance() {
         return softDropDistance;
+    }
+
+    /**
+     * Reseta o estado de "empurrar paredes".
+     * Chamado quando uma nova peça é gerada ou rotacionada.
+     */
+    public void resetWallPushState() {
+        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
     }
 }

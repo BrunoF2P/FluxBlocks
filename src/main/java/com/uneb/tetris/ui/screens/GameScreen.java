@@ -78,6 +78,18 @@ public class GameScreen {
     /** Flag para controlar se uma animação está ativa. */
     private boolean isAnimationPlaying = false;
 
+    /** Efeito do quanto o container é empurrado */
+    private static final double WALL_PUSH_OFFSET = 12.0;
+
+    /** Duração do efeito do container sendo empurrado*/
+    private static final Duration WALL_PUSH_ANIMATION_DURATION = Duration.millis(140);
+
+    /** Indica se a peça atual está encostada e empurrando a parede esquerda. */
+    private boolean isPushingLeftWall = false;
+
+    /** Indica se a peça atual está encostada e empurrando a parede direita. */
+    private boolean isPushingRightWall = false;
+
 
     /**
      * Constrói uma nova tela de jogo e configura os elementos de UI.
@@ -131,15 +143,11 @@ public class GameScreen {
             currentLevel = level;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
         });
-        mediator.receiver(GameEvents.UiEvents.COLLISION_LEFT, data -> {
-            playCollisionAnimation(false);
-        });
-        mediator.receiver(GameEvents.UiEvents.COLLISION_RIGHT, data -> {
-            playCollisionAnimation(true);
-        });
         mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_SOFT, data -> playLandedAnimation(5.0, Duration.millis(60)));
         mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_NORMAL, data -> playLandedAnimation(8.0, Duration.millis(70)));
         mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_HARD, data -> playLandedAnimation(12.0, Duration.millis(80)));
+
+        setupWallPushAnimationListeners();
     }
 
     /**
@@ -164,30 +172,52 @@ public class GameScreen {
     }
 
     /**
-     * Executa uma animação de "shake" lateral no contêiner do tabuleiro.
-     *
-     * @param moveRight Define a direção do movimento inicial da animação.
-     *                  Se {@code true}, move para a direita; se {@code false}, move para a esquerda.
+     * Configura os listeners para os eventos de "empurrar" e "parar de empurrar" as paredes.
+     * Estes listeners atualizam a posição do tabuleiro para dar feedback visual.
      */
-    private void playCollisionAnimation(boolean moveRight) {
-        if (isAnimationPlaying) {
-            return;
-        }
-        isAnimationPlaying = true;
-
-        final double SHAKE_AMOUNT = 10.0;
-        final Duration ANIMATION_DURATION = Duration.millis(75);
-
-        TranslateTransition tt = new TranslateTransition(ANIMATION_DURATION, centerContainer);
-        tt.setByX(moveRight ? SHAKE_AMOUNT : -SHAKE_AMOUNT);
-        tt.setCycleCount(2);
-        tt.setAutoReverse(true);
-
-        tt.setOnFinished(event -> {
-            centerContainer.setTranslateX(0);
-            isAnimationPlaying = false;
+    private void setupWallPushAnimationListeners() {
+        mediator.receiver(GameEvents.UiEvents.PIECE_PUSHING_WALL_LEFT, unused -> {
+            if (isPushingRightWall) {
+                isPushingRightWall = false;
+            }
+            isPushingLeftWall = true;
+            updateBoardPosition();
         });
 
+        mediator.receiver(GameEvents.UiEvents.PIECE_PUSHING_WALL_RIGHT, unused -> {
+            if (isPushingLeftWall) {
+                isPushingLeftWall = false;
+            }
+            isPushingRightWall = true;
+            updateBoardPosition();
+        });
+
+        mediator.receiver(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, unused -> {
+            isPushingLeftWall = false;
+            updateBoardPosition();
+        });
+
+        mediator.receiver(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, unused -> {
+            isPushingRightWall = false;
+            updateBoardPosition();
+        });
+    }
+
+    /**
+     * Atualiza a translação horizontal do contêiner do tabuleiro (centerContainer)
+     * com base em qual parede (se houver) está sendo "empurrada", usando uma animação suave.
+     * O tabuleiro se move na direção da parede que está sendo empurrada.
+     */
+    private void updateBoardPosition() {
+        double targetX = 0;
+        if (isPushingLeftWall) {
+            targetX = -WALL_PUSH_OFFSET;
+        } else if (isPushingRightWall) {
+            targetX = WALL_PUSH_OFFSET;
+        }
+
+        TranslateTransition tt = new TranslateTransition(WALL_PUSH_ANIMATION_DURATION, centerContainer);
+        tt.setToX(targetX);
         tt.play();
     }
 

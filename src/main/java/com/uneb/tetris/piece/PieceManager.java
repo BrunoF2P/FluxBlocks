@@ -127,6 +127,7 @@ public class PieceManager {
         nextPiece.setPosition(board.getWidth() / 2, 0);
 
         mediator.emit(GameEvents.UiEvents.NEXT_PIECE_UPDATE, nextPiece);
+        movementHandler.resetWallPushState();
 
         if (!collisionDetector.isValidPosition(currentPiece)) {
             mediator.emit(GameEvents.GameplayEvents.GAME_OVER, null);
@@ -162,6 +163,9 @@ public class PieceManager {
                 board.setCell(cell.getX(), cell.getY(), cell.getType());
             }
         });
+
+        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
 
         if (isHardDrop) {
             mediator.emit(GameEvents.UiEvents.PIECE_LANDED_HARD, null);
@@ -217,11 +221,8 @@ public class PieceManager {
             if (!lockDelayManager.isLockPending()) {
                 lockDelayManager.startLockDelay(currentPiece);
             }
-            // Não emitimos evento de soft landing aqui, pois `lockPiece` cuidará disso
-            // para diferenciar de um lock normal.
             return;
         }
-        // Se moveu, apenas atualiza o tabuleiro. O "shake" ocorrerá ao encaixar.
         updateBoardWithCurrentPiece();
     }
 
@@ -232,14 +233,14 @@ public class PieceManager {
         if (currentPiece == null) return;
 
         int distance = movementHandler.hardDrop(currentPiece);
-        updateBoardWithCurrentPiece(); // Atualiza visualmente a peça na posição final
+        updateBoardWithCurrentPiece();
 
         if (distance > 0) {
             int hardDropScore = scoreCalculator.calculateHardDropScore(distance);
             mediator.emit(GameEvents.GameplayEvents.SCORE_UPDATED, hardDropScore);
         }
 
-        lockPiece(true); // Chama lockPiece indicando que foi um hard drop
+        lockPiece(true);
     }
 
     /**
@@ -247,6 +248,7 @@ public class PieceManager {
      */
     public void rotate() {
         if (rotationHandler.rotate(currentPiece)) {
+            movementHandler.resetWallPushState();
             updateBoardWithCurrentPiece();
         }
     }
