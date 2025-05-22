@@ -320,11 +320,12 @@ public class GameScreen {
         VBox timeBox = new VBox(5);
         timeBox.setAlignment(Pos.CENTER);
         timeBox.getStyleClass().add("info-box");
+        timeBox.setMinWidth(150);
 
         Text timeLabel = new Text("Tempo");
         timeLabel.getStyleClass().add("info-text");
 
-        Text timeText = new Text("00:00");
+        Text timeText = new Text("00:00:000");
         timeText.getStyleClass().add("score-text");
         timeText.setId("time-text");
 

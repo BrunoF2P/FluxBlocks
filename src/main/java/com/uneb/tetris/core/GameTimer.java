@@ -82,7 +82,7 @@ public class GameTimer {
      */
     private void initializeGameClock() {
         gameClock = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), e -> onClockTick());
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(10), e -> onClockTick());
         gameClock.getKeyFrames().add(keyFrame);
         gameClock.setCycleCount(Animation.INDEFINITE);
     }
@@ -167,21 +167,24 @@ public class GameTimer {
      */
     private void updateElapsedTime() {
         LocalTime now = LocalTime.now();
-        long secondsElapsed = ChronoUnit.SECONDS.between(startTime, now);
-        String timeFormatted = formatElapsedTime(secondsElapsed);
+        long millisElapsed = ChronoUnit.MILLIS.between(startTime, now);
+        String timeFormatted = formatElapsedTime(millisElapsed);
         mediator.emit(GameEvents.UiEvents.TIME_UPDATE, timeFormatted);
     }
 
     /**
-     * Formata o tempo decorrido em minutos e segundos.
+     * Formata o tempo decorrido em minutos, segundos e milliseconds.
      *
-     * @param secondsElapsed Total de segundos decorridos
-     * @return String formatada no padrão "MM:SS"
+     * @param millisElapsed Total de milliseconds decorridos
+     * @return String formatada no padrão "MM:SS:mmm"
      */
-    private String formatElapsedTime(long secondsElapsed) {
-        long minutes = secondsElapsed / 60;
-        long seconds = secondsElapsed % 60;
-        return String.format("%02d:%02d", minutes, seconds);
+    private String formatElapsedTime(long millisElapsed) {
+        long milliseconds = millisElapsed % 1000;
+        long totalSeconds = millisElapsed / 1000;
+        long seconds = totalSeconds % 60;
+        long minutes = totalSeconds / 60;
+        return String.format("%02d:%02d:%03d", minutes, seconds, milliseconds);
+
     }
 
     /**
