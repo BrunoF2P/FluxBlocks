@@ -1,6 +1,6 @@
-package com.uneb.tetris.core;
+package com.uneb.tetris.architecture.mediators;
 
-import com.uneb.tetris.event.EventType;
+import com.uneb.tetris.architecture.events.EventType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

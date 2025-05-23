@@ -1,7 +1,7 @@
 package com.uneb.tetris.ui.screens;
 
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.components.BoardCanvas;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -50,7 +50,7 @@ public class GameBoardScreen {
      * Registra os eventos necessários para atualização do tabuleiro.
      */
     private void registerEvents() {
-        mediator.receiver(GameEvents.UiEvents.BOARD_UPDATE, this::updateBoard);
+        mediator.receiver(UiEvents.BOARD_UPDATE, this::updateBoard);
     }
 
     /**

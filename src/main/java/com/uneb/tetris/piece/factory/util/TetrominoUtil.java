@@ -1,6 +1,6 @@
 package com.uneb.tetris.piece.factory.util;
 
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.piece.entities.Tetromino;
 
 import java.util.List;
 

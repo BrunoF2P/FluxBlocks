@@ -1,7 +1,8 @@
-package com.uneb.tetris.board;
+package com.uneb.tetris.game.logic;
 
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
 
 public class GameBoard {
     private final GameMediator mediator;
@@ -65,7 +66,7 @@ public class GameBoard {
 
         if (linesRemoved > 0) {
             notifyBoardUpdated();
-            mediator.emit(GameEvents.GameplayEvents.LINE_CLEARED, linesRemoved);
+            mediator.emit(GameplayEvents.LINE_CLEARED, linesRemoved);
         }
 
         return linesRemoved;
@@ -116,6 +117,6 @@ public class GameBoard {
             System.arraycopy(grid[y], 0, gridCopy[y], 0, width);
         }
 
-        mediator.emit(GameEvents.UiEvents.BOARD_UPDATE, gridCopy);
+        mediator.emit(UiEvents.BOARD_UPDATE, gridCopy);
     }
 }

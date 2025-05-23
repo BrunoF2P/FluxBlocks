@@ -8,12 +8,17 @@ open module com.uneb.tetris {
     requires transitive com.almasb.fxgl.core;
     requires transitive com.almasb.fxgl.entity;
 
-    exports com.uneb.tetris.core;
+    exports com.uneb.tetris.game.core;
     exports com.uneb.tetris.ui;
     exports com.uneb.tetris.ui.components;
     exports com.uneb.tetris.ui.screens;
-    exports com.uneb.tetris.event;
-    exports com.uneb.tetris.board;
-    exports com.uneb.tetris.piece;
     exports com.uneb.tetris.piece.factory;
+    exports com.uneb.tetris.game.logic;
+    exports com.uneb.tetris.ui.controllers;
+    exports com.uneb.tetris.architecture.mediators;
+    exports com.uneb.tetris.architecture.events;
+    exports com.uneb.tetris.piece.entities;
+    exports com.uneb.tetris.piece.movement;
+    exports com.uneb.tetris.game.scoring;
+    exports com.uneb.tetris.piece;
 }

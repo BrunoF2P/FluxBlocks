@@ -1,7 +1,7 @@
 package com.uneb.tetris.piece.rendering;
 
-import com.uneb.tetris.piece.Cell;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.piece.entities.Cell;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.factory.TetrominoFactory;
 import com.uneb.tetris.piece.collision.CollisionDetector;
 

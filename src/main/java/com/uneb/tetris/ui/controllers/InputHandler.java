@@ -1,10 +1,13 @@
-package com.uneb.tetris.core;
+package com.uneb.tetris.ui.controllers;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.input.UserAction;
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.InputEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameState;
 import javafx.scene.input.KeyCode;
-
-import java.util.Objects;
 
 /**
  * Gerencia toda a entrada do usuário para o jogo Tetris.
@@ -14,7 +17,7 @@ import java.util.Objects;
  * para ações contínuas e garante que os eventos de entrada sejam gerenciados
  * adequadamente com base no estado atual do jogo.
  */
-public class InputManager {
+public class InputHandler {
     /** O mediador do jogo para transmitir eventos */
     private final GameMediator mediator;
 
@@ -43,12 +46,12 @@ public class InputManager {
     private static final double SOFT_DROP_INITIAL_DELAY = 0.05; // 50ms
 
     /**
-     * Cria um novo InputManager com o mediador e estado do jogo especificados.
+     * Cria um novo InputHandler com o mediador e estado do jogo especificados.
      *
      * @param mediator O mediador do jogo para notificar sobre eventos de entrada
      * @param gameState O estado atual do jogo para verificar o tratamento de entrada válido
      */
-    public InputManager(GameMediator mediator, GameState gameState) {
+    public InputHandler(GameMediator mediator, GameState gameState) {
         this.mediator = mediator;
         this.gameState = gameState;
     }
@@ -100,7 +103,7 @@ public class InputManager {
                 double delay = isFirstMove ? INITIAL_DELAY : HORIZONTAL_REPEAT_DELAY;
 
                 if (isFirstMove || (now - lastMoveTime >= delay)) {
-                    mediator.emit(GameEvents.GameplayEvents.MOVE_LEFT, null);
+                    mediator.emit(GameplayEvents.MOVE_LEFT, null);
                     lastMoveTime = now;
                     isFirstMove = false;
                 }
@@ -110,7 +113,7 @@ public class InputManager {
             protected void onActionEnd() {
                 leftKeyPressed = false;
                 isFirstMove = true;
-                mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+                mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
                 if (!rightKeyPressed) {
                     lastHorizontalKeyPressed = null;
                 } else {
@@ -144,7 +147,7 @@ public class InputManager {
                 double delay = isFirstMove ? INITIAL_DELAY : HORIZONTAL_REPEAT_DELAY;
 
                 if (isFirstMove || (now - lastMoveTime >= delay)) {
-                    mediator.emit(GameEvents.GameplayEvents.MOVE_RIGHT, null);
+                    mediator.emit(GameplayEvents.MOVE_RIGHT, null);
                     lastMoveTime = now;
                     isFirstMove = false;
                 }
@@ -154,7 +157,7 @@ public class InputManager {
             protected void onActionEnd() {
                 rightKeyPressed = false;
                 isFirstMove = true;
-                mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+                mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
                 if (!leftKeyPressed) {
                     lastHorizontalKeyPressed = null;
                 } else {
@@ -177,7 +180,7 @@ public class InputManager {
             protected void onActionBegin() {
                 if (isGameNotPlayable()) return;
 
-                mediator.emit(GameEvents.GameplayEvents.MOVE_DOWN, null);
+                mediator.emit(GameplayEvents.MOVE_DOWN, null);
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -190,7 +193,7 @@ public class InputManager {
                 double delay = isFirstMove ? SOFT_DROP_INITIAL_DELAY : SOFT_DROP_DELAY;
 
                 if (now - lastMoveTime >= delay) {
-                    mediator.emit(GameEvents.GameplayEvents.MOVE_DOWN, null);
+                    mediator.emit(GameplayEvents.MOVE_DOWN, null);
                     lastMoveTime = now;
                     isFirstMove = false;
                 }
@@ -211,13 +214,13 @@ public class InputManager {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
-                mediator.emit(GameEvents.GameplayEvents.ROTATE, null);
+                mediator.emit(GameplayEvents.ROTATE, null);
             }
 
             @Override
             protected void onActionEnd() {
                 if (isGameNotPlayable()) return;
-                mediator.emit(GameEvents.InputEvents.ROTATE_RESET, null);
+                mediator.emit(InputEvents.ROTATE_RESET, null);
             }
         }, KeyCode.UP);
     }
@@ -231,7 +234,7 @@ public class InputManager {
             protected void onActionBegin() {
                 if (isGameNotPlayable()) return;
 
-                mediator.emit(GameEvents.GameplayEvents.DROP, null);
+                mediator.emit(GameplayEvents.DROP, null);
             }
         }, KeyCode.SPACE);
     }
@@ -243,7 +246,7 @@ public class InputManager {
         FXGL.getInput().addAction(new UserAction("Pause") {
             @Override
             protected void onActionBegin() {
-                mediator.emit(GameEvents.GameplayEvents.PAUSE, null);
+                mediator.emit(GameplayEvents.PAUSE, null);
             }
         }, KeyCode.P);
     }
@@ -255,7 +258,7 @@ public class InputManager {
         FXGL.getInput().addAction(new UserAction("Restart") {
             @Override
             protected void onActionBegin() {
-                mediator.emit(GameEvents.GameplayEvents.RESTART, null);
+                mediator.emit(GameplayEvents.RESTART, null);
             }
         }, KeyCode.R);
     }

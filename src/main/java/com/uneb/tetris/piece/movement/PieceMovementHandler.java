@@ -1,17 +1,17 @@
 package com.uneb.tetris.piece.movement;
 
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.collision.CollisionDetector;
-import com.uneb.tetris.piece.timing.LockDelayManager;
+import com.uneb.tetris.piece.timing.LockDelayHandler;
 
 /**
  * Gerencia a movimentação de peças (esquerda, direita, baixo, hard drop).
  */
 public class PieceMovementHandler {
     private final CollisionDetector collisionDetector;
-    private final LockDelayManager lockDelayManager;
+    private final LockDelayHandler lockDelayHandler;
     private final GameMediator mediator;
 
     /** Flag que indica se o jogador está realizando soft drop */
@@ -24,12 +24,12 @@ public class PieceMovementHandler {
      * Constrói um novo manipulador de movimento de peças.
      *
      * @param collisionDetector Detector de colisões para verificar posições válidas
-     * @param lockDelayManager Gerenciador de atraso de bloqueio
+     * @param lockDelayHandler Gerenciador de atraso de bloqueio
      * @param mediator O mediador para comunicação entre componentes do jogo
      */
-    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayManager lockDelayManager, GameMediator mediator) {
+    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayHandler lockDelayHandler, GameMediator mediator) {
         this.collisionDetector = collisionDetector;
-        this.lockDelayManager = lockDelayManager;
+        this.lockDelayHandler = lockDelayHandler;
         this.mediator = mediator;
     }
 
@@ -44,12 +44,12 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, -1, 0);
 
         if (moved) {
-            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
-            lockDelayManager.resetLockDelay(piece, isAtRest);
+            lockDelayHandler.resetLockDelay(piece, isAtRest);
         } else {
-            mediator.emit(GameEvents.UiEvents.PIECE_PUSHING_WALL_LEFT, null);
+            mediator.emit(UiEvents.PIECE_PUSHING_WALL_LEFT, null);
         }
         return moved;
     }
@@ -64,12 +64,12 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, 1, 0);
 
         if (moved) {
-            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
-            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
-            lockDelayManager.resetLockDelay(piece, isAtRest);
+            lockDelayHandler.resetLockDelay(piece, isAtRest);
         } else {
-            mediator.emit(GameEvents.UiEvents.PIECE_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_PUSHING_WALL_RIGHT, null);
         }
         return moved;
     }
@@ -87,10 +87,10 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, 0, 1);
 
         if (moved) {
-            lockDelayManager.resetLockDelay(piece, collisionDetector.isAtRestingPosition(piece));
+            lockDelayHandler.resetLockDelay(piece, collisionDetector.isAtRestingPosition(piece));
             softDropDistance++;
-            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-            mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
         }
         return moved;
     }
@@ -108,8 +108,8 @@ public class PieceMovementHandler {
         while (tryMove(piece, 0, 1)) {
             distance++;
         }
-        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
 
         resetSoftDropTracking();
         return distance;
@@ -167,7 +167,7 @@ public class PieceMovementHandler {
      * Chamado quando uma nova peça é gerada ou rotacionada.
      */
     public void resetWallPushState() {
-        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
     }
 }

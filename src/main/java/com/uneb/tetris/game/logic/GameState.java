@@ -1,4 +1,4 @@
-package com.uneb.tetris.core;
+package com.uneb.tetris.game.logic;
 
 /**
  * Mantém e gerencia o estado atual do jogo Tetris.

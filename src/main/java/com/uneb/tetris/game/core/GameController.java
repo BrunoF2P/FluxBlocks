@@ -1,7 +1,13 @@
-package com.uneb.tetris.core;
+package com.uneb.tetris.game.core;
 
-import com.uneb.tetris.board.GameBoard;
-import com.uneb.tetris.piece.PieceManager;
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameBoard;
+import com.uneb.tetris.game.logic.GameState;
+import com.uneb.tetris.piece.PieceSystem;
+import com.uneb.tetris.game.scoring.ScoreTracker;
+import com.uneb.tetris.ui.controllers.InputHandler;
 
 /**
  * Gerenciador principal do jogo Tetris.
@@ -15,7 +21,7 @@ import com.uneb.tetris.piece.PieceManager;
  *   <li>Gerenciamento de eventos do jogo</li>
  * </ul>
  */
-public class GameManager {
+public class GameController {
     /** Mediador central para comunicação entre componentes */
     private final GameMediator mediator;
     
@@ -23,13 +29,13 @@ public class GameManager {
     private final GameBoard gameBoard;
     
     /** Gerenciador de peças */
-    private final PieceManager pieceManager;
+    private final PieceSystem pieceManager;
     
     /** Gerenciador de entrada do usuário */
-    private final InputManager inputManager;
+    private final InputHandler inputHandler;
     
     /** Gerenciador de pontuação */
-    private final ScoreManager scoreManager;
+    private final ScoreTracker scoreTracker;
     
     /** Controlador de tempo do jogo */
     private final GameTimer gameTimer;
@@ -42,14 +48,14 @@ public class GameManager {
      *
      * @param mediator O mediador central para comunicação entre componentes
      */
-    public GameManager(GameMediator mediator) {
+    public GameController(GameMediator mediator) {
         this.mediator = mediator;
         this.gameBoard = new GameBoard(mediator);
-        this.pieceManager = new PieceManager(mediator, gameBoard);
+        this.pieceManager = new PieceSystem(mediator, gameBoard);
         this.gameState = new GameState();
-        this.scoreManager = new ScoreManager(mediator, gameState);
+        this.scoreTracker = new ScoreTracker(mediator, gameState);
         this.gameTimer = new GameTimer(mediator, gameState);
-        this.inputManager = new InputManager(mediator, gameState);
+        this.inputHandler = new InputHandler(mediator, gameState);
 
         registerEvents();
         start();
@@ -60,9 +66,9 @@ public class GameManager {
      * Configura os handlers para game over e pausa.
      */
     private void registerEvents() {
-        mediator.receiver(GameEvents.GameplayEvents.GAME_OVER, unused -> handleGameOver());
-        mediator.receiver(GameEvents.GameplayEvents.PAUSE, unused -> togglePause());
-        mediator.emit(GameEvents.UiEvents.NEXT_PIECE_UPDATE, pieceManager.getNextPiece());
+        mediator.receiver(GameplayEvents.GAME_OVER, unused -> handleGameOver());
+        mediator.receiver(GameplayEvents.PAUSE, unused -> togglePause());
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, pieceManager.getNextPiece());
     }
 
     /**
@@ -75,10 +81,10 @@ public class GameManager {
         gameState.reset();
 
         gameTimer.start();
-        scoreManager.reset();
-        inputManager.setupInputHandling();
+        scoreTracker.reset();
+        inputHandler.setupInputHandling();
 
-        mediator.emit(GameEvents.UiEvents.GAME_STARTED, null);
+        mediator.emit(UiEvents.GAME_STARTED, null);
     }
 
     /**
@@ -88,7 +94,7 @@ public class GameManager {
     public void togglePause() {
         gameState.togglePause();
         gameTimer.handlePauseState(gameState.isPaused());
-        mediator.emit(GameEvents.UiEvents.GAME_PAUSED, gameState.isPaused());
+        mediator.emit(UiEvents.GAME_PAUSED, gameState.isPaused());
     }
 
     /**
@@ -108,6 +114,6 @@ public class GameManager {
     private void handleGameOver() {
         gameState.setGameOver(true);
         gameTimer.stop();
-        mediator.emit(GameEvents.UiEvents.GAME_OVER, scoreManager.getScore());
+        mediator.emit(UiEvents.GAME_OVER, scoreTracker.getScore());
     }
 }

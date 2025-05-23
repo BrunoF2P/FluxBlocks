@@ -1,6 +1,6 @@
 package com.uneb.tetris.piece.factory.provider;
 
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.factory.TetrominoFactory;
 import com.uneb.tetris.piece.factory.util.TetrominoUtil;
 

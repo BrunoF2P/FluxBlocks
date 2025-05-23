@@ -1,9 +1,12 @@
 package com.uneb.tetris.piece;
 
 import com.almasb.fxgl.dsl.FXGL;
-import com.uneb.tetris.board.GameBoard;
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.InputEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameBoard;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.collision.CollisionDetector;
 import com.uneb.tetris.piece.factory.TetrominoFactory;
 import com.uneb.tetris.piece.movement.PieceMovementHandler;
@@ -11,7 +14,7 @@ import com.uneb.tetris.piece.movement.PieceRotationHandler;
 import com.uneb.tetris.piece.rendering.PieceRenderer;
 import com.uneb.tetris.piece.rendering.ShadowPieceCalculator;
 import com.uneb.tetris.piece.scoring.ScoreCalculator;
-import com.uneb.tetris.piece.timing.LockDelayManager;
+import com.uneb.tetris.piece.timing.LockDelayHandler;
 import javafx.util.Duration;
 
 /**
@@ -21,7 +24,7 @@ import javafx.util.Duration;
  * <p>Esta classe implementa o padrão Mediator, coordenando a interação
  * entre os diversos subsistemas que controlam as peças do jogo.</p>
  */
-public class PieceManager {
+public class PieceSystem {
     /** Mediador para comunicação com outros componentes do jogo */
     private final GameMediator mediator;
 
@@ -38,7 +41,7 @@ public class PieceManager {
     private int currentLevel = 1;
 
     private final CollisionDetector collisionDetector;
-    private final LockDelayManager lockDelayManager;
+    private final LockDelayHandler lockDelayHandler;
     private final PieceMovementHandler movementHandler;
     private final PieceRotationHandler rotationHandler;
     private final ShadowPieceCalculator shadowCalculator;
@@ -51,14 +54,14 @@ public class PieceManager {
      * @param mediator O mediador para comunicação entre componentes do jogo
      * @param board O tabuleiro do jogo onde as peças serão posicionadas
      */
-    public PieceManager(GameMediator mediator, GameBoard board) {
+    public PieceSystem(GameMediator mediator, GameBoard board) {
         this.mediator = mediator;
         this.board = board;
 
         this.collisionDetector = new CollisionDetector(board);
-        this.lockDelayManager = new LockDelayManager();
-        this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayManager, mediator);
-        this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayManager);
+        this.lockDelayHandler = new LockDelayHandler();
+        this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayHandler, mediator);
+        this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayHandler);
         this.shadowCalculator = new ShadowPieceCalculator(collisionDetector);
         this.renderer = new PieceRenderer(board, shadowCalculator);
         this.scoreCalculator = new ScoreCalculator();
@@ -83,16 +86,16 @@ public class PieceManager {
      * Registra os eventos necessários no mediador para controle das peças.
      */
     private void registerEvents() {
-        mediator.receiver(GameEvents.GameplayEvents.MOVE_LEFT, unused -> moveLeft());
-        mediator.receiver(GameEvents.GameplayEvents.MOVE_RIGHT, unused -> moveRight());
-        mediator.receiver(GameEvents.GameplayEvents.MOVE_DOWN, unused -> moveDown());
-        mediator.receiver(GameEvents.GameplayEvents.AUTO_MOVE_DOWN, unused -> moveDown());
-        mediator.receiver(GameEvents.GameplayEvents.ROTATE, unused -> rotate());
-        mediator.receiver(GameEvents.GameplayEvents.DROP, unused -> hardDrop());
-        mediator.receiver(GameEvents.InputEvents.ROTATE_RESET, unused -> rotationHandler.resetRotateDelay());
-        mediator.receiver(GameEvents.UiEvents.LEVEL_UPDATE, level -> updateLevel((int)level));
-        mediator.receiver(GameEvents.UiEvents.GAME_STARTED, unused -> {
-            mediator.emit(GameEvents.UiEvents.NEXT_PIECE_UPDATE, nextPiece);
+        mediator.receiver(GameplayEvents.MOVE_LEFT, unused -> moveLeft());
+        mediator.receiver(GameplayEvents.MOVE_RIGHT, unused -> moveRight());
+        mediator.receiver(GameplayEvents.MOVE_DOWN, unused -> moveDown());
+        mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, unused -> moveDown());
+        mediator.receiver(GameplayEvents.ROTATE, unused -> rotate());
+        mediator.receiver(GameplayEvents.DROP, unused -> hardDrop());
+        mediator.receiver(InputEvents.ROTATE_RESET, unused -> rotationHandler.resetRotateDelay());
+        mediator.receiver(UiEvents.LEVEL_UPDATE, level -> updateLevel((int)level));
+        mediator.receiver(UiEvents.GAME_STARTED, unused -> {
+            mediator.emit(UiEvents.NEXT_PIECE_UPDATE, nextPiece);
         });
 
         FXGL.getGameTimer().runAtInterval(this::checkLockDelay, Duration.millis(16.67)); // 60 FPS
@@ -112,7 +115,7 @@ public class PieceManager {
      * Verifica se o lock delay expirou, fixando a peça se necessário.
      */
     private void checkLockDelay() {
-        if (lockDelayManager.isLockPending() && lockDelayManager.isLockDelayExpired()) {
+        if (lockDelayHandler.isLockPending() && lockDelayHandler.isLockDelayExpired()) {
             lockPiece(false);
         }
     }
@@ -126,15 +129,15 @@ public class PieceManager {
         nextPiece = TetrominoFactory.createRandomTetromino();
         nextPiece.setPosition(board.getWidth() / 2, 0);
 
-        mediator.emit(GameEvents.UiEvents.NEXT_PIECE_UPDATE, nextPiece);
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, nextPiece);
         movementHandler.resetWallPushState();
 
         if (!collisionDetector.isValidPosition(currentPiece)) {
-            mediator.emit(GameEvents.GameplayEvents.GAME_OVER, null);
+            mediator.emit(GameplayEvents.GAME_OVER, null);
             return;
         }
 
-        lockDelayManager.reset();
+        lockDelayHandler.reset();
         movementHandler.resetSoftDropTracking();
 
         updateBoardWithCurrentPiece();
@@ -164,32 +167,32 @@ public class PieceManager {
             }
         });
 
-        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-        mediator.emit(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
 
         if (isHardDrop) {
-            mediator.emit(GameEvents.UiEvents.PIECE_LANDED_HARD, null);
+            mediator.emit(UiEvents.PIECE_LANDED_HARD, null);
         } else if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
-            mediator.emit(GameEvents.UiEvents.PIECE_LANDED_SOFT, null);
+            mediator.emit(UiEvents.PIECE_LANDED_SOFT, null);
         } else {
-            mediator.emit(GameEvents.UiEvents.PIECE_LANDED_NORMAL, null);
+            mediator.emit(UiEvents.PIECE_LANDED_NORMAL, null);
         }
 
 
         if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
             int softDropScore = scoreCalculator.calculateSoftDropScore(); // Supondo que este método exista
-            mediator.emit(GameEvents.GameplayEvents.SCORE_UPDATED, softDropScore);
+            mediator.emit(GameplayEvents.SCORE_UPDATED, softDropScore);
         }
 
         int linesCleared = board.removeCompletedLines();
         if (linesCleared > 0) {
             int linesClearedScore = scoreCalculator.calculateLinesClearedScore(linesCleared);
-            mediator.emit(GameEvents.GameplayEvents.SCORE_UPDATED, linesClearedScore);
+            mediator.emit(GameplayEvents.SCORE_UPDATED, linesClearedScore);
             scoreCalculator.updateTotalClearedLines(linesCleared);
         }
 
         // Resetar estado e gerar nova peça
-        lockDelayManager.reset();
+        lockDelayHandler.reset();
         spawnNewPiece();
     }
 
@@ -218,8 +221,8 @@ public class PieceManager {
         if (currentPiece == null) return;
 
         if (!movementHandler.moveDown(currentPiece)) { // Se não conseguiu mover para baixo
-            if (!lockDelayManager.isLockPending()) {
-                lockDelayManager.startLockDelay(currentPiece);
+            if (!lockDelayHandler.isLockPending()) {
+                lockDelayHandler.startLockDelay(currentPiece);
             }
             return;
         }
@@ -237,7 +240,7 @@ public class PieceManager {
 
         if (distance > 0) {
             int hardDropScore = scoreCalculator.calculateHardDropScore(distance);
-            mediator.emit(GameEvents.GameplayEvents.SCORE_UPDATED, hardDropScore);
+            mediator.emit(GameplayEvents.SCORE_UPDATED, hardDropScore);
         }
 
         lockPiece(true);

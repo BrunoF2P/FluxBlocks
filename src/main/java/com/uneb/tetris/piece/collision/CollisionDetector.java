@@ -1,8 +1,8 @@
 package com.uneb.tetris.piece.collision;
 
-import com.uneb.tetris.board.GameBoard;
-import com.uneb.tetris.piece.Cell;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.game.logic.GameBoard;
+import com.uneb.tetris.piece.entities.Cell;
+import com.uneb.tetris.piece.entities.Tetromino;
 
 /**
  * Responsável por detectar colisões de peças com outras peças

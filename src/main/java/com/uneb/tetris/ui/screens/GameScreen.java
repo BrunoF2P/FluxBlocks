@@ -1,11 +1,14 @@
 package com.uneb.tetris.ui.screens;
 
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.components.NextPiecePreview;
-import javafx.animation.TranslateTransition;
+import com.uneb.tetris.ui.components.TimeDisplay;
+import com.uneb.tetris.ui.effects.Effects;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -15,7 +18,6 @@ import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
 
 import java.util.Objects;
 
@@ -69,20 +71,11 @@ public class GameScreen {
     /** Pontuação atual do jogador. */
     private int score = 0;
 
-    /** Tempo de jogo no formato "MM:SS". */
-    private String gameTime = "00:00";
+    /** Tempo de jogo no formato "MM:SS:mmm". */
+    private String gameTime = "00:00:000";
 
     /** Contêiner para o tabuleiro do jogo, que será animado. */
     private StackPane centerContainer;
-
-    /** Flag para controlar se uma animação está ativa. */
-    private boolean isAnimationPlaying = false;
-
-    /** Efeito do quanto o container é empurrado */
-    private static final double WALL_PUSH_OFFSET = 12.0;
-
-    /** Duração do efeito do container sendo empurrado*/
-    private static final Duration WALL_PUSH_ANIMATION_DURATION = Duration.millis(140);
 
     /** Indica se a peça atual está encostada e empurrando a parede esquerda. */
     private boolean isPushingLeftWall = false;
@@ -90,6 +83,14 @@ public class GameScreen {
     /** Indica se a peça atual está encostada e empurrando a parede direita. */
     private boolean isPushingRightWall = false;
 
+    /** Componentes da UI cacheados para evitar lookups repetidos */
+    private Text scoreTextNode;
+    private Text levelTextNode;
+    private Arc progressArcNode;
+    private Text linesLabelNode;
+    
+    /** Componente otimizado para exibição de tempo */
+    private TimeDisplay timeDisplay;
 
     /**
      * Constrói uma nova tela de jogo e configura os elementos de UI.
@@ -112,11 +113,31 @@ public class GameScreen {
     }
 
     /**
+     * Inicializa as referências de UI para evitar lookups repetidos.
+     * Chame este método após a construção da interface.
+     */
+    private void cacheUIReferences() {
+        scoreTextNode = (Text) root.lookup("#score-text");
+        scoreTextNode.setCache(true);
+        scoreTextNode.setCacheHint(CacheHint.SPEED);
+        
+        levelTextNode = (Text) root.lookup("#level-text");
+        levelTextNode.setCache(true);
+        levelTextNode.setCacheHint(CacheHint.SPEED);
+        
+        progressArcNode = (Arc) root.lookup("#progress-arc");
+        linesLabelNode = (Text) root.lookup("#lines-label");
+        linesLabelNode.setCache(true);
+        linesLabelNode.setCacheHint(CacheHint.SPEED);
+    }
+
+    /**
      * Inicializa a tela do jogo registrando os eventos necessários.
      * Deve ser chamado após a construção da tela.
      */
     public void initialize() {
         registerEvents();
+        cacheUIReferences();
     }
 
     /**
@@ -133,19 +154,25 @@ public class GameScreen {
      * Gerencia eventos como linhas eliminadas, pontuação, tempo e mudança de nível.
      */
     private void registerEvents() {
-        mediator.receiver(GameEvents.GameplayEvents.LINE_CLEARED, lines -> {
+        mediator.receiver(GameplayEvents.LINE_CLEARED, lines -> {
             linesCleared += lines;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
         });
-        mediator.receiver(GameEvents.UiEvents.SCORE_UPDATE, this::updateScore);
-        mediator.receiver(GameEvents.UiEvents.TIME_UPDATE, this::updateTime);
-        mediator.receiver(GameEvents.UiEvents.LEVEL_UPDATE, level -> {
+        mediator.receiver(UiEvents.SCORE_UPDATE, this::updateScore);
+        mediator.receiver(UiEvents.TIME_UPDATE, this::updateTime);
+        mediator.receiver(UiEvents.LEVEL_UPDATE, level -> {
             currentLevel = level;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
         });
-        mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_SOFT, data -> playLandedAnimation(5.0, Duration.millis(60)));
-        mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_NORMAL, data -> playLandedAnimation(8.0, Duration.millis(70)));
-        mediator.receiver(GameEvents.UiEvents.PIECE_LANDED_HARD, data -> playLandedAnimation(12.0, Duration.millis(80)));
+        
+        mediator.receiver(UiEvents.PIECE_LANDED_SOFT, data ->
+            Effects.applySoftLanding(centerContainer, null));
+        
+        mediator.receiver(UiEvents.PIECE_LANDED_NORMAL, data -> 
+            Effects.applyNormalLanding(centerContainer, null));
+        
+        mediator.receiver(UiEvents.PIECE_LANDED_HARD, data -> 
+            Effects.applyHardLanding(centerContainer, null));
 
         setupWallPushAnimationListeners();
     }
@@ -176,7 +203,7 @@ public class GameScreen {
      * Estes listeners atualizam a posição do tabuleiro para dar feedback visual.
      */
     private void setupWallPushAnimationListeners() {
-        mediator.receiver(GameEvents.UiEvents.PIECE_PUSHING_WALL_LEFT, unused -> {
+        mediator.receiver(UiEvents.PIECE_PUSHING_WALL_LEFT, unused -> {
             if (isPushingRightWall) {
                 isPushingRightWall = false;
             }
@@ -184,7 +211,7 @@ public class GameScreen {
             updateBoardPosition();
         });
 
-        mediator.receiver(GameEvents.UiEvents.PIECE_PUSHING_WALL_RIGHT, unused -> {
+        mediator.receiver(UiEvents.PIECE_PUSHING_WALL_RIGHT, unused -> {
             if (isPushingLeftWall) {
                 isPushingLeftWall = false;
             }
@@ -192,60 +219,24 @@ public class GameScreen {
             updateBoardPosition();
         });
 
-        mediator.receiver(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, unused -> {
+        mediator.receiver(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, unused -> {
             isPushingLeftWall = false;
             updateBoardPosition();
         });
 
-        mediator.receiver(GameEvents.UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, unused -> {
+        mediator.receiver(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, unused -> {
             isPushingRightWall = false;
             updateBoardPosition();
         });
     }
 
     /**
-     * Atualiza a translação horizontal do contêiner do tabuleiro (centerContainer)
-     * com base em qual parede (se houver) está sendo "empurrada", usando uma animação suave.
+     * Atualiza a translação horizontal do contêiner do tabuleiro usando a classe Effects.
      * O tabuleiro se move na direção da parede que está sendo empurrada.
      */
     private void updateBoardPosition() {
-        double targetX = 0;
-        if (isPushingLeftWall) {
-            targetX = -WALL_PUSH_OFFSET;
-        } else if (isPushingRightWall) {
-            targetX = WALL_PUSH_OFFSET;
-        }
-
-        TranslateTransition tt = new TranslateTransition(WALL_PUSH_ANIMATION_DURATION, centerContainer);
-        tt.setToX(targetX);
-        tt.play();
+        Effects.applyWallPushEffect(centerContainer, isPushingLeftWall, isPushingRightWall);
     }
-
-    /**
-     * Executa uma animação de "shake" vertical (para baixo) no contêiner do tabuleiro.
-     *
-     * @param intensity A distância do "shake" em pixels (para baixo).
-     * @param duration A duração de cada parte do "shake" (ida ou volta).
-     */
-    private void playLandedAnimation(double intensity, Duration duration) {
-        if (isAnimationPlaying) {
-            return;
-        }
-        isAnimationPlaying = true;
-
-        TranslateTransition tt = new TranslateTransition(duration, centerContainer);
-        tt.setByY(intensity);
-        tt.setCycleCount(2);
-        tt.setAutoReverse(true);
-
-        tt.setOnFinished(event -> {
-            centerContainer.setTranslateY(0);
-            isAnimationPlaying = false;
-        });
-
-        tt.play();
-    }
-
 
     /**
      * Cria o painel esquerdo da interface.
@@ -325,11 +316,10 @@ public class GameScreen {
         Text timeLabel = new Text("Tempo");
         timeLabel.getStyleClass().add("info-text");
 
-        Text timeText = new Text("00:00:000");
-        timeText.getStyleClass().add("score-text");
-        timeText.setId("time-text");
+        timeDisplay = new TimeDisplay(150, 40);
+        timeDisplay.setColors(Color.web("#fcd34d"), Color.color(0, 0, 0, 0.6));
 
-        timeBox.getChildren().addAll(timeLabel, timeText);
+        timeBox.getChildren().addAll(timeLabel, timeDisplay);
 
         bottomContainer.getChildren().addAll(scoreBox, timeBox);
 
@@ -381,19 +371,16 @@ public class GameScreen {
         int linesInCurrentLevel = linesCleared % LINES_PER_LEVEL;
         double progress = 360 * ((double) linesInCurrentLevel / LINES_PER_LEVEL);
 
-        Arc progressArc = (Arc) root.lookup("#progress-arc");
-        if (progressArc != null) {
-            progressArc.setLength(-progress);
+        if (progressArcNode != null) {
+            progressArcNode.setLength(-progress);
         }
 
-        Text levelText = (Text) root.lookup("#level-text");
-        if (levelText != null) {
-            levelText.setText(String.valueOf(currentLevel));
+        if (levelTextNode != null) {
+            levelTextNode.setText(String.valueOf(currentLevel));
         }
 
-        Text linesLabel = (Text) root.lookup("#lines-label");
-        if (linesLabel != null) {
-            linesLabel.setText(String.format("Linhas: %d", linesCleared));
+        if (linesLabelNode != null) {
+            linesLabelNode.setText(String.format("Linhas: %d", linesCleared));
         }
     }
 
@@ -404,22 +391,21 @@ public class GameScreen {
      */
     public void updateScore(int score) {
         this.score = score;
-        Text scoreText = (Text) root.lookup("#score-text");
-        if (scoreText != null) {
-            scoreText.setText(String.valueOf(score));
+        if (scoreTextNode != null) {
+            scoreTextNode.setText(String.valueOf(score));
         }
     }
 
     /**
      * Atualiza o tempo de jogo exibido na interface.
+     * Usa o componente TimeDisplay otimizado para atualizações frequentes.
      *
-     * @param time Tempo de jogo no formato "MM:SS"
+     * @param time Tempo de jogo no formato "MM:SS:mmm"
      */
     public void updateTime(String time) {
         this.gameTime = time;
-        Text timeText = (Text) root.lookup("#time-text");
-        if (timeText != null) {
-            timeText.setText(time);
+        if (timeDisplay != null) {
+            timeDisplay.updateTime(time);
         }
     }
 

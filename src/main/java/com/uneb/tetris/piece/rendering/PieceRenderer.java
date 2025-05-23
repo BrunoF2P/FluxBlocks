@@ -1,10 +1,10 @@
 package com.uneb.tetris.piece.rendering;
 
-import com.uneb.tetris.board.GameBoard;
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
-import com.uneb.tetris.piece.Cell;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.game.logic.GameBoard;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.piece.entities.Cell;
+import com.uneb.tetris.piece.entities.Tetromino;
 
 /**
  * Responsável pela renderização das peças no tabuleiro.
@@ -46,7 +46,7 @@ public class PieceRenderer {
         int[][] grid = createBoardGridWithShadow(currentPiece);
         addPieceToGrid(currentPiece, grid);
 
-        mediator.emit(GameEvents.UiEvents.BOARD_UPDATE, grid);
+        mediator.emit(UiEvents.BOARD_UPDATE, grid);
     }
 
     /**

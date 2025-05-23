@@ -1,5 +1,9 @@
-package com.uneb.tetris.core;
+package com.uneb.tetris.game.core;
 
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameState;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -52,8 +56,8 @@ public class GameTimer {
      * Registra os eventos necessários para o funcionamento do timer.
      */
     private void subscribeToEvents() {
-        mediator.receiver(GameEvents.GameplayEvents.UPDATE_SPEED, this::onSpeedUpdate);
-        mediator.receiver(GameEvents.GameplayEvents.RESTART, unused -> restartGame());
+        mediator.receiver(GameplayEvents.UPDATE_SPEED, this::onSpeedUpdate);
+        mediator.receiver(GameplayEvents.RESTART, unused -> restartGame());
     }
 
     /**
@@ -82,7 +86,7 @@ public class GameTimer {
      */
     private void initializeGameClock() {
         gameClock = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(10), e -> onClockTick());
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(16.67), e -> onClockTick());
         gameClock.getKeyFrames().add(keyFrame);
         gameClock.setCycleCount(Animation.INDEFINITE);
     }
@@ -151,7 +155,7 @@ public class GameTimer {
      */
     private void onGameLoopTick() {
         if (gameState.isPaused() || gameState.isGameOver()) return;
-        mediator.emit(GameEvents.GameplayEvents.AUTO_MOVE_DOWN, null);
+        mediator.emit(GameplayEvents.AUTO_MOVE_DOWN, null);
     }
 
     /**
@@ -169,7 +173,7 @@ public class GameTimer {
         LocalTime now = LocalTime.now();
         long millisElapsed = ChronoUnit.MILLIS.between(startTime, now);
         String timeFormatted = formatElapsedTime(millisElapsed);
-        mediator.emit(GameEvents.UiEvents.TIME_UPDATE, timeFormatted);
+        mediator.emit(UiEvents.TIME_UPDATE, timeFormatted);
     }
 
     /**
@@ -183,15 +187,32 @@ public class GameTimer {
         long totalSeconds = millisElapsed / 1000;
         long seconds = totalSeconds % 60;
         long minutes = totalSeconds / 60;
-        return String.format("%02d:%02d:%03d", minutes, seconds, milliseconds);
 
+        char[] result = new char[9];
+
+        final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
+        result[0] = DIGITS[(int)((minutes / 10) % 10)];
+        result[1] = DIGITS[(int)(minutes % 10)];
+        result[2] = ':';
+
+        result[3] = DIGITS[(int)((seconds / 10) % 10)];
+        result[4] = DIGITS[(int)(seconds % 10)];
+        result[5] = ':';
+
+        result[6] = DIGITS[(int)((milliseconds / 100) % 10)];
+        result[7] = DIGITS[(int)((milliseconds / 10) % 10)];
+        result[8] = DIGITS[(int)(milliseconds % 10)];
+
+        return new String(result);
     }
+
 
     /**
      * Reinicia o jogo emitindo o evento apropriado.
      */
     private void restartGame() {
-        mediator.emit(GameEvents.GameplayEvents.RESTART_GAME, null);
+        mediator.emit(GameplayEvents.RESTART_GAME, null);
     }
 
     /**

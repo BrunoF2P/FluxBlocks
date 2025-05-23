@@ -1,13 +1,13 @@
 package com.uneb.tetris.piece.timing;
 
 import com.almasb.fxgl.dsl.FXGL;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.piece.entities.Tetromino;
 
 /**
  * Gerencia o sistema de lock delay, controlando quando uma peça
  * deve ser fixada no tabuleiro após atingir uma posição de descanso.
  */
-public class LockDelayManager {
+public class LockDelayHandler {
     /** Tempo em milissegundos antes da peça ser fixada após pousar */
     private static final double LOCK_DELAY = 500.0;
 

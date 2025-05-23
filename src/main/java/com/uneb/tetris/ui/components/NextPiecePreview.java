@@ -1,9 +1,9 @@
 package com.uneb.tetris.ui.components;
 
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
-import com.uneb.tetris.piece.Cell;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.piece.entities.Cell;
+import com.uneb.tetris.piece.entities.Tetromino;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -71,7 +71,7 @@ public class NextPiecePreview {
      * Registra o listener para o evento de atualização da próxima peça.
      */
     private void registerEvents() {
-        mediator.receiver(GameEvents.UiEvents.NEXT_PIECE_UPDATE, this::updateNextPiecePreview);
+        mediator.receiver(UiEvents.NEXT_PIECE_UPDATE, this::updateNextPiecePreview);
     }
 
     /**

@@ -1,16 +1,16 @@
 package com.uneb.tetris.piece.movement;
 
 import com.almasb.fxgl.dsl.FXGL;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.collision.CollisionDetector;
-import com.uneb.tetris.piece.timing.LockDelayManager;
+import com.uneb.tetris.piece.timing.LockDelayHandler;
 
 /**
  * Gerencia a rotação das peças com sistema de wall kicks.
  */
 public class PieceRotationHandler {
     private final CollisionDetector collisionDetector;
-    private final LockDelayManager lockDelayManager;
+    private final LockDelayHandler lockDelayHandler;
 
     /** Tempo inicial entre rotações consecutivas */
     private static final double ROTATE_INITIAL_DELAY = 100.0;
@@ -25,9 +25,9 @@ public class PieceRotationHandler {
     private boolean isFirstRotate = true;
 
     public PieceRotationHandler(CollisionDetector collisionDetector,
-                                LockDelayManager lockDelayManager) {
+                                LockDelayHandler lockDelayHandler) {
         this.collisionDetector = collisionDetector;
-        this.lockDelayManager = lockDelayManager;
+        this.lockDelayHandler = lockDelayHandler;
     }
 
     /**
@@ -140,7 +140,7 @@ public class PieceRotationHandler {
      */
     private void completeSuccessfulRotation(Tetromino piece) {
         boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
-        lockDelayManager.resetLockDelay(piece, isAtRest);
+        lockDelayHandler.resetLockDelay(piece, isAtRest);
 
         lastRotateTime = FXGL.getGameTimer().getNow() * 1000;
         isFirstRotate = false;

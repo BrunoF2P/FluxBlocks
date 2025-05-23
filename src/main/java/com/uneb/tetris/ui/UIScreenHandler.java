@@ -1,21 +1,21 @@
 package com.uneb.tetris.ui;
 
 import com.almasb.fxgl.app.scene.GameScene;
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameManager;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.game.core.GameController;
+import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.screens.GameScreen;
 import com.uneb.tetris.ui.screens.MenuScreen;
 import javafx.scene.layout.StackPane;
 
-public class UIManager {
+public class UIScreenHandler {
     private final GameMediator mediator;
     private final GameScene gameScene;
     private final StackPane currentScreen = new StackPane();
     private GameScreen gameScreen;
-    private GameManager gameManager;
+    private GameController gameManager;
 
-    public UIManager(GameScene gameScene, GameMediator mediator) {
+    public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
         this.gameScene = gameScene;
         this.mediator = mediator;
         registerEvents();
@@ -23,12 +23,12 @@ public class UIManager {
     }
 
     private void registerEvents() {
-        mediator.receiver(GameEvents.UiEvents.START, unused -> showMenuScreen());
-        mediator.receiver(GameEvents.UiEvents.PLAY_GAME, unused -> {
+        mediator.receiver(UiEvents.START, unused -> showMenuScreen());
+        mediator.receiver(UiEvents.PLAY_GAME, unused -> {
             if (gameManager != null) {
                 gameManager.restart();
             } else {
-                gameManager = new GameManager(mediator);
+                gameManager = new GameController(mediator);
             }
             showGameScreen();
         });
@@ -54,7 +54,7 @@ public class UIManager {
 
         currentScreen.getChildren().setAll(gameScreen.getNode());
         gameScene.addUINode(currentScreen);
-        mediator.emit(GameEvents.UiEvents.GAME_STARTED, null);
+        mediator.emit(UiEvents.GAME_STARTED, null);
     }
 
 }

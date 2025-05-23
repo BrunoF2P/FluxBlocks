@@ -1,4 +1,9 @@
-package com.uneb.tetris.core;
+package com.uneb.tetris.game.scoring;
+
+import com.uneb.tetris.architecture.events.GameplayEvents;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameState;
 
 /**
  * Gerenciador de pontuação e níveis do jogo.
@@ -11,7 +16,7 @@ package com.uneb.tetris.core;
  *   <li>Emitir eventos relacionados a pontuação e níveis</li>
  * </ul></p>
  */
-public class ScoreManager {
+public class ScoreTracker {
     /** Mediador para comunicação com outros componentes do jogo */
     private final GameMediator mediator;
     
@@ -33,7 +38,7 @@ public class ScoreManager {
      * @param mediator O mediador para comunicação entre componentes
      * @param gameState O estado atual do jogo
      */
-    public ScoreManager(GameMediator mediator, GameState gameState) {
+    public ScoreTracker(GameMediator mediator, GameState gameState) {
         this.mediator = mediator;
         this.gameState = gameState;
 
@@ -44,8 +49,8 @@ public class ScoreManager {
      * Registra os eventos necessários para o funcionamento do sistema de pontuação.
      */
     private void registerEvents() {
-        mediator.receiver(GameEvents.GameplayEvents.SCORE_UPDATED, this::updateScore);
-        mediator.receiver(GameEvents.GameplayEvents.LINE_CLEARED, this::handleLinesCleared);
+        mediator.receiver(GameplayEvents.SCORE_UPDATED, this::updateScore);
+        mediator.receiver(GameplayEvents.LINE_CLEARED, this::handleLinesCleared);
     }
 
     /**
@@ -57,8 +62,8 @@ public class ScoreManager {
         level = 1;
         linesCleared = 0;
 
-        mediator.emit(GameEvents.UiEvents.SCORE_UPDATE, score);
-        mediator.emit(GameEvents.UiEvents.LEVEL_UPDATE, level);
+        mediator.emit(UiEvents.SCORE_UPDATE, score);
+        mediator.emit(UiEvents.LEVEL_UPDATE, level);
     }
 
     /**
@@ -68,7 +73,7 @@ public class ScoreManager {
      */
     public void updateScore(int points) {
         score += points;
-        mediator.emit(GameEvents.UiEvents.SCORE_UPDATE, score);
+        mediator.emit(UiEvents.SCORE_UPDATE, score);
     }
 
     /**
@@ -93,8 +98,8 @@ public class ScoreManager {
         level++;
         double newSpeed = gameState.calculateLevelSpeed(level);
 
-        mediator.emit(GameEvents.GameplayEvents.UPDATE_SPEED, newSpeed);
-        mediator.emit(GameEvents.UiEvents.LEVEL_UPDATE, level);
+        mediator.emit(GameplayEvents.UPDATE_SPEED, newSpeed);
+        mediator.emit(UiEvents.LEVEL_UPDATE, level);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.uneb.tetris.piece;
+package com.uneb.tetris.piece.entities;
 
 import java.util.ArrayList;
 import java.util.List;

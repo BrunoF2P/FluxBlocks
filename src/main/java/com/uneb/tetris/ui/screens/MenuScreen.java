@@ -1,7 +1,7 @@
 package com.uneb.tetris.ui.screens;
 
-import com.uneb.tetris.core.GameEvents;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.architecture.events.UiEvents;
+import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.UIFactory;
 import com.uneb.tetris.ui.components.Button;
 import javafx.geometry.Pos;
@@ -49,9 +49,9 @@ public class MenuScreen {
 
         content.getChildren().addAll(
                 title,
-                createMenuButton("JOGAR", Button.ButtonType.PLAY, e -> mediator.emit(GameEvents.UiEvents.PLAY_GAME, null)),
-                createMenuButton("RANKING", Button.ButtonType.RANKING, e -> mediator.emit(GameEvents.UiEvents.RANKING, null)),
-                createMenuButton("OPÇÕES", Button.ButtonType.OPTIONS, e -> mediator.emit(GameEvents.UiEvents.OPTIONS, null)),
+                createMenuButton("JOGAR", Button.ButtonType.PLAY, e -> mediator.emit(UiEvents.PLAY_GAME, null)),
+                createMenuButton("RANKING", Button.ButtonType.RANKING, e -> mediator.emit(UiEvents.RANKING, null)),
+                createMenuButton("OPÇÕES", Button.ButtonType.OPTIONS, e -> mediator.emit(UiEvents.OPTIONS, null)),
                 createMenuButton("SAIR", Button.ButtonType.EXIT, e -> System.exit(0))
         );
     }

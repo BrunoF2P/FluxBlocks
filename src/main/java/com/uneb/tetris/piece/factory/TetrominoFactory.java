@@ -1,7 +1,7 @@
 package com.uneb.tetris.piece.factory;
 
-import com.uneb.tetris.piece.Cell;
-import com.uneb.tetris.piece.Tetromino;
+import com.uneb.tetris.piece.entities.Cell;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.factory.provider.SevenBagTetrominoProvider;
 
 import java.util.ArrayList;

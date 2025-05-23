@@ -3,8 +3,8 @@ package com.uneb.tetris;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
-import com.uneb.tetris.core.GameInitializer;
-import com.uneb.tetris.core.GameMediator;
+import com.uneb.tetris.game.core.GameInitializer;
+import com.uneb.tetris.architecture.mediators.GameMediator;
 import javafx.scene.text.Font;
 
 import java.util.Objects;
