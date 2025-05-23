@@ -80,7 +80,7 @@ public class GameController {
         gameBoard.clearGrid();
         gameState.reset();
 
-        gameTimer.start();
+        gameTimer.startTimer();
         scoreTracker.reset();
         inputHandler.setupInputHandling();
 
@@ -102,7 +102,7 @@ public class GameController {
      * Para o timer atual e inicia uma nova partida.
      */
     public void restart() {
-        gameTimer.stop();
+        gameTimer.stopTimer();
         start();
     }
 
@@ -113,7 +113,7 @@ public class GameController {
      */
     private void handleGameOver() {
         gameState.setGameOver(true);
-        gameTimer.stop();
+        gameTimer.stopTimer();
         mediator.emit(UiEvents.GAME_OVER, scoreTracker.getScore());
     }
 }

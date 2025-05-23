@@ -4,38 +4,44 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.game.logic.GameState;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
+import javafx.animation.AnimationTimer;
 
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 
 /**
  * Controlador de tempo do jogo, responsável pelo loop principal e cronômetro.
- * 
+ *
  * <p>Esta classe gerencia dois aspectos temporais do jogo:</p>
  * <ul>
  *   <li>Loop principal: Controla a queda automática das peças</li>
  *   <li>Cronômetro: Mantém o registro do tempo de jogo</li>
  * </ul>
  */
-public class GameTimer {
+public class GameTimer extends AnimationTimer {
     /** Mediador para comunicação com outros componentes */
     private final GameMediator mediator;
-    
+
     /** Estado atual do jogo */
     private final GameState gameState;
 
-    /** Timeline para o loop principal do jogo */
-    private Timeline gameLoop;
-    
-    /** Timeline para o cronômetro do jogo */
-    private Timeline gameClock;
-    
     /** Horário de início da partida */
     private LocalTime startTime;
+
+    /** Última atualização do AnimationTimer */
+    private long lastUpdate = 0;
+
+    /** Última vez que o game loop foi executado */
+    private long lastGameLoop = 0;
+
+    /** Última vez que o clock foi atualizado */
+    private long lastClockUpdate = 0;
+
+    /** Velocidade atual do jogo em nanosegundos */
+    private long gameSpeed = (long)(GameState.INITIAL_SPEED * 1_000_000);
+
+    /** Intervalo do clock em nanosegundos (16.67ms = ~60fps) */
+    private static final long CLOCK_INTERVAL = (long)(16.67 * 1_000_000);
 
     /**
      * Cria um novo controlador de tempo do jogo.
@@ -46,9 +52,6 @@ public class GameTimer {
     public GameTimer(GameMediator mediator, GameState gameState) {
         this.mediator = mediator;
         this.gameState = gameState;
-
-        initializeGameLoop();
-        initializeGameClock();
         subscribeToEvents();
     }
 
@@ -60,83 +63,58 @@ public class GameTimer {
         mediator.receiver(GameplayEvents.RESTART, unused -> restartGame());
     }
 
-    /**
-     * Inicializa o loop principal do jogo com a velocidade inicial.
-     */
-    private void initializeGameLoop() {
-        gameLoop = createGameLoop(GameState.INITIAL_SPEED);
-    }
+    @Override
+    public void handle(long now) {
+        if (lastUpdate == 0) {
+            lastUpdate = now;
+            lastGameLoop = now;
+            lastClockUpdate = now;
+            return;
+        }
 
-    /**
-     * Cria um novo loop de jogo com o intervalo especificado.
-     *
-     * @param intervalMs Intervalo em milissegundos entre cada tick
-     * @return Timeline configurada para o loop do jogo
-     */
-    private Timeline createGameLoop(double intervalMs) {
-        Timeline loop = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(intervalMs), e -> onGameLoopTick());
-        loop.getKeyFrames().add(keyFrame);
-        loop.setCycleCount(Animation.INDEFINITE);
-        return loop;
-    }
+        if (!gameState.isPaused() && !gameState.isGameOver()) {
+            if (now - lastGameLoop >= gameSpeed) {
+                onGameLoopTick();
+                lastGameLoop = now;
+            }
+        }
 
-    /**
-     * Inicializa o cronômetro do jogo.
-     */
-    private void initializeGameClock() {
-        gameClock = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(16.67), e -> onClockTick());
-        gameClock.getKeyFrames().add(keyFrame);
-        gameClock.setCycleCount(Animation.INDEFINITE);
+        if (!gameState.isGameOver()) {
+            if (now - lastClockUpdate >= CLOCK_INTERVAL) {
+                onClockTick();
+                lastClockUpdate = now;
+            }
+        }
+
+        lastUpdate = now;
     }
 
     /**
      * Inicia o timer do jogo.
      * @throws IllegalStateException se o timer já estiver iniciado
      */
-    public void start() {
+    public void startTimer() {
         validateStart();
         startTime = LocalTime.now();
-        gameLoop.play();
-        gameClock.play();
+        start();
     }
 
     /**
      * Para completamente o timer do jogo.
      */
-    public void stop() {
-        gameLoop.stop();
-        gameClock.stop();
+    public void stopTimer() {
+        stop();
+        startTime = null;
     }
 
     /**
      * Gerencia o estado de pausa do timer.
+     * O AnimationTimer continua rodando, mas os ticks são ignorados
+     * baseado no estado do jogo.
      *
      * @param isPaused true para pausar, false para resumir
      */
     public void handlePauseState(boolean isPaused) {
-        if (isPaused) {
-            pause();
-            return;
-        }
-        resume();
-    }
-
-    /**
-     * Pausa temporariamente o timer.
-     */
-    private void pause() {
-        gameLoop.pause();
-        gameClock.pause();
-    }
-
-    /**
-     * Retoma o timer após uma pausa.
-     */
-    private void resume() {
-        gameLoop.play();
-        gameClock.play();
     }
 
     /**
@@ -145,16 +123,13 @@ public class GameTimer {
      * @param newSpeedMs Nova velocidade em milissegundos
      */
     private void onSpeedUpdate(double newSpeedMs) {
-        gameLoop.stop();
-        gameLoop = createGameLoop(newSpeedMs);
-        gameLoop.play();
+        gameSpeed = (long)(newSpeedMs * 1_000_000);
     }
 
     /**
      * Processa um tick do loop principal do jogo.
      */
     private void onGameLoopTick() {
-        if (gameState.isPaused() || gameState.isGameOver()) return;
         mediator.emit(GameplayEvents.AUTO_MOVE_DOWN, null);
     }
 
@@ -162,7 +137,6 @@ public class GameTimer {
      * Processa um tick do cronômetro.
      */
     private void onClockTick() {
-        if (gameState.isPaused() || gameState.isGameOver()) return;
         updateElapsedTime();
     }
 
@@ -170,6 +144,8 @@ public class GameTimer {
      * Atualiza e emite o tempo decorrido de jogo.
      */
     private void updateElapsedTime() {
+        if (startTime == null) return;
+
         LocalTime now = LocalTime.now();
         long millisElapsed = ChronoUnit.MILLIS.between(startTime, now);
         String timeFormatted = formatElapsedTime(millisElapsed);
