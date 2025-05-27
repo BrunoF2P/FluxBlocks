@@ -4,9 +4,8 @@ open module com.uneb.tetris {
     requires javafx.media;
     requires javafx.graphics;
 
+    requires transitive com.fasterxml.jackson.databind;
     requires transitive com.almasb.fxgl.all;
-    requires transitive com.almasb.fxgl.core;
-    requires transitive com.almasb.fxgl.entity;
 
     exports com.uneb.tetris.game.core;
     exports com.uneb.tetris.ui;
@@ -14,7 +13,6 @@ open module com.uneb.tetris {
     exports com.uneb.tetris.ui.screens;
     exports com.uneb.tetris.piece.factory;
     exports com.uneb.tetris.game.logic;
-    exports com.uneb.tetris.ui.controllers;
     exports com.uneb.tetris.architecture.mediators;
     exports com.uneb.tetris.architecture.events;
     exports com.uneb.tetris.piece.entities;
