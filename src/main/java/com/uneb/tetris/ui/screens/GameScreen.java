@@ -168,10 +168,10 @@ public class GameScreen {
         mediator.receiver(UiEvents.PIECE_LANDED_SOFT, data ->
             Effects.applySoftLanding(centerContainer, null));
         
-        mediator.receiver(UiEvents.PIECE_LANDED_NORMAL, data -> 
+        mediator.receiver(UiEvents.PIECE_LANDED_NORMAL, data ->
             Effects.applyNormalLanding(centerContainer, null));
         
-        mediator.receiver(UiEvents.PIECE_LANDED_HARD, data -> 
+        mediator.receiver(UiEvents.PIECE_LANDED_HARD, data ->
             Effects.applyHardLanding(centerContainer, null));
 
         setupWallPushAnimationListeners();
@@ -235,7 +235,16 @@ public class GameScreen {
      * O tabuleiro se move na direção da parede que está sendo empurrada.
      */
     private void updateBoardPosition() {
-        Effects.applyWallPushEffect(centerContainer, isPushingLeftWall, isPushingRightWall);
+        // Apenas anima se houver mudança de estado
+        if (isPushingLeftWall || isPushingRightWall ||
+                centerContainer.getTranslateX() != 0) {
+
+            Effects.applyWallPushEffect(
+                    centerContainer,
+                    isPushingLeftWall,
+                    isPushingRightWall
+            );
+        }
     }
 
     /**

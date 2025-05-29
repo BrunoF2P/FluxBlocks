@@ -38,12 +38,16 @@ public class Cell implements Shape {
         this.x += deltaX;
         this.y += deltaY;
     }
-
+    public void setRelativePosition(int relativeX, int relativeY) {
+        this.relativeX = relativeX;
+        this.relativeY = relativeY;
+    }
     @Override
     public void rotate() {
-        int temp = relativeX;
-        relativeX = relativeY;
-        relativeY = -temp;
+        int newX = -this.relativeY;
+        int newY = this.relativeX;
+        this.relativeX = newX;
+        this.relativeY = newY;
     }
 
     public int getRelativeX() {

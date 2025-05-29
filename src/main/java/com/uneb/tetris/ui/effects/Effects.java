@@ -59,6 +59,11 @@ public class Effects {
      * @param isPushingRight true se estiver empurrando a parede direita
      */
     public static void applyWallPushEffect(Node node, boolean isPushingLeft, boolean isPushingRight) {
+        Object animKey = node.getProperties().get("wallPushAnimation");
+        TranslateTransition tt = (animKey instanceof TranslateTransition)
+                ? (TranslateTransition) animKey
+                : null;
+
         double targetX = 0;
         if (isPushingLeft) {
             targetX = -WALL_PUSH_OFFSET;
@@ -66,7 +71,19 @@ public class Effects {
             targetX = WALL_PUSH_OFFSET;
         }
 
-        TranslateTransition tt = new TranslateTransition(WALL_PUSH_ANIMATION_DURATION, node);
+        if (node.getTranslateX() == targetX) {
+            return;
+        }
+
+        if (tt == null) {
+            tt = new TranslateTransition(WALL_PUSH_ANIMATION_DURATION, node);
+            tt.setOnFinished(e -> node.getProperties().remove("wallPushAnimation"));
+            node.getProperties().put("wallPushAnimation", tt);
+        }
+        else {
+            tt.stop();
+        }
+
         tt.setToX(targetX);
         tt.play();
     }
