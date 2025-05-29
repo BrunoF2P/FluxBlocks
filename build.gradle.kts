@@ -14,9 +14,8 @@ plugins {
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
+    maven { url = uri("https://repo.maven.apache.org/maven2/") }
+    maven { url = uri("https://jitpack.io") }
 }
 application {
     mainClass = "com.uneb.tetris.Main"
@@ -37,9 +36,7 @@ dependencies {
     api(libs.org.openjfx.javafx.fxml)
     api(libs.org.openjfx.javafx.media)
 
-    implementation("com.github.almasb:fxgl:21.1") {
-        exclude(group = "org.openjfx")
-    }
+    implementation("com.github.almasb.fxgl:fxgl:21.1")
 
     testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
     testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)
@@ -74,12 +71,10 @@ publishing {
 tasks {
     withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.compilerArgs.add("--enable-preview")
     }
 
     withType<Test> {
         useJUnitPlatform()
-        jvmArgs("--enable-preview")
     }
 
     withType<Javadoc> {
