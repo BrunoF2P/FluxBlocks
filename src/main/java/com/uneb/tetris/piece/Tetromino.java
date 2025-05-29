@@ -1,6 +1,7 @@
 package com.uneb.tetris.piece;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Tetromino implements Shape {
@@ -12,7 +13,8 @@ public class Tetromino implements Shape {
         O(4),
         S(5),
         T(6),
-        Z(7);
+        Z(7),
+        X(8);
 
         private final int value;
 
@@ -81,6 +83,13 @@ public class Tetromino implements Shape {
                 cells.add(new Cell(0, 0, type.getValue()));
                 cells.add(new Cell(1, 0, type.getValue()));
             }
+            case X -> {
+                cells.add(new Cell(0, -1, type.getValue()));
+                cells.add(new Cell(-1, 0, type.getValue()));
+                cells.add(new Cell(0, 0, type.getValue()));
+                cells.add(new Cell(1, 0, type.getValue()));
+                cells.add(new Cell(0, 1, type.getValue()));
+            }
         }
     }
 
@@ -121,8 +130,10 @@ public class Tetromino implements Shape {
 
     @Override
     public void rotate() {
-        if (type == Type.O) {
-            return;
+        for (Type type1 : Arrays.asList(Type.O, Type.X)) {
+            if (type == type1) {
+                return;
+            }
         }
 
         for (Cell cell : cells) {

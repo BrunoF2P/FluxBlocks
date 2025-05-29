@@ -284,7 +284,7 @@ public class PieceManager {
                 int y = cell.getY();
 
                 if (y >= 0 && y < board.getHeight() && x >= 0 && x < board.getWidth()) {
-                    grid[y][x] = 8;  // 8 é o código para células da sombra
+                    grid[y][x] = 9;  // 9 é o código para células da sombra
                 }
             }
         }

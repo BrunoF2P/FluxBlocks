@@ -37,10 +37,11 @@ public class BoardCanvas extends Canvas {
         COLOR_CACHE.put(5, Color.web("#32cd32")); // S - Verde
         COLOR_CACHE.put(6, Color.web("#bf3eff")); // T - Roxo
         COLOR_CACHE.put(7, Color.web("#ff3030")); // Z - Vermelho
-        COLOR_CACHE.put(8, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
+        COLOR_CACHE.put(8, Color.web("#964b00")); // X - Marrom
+        COLOR_CACHE.put(9, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
 
         int cellSize = 30;
-        for (int type = 0; type <= 8; type++) {
+        for (int type = 0; type <= 9; type++) {
             IMAGE_CACHE.put(type, createCellImage(type, cellSize));
         }
     }
@@ -72,7 +73,7 @@ public class BoardCanvas extends Canvas {
         setWidth(width * cellSize);
         setHeight(height * cellSize);
 
-        for (int type = 0; type <= 8; type++) {
+        for (int type = 0; type <= 9; type++) {
             if (cellSize == 30) {
                 instanceImageCache.put(type, IMAGE_CACHE.get(type));
             } else {
@@ -184,7 +185,7 @@ public class BoardCanvas extends Canvas {
     /**
      * Retorna a cor associada ao tipo de tetromino especificado.
      *
-     * @param type tipo de peça (1 a 7) ou valor especial (8 = ghost)
+     * @param type tipo de peça (1 a 8) ou valor especial (9 = ghost)
      * @return cor correspondente ou {@link Color#TRANSPARENT} se inválido
      */
     private static Color getTetrominoColor(int type) {
