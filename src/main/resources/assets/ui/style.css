@@ -201,10 +201,14 @@
 }
 
 .tetromino-7 {
-    -fx-fill: #ff3030;
+    -fx-fill: #ffcbdb;
 }
 
 .tetromino-8 {
+    -fx-fill: #ff3030;
+}
+
+.tetromino-9 {
     -fx-fill: rgba(255, 255, 255, 0.15);
     -fx-stroke: rgba(255, 255, 255, 0.3);
 }

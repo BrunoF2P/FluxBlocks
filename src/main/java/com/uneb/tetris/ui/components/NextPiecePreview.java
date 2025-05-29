@@ -32,8 +32,9 @@ public class NextPiecePreview {
         COLOR_CACHE.put(4, Color.web("#ffd700")); // O - Amarelo
         COLOR_CACHE.put(5, Color.web("#32cd32")); // S - Verde
         COLOR_CACHE.put(6, Color.web("#bf3eff")); // T - Roxo
-        COLOR_CACHE.put(7, Color.web("#ff3030")); // Z - Vermelho
-        COLOR_CACHE.put(8, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
+        COLOR_CACHE.put(7, Color.web("#ffcbdb")); // Z - Rosa
+        COLOR_CACHE.put(8, Color.web("#ff3030")); // Z - Vermelho
+        COLOR_CACHE.put(9, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
     }
 
     private final GameMediator mediator;

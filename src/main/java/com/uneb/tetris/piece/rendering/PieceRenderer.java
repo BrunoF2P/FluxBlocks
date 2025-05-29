@@ -15,7 +15,7 @@ public class PieceRenderer {
     private GameMediator mediator;
 
     /** Código para representar células de sombra no grid */
-    private static final int SHADOW_CELL_CODE = 8;
+    private static final int SHADOW_CELL_CODE = 9;
 
     /**
      * Cria um novo renderizador de peças.

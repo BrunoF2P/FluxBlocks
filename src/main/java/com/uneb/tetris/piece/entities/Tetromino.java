@@ -12,7 +12,8 @@ public class Tetromino implements Shape {
         O(4),
         S(5),
         T(6),
-        Z(7);
+        Z(7),
+        X(8);
 
         private final int value;
 

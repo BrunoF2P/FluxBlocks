@@ -31,6 +31,7 @@ public class TetrominoFactory {
             case S -> createSPiece(cells);
             case T -> createTPiece(cells);
             case Z -> createZPiece(cells);
+            case X -> createXPiece(cells);
         }
 
         return new Tetromino(cells, type.ordinal());
@@ -149,6 +150,16 @@ public class TetrominoFactory {
         cells.add(new Cell(0, 0, type));
         cells.add(new Cell(1, 0, type));
     }
+
+    private static void createXPiece(List<Cell> cells) {
+        int type = Tetromino.Type.X.ordinal();
+        cells.add(new Cell(0, -1, type));
+        cells.add(new Cell(-1, 0, type));
+        cells.add(new Cell(0, 0, type));
+        cells.add(new Cell(1, 0, type));
+        cells.add(new Cell(0, 1, type));
+    }
+
 
     /**
      * Cria e posiciona um {@link Tetromino} aleatório no topo do tabuleiro.
