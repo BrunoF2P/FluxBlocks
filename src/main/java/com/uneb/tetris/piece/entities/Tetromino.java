@@ -39,7 +39,7 @@ public class Tetromino implements Shape {
     private final List<Cell> cells;
     private final int typeValue;
     private final Type type;
-
+    private final List<int[]> initialRelativePositions;
     /**
      * Construtor que recebe uma lista de células e o valor do tipo.
      * Este construtor é chamado pela TetrominoFactory.
@@ -48,6 +48,12 @@ public class Tetromino implements Shape {
         this.cells = new ArrayList<>(cells);
         this.typeValue = typeValue;
         this.type = Type.fromOrdinal(typeValue);
+
+        this.initialRelativePositions = new ArrayList<>(cells.size());
+        for (Cell cell : cells) {
+            initialRelativePositions.add(new int[]{cell.getRelativeX(), cell.getRelativeY()});
+        }
+
         updateCellPositions();
     }
 
@@ -99,6 +105,21 @@ public class Tetromino implements Shape {
         updateCellPositions();
     }
 
+    public void resetState() {
+        this.centerX = 0;
+        this.centerY = 0;
+        resetRotation();
+    }
+
+    public void resetRotation() {
+        if (type == Type.O) return;
+
+        for (int i = 0; i < cells.size(); i++) {
+            Cell cell = cells.get(i);
+            int[] initialPos = initialRelativePositions.get(i);
+            cell.setRelativePosition(initialPos[0], initialPos[1]);
+        }
+    }
     @Override
     public int getType() {
         return typeValue;

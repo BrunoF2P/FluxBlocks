@@ -8,12 +8,12 @@ import java.util.*;
 
 /**
  * Implementação do sistema "Seven Bag" para geração de peças do Tetris.
- * 
+ *
  * <p>Este provedor implementa o sistema de randomização oficial do Tetris,
  * conhecido como "Seven Bag", onde todas as 7 peças diferentes são colocadas
  * em um saco virtual, embaralhadas e distribuídas antes de um novo conjunto
  * ser gerado.</p>
- * 
+ *
  * <p>Este sistema garante que:
  * <ul>
  *   <li>O jogador receberá todas as 7 peças antes que qualquer peça se repita</li>
@@ -23,7 +23,8 @@ import java.util.*;
  */
 public class SevenBagTetrominoProvider implements TetrominoProvider {
     /** Fila que armazena as peças do saco atual */
-    private final Queue<Tetromino.Type> bag = new LinkedList<>();
+    private final List<Tetromino.Type> bag = new ArrayList<>();
+    private int index = 0;
 
     /**
      * Retorna a próxima peça do saco.
@@ -34,10 +35,10 @@ public class SevenBagTetrominoProvider implements TetrominoProvider {
      */
     @Override
     public Tetromino next() {
-        if (bag.isEmpty()) {
+        if (index >= bag.size()) {
             refillBag();
         }
-        return TetrominoFactory.createTetromino(Objects.requireNonNull(bag.poll()));
+        return TetrominoFactory.createTetromino(bag.get(index++));
     }
 
     /**
@@ -45,8 +46,10 @@ public class SevenBagTetrominoProvider implements TetrominoProvider {
      * Este método é chamado automaticamente quando o saco fica vazio.
      */
     private void refillBag() {
-        List<Tetromino.Type> types = new ArrayList<>(TetrominoUtil.VALID_TYPES);
-        Collections.shuffle(types);
-        bag.addAll(types);
+        bag.clear();
+        List<Tetromino.Type> allTypes = new ArrayList<>(TetrominoUtil.VALID_TYPES);
+        bag.addAll(allTypes);
+        Collections.shuffle(bag);
+        index = 0;
     }
 }
