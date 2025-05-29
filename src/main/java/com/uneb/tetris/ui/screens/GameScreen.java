@@ -427,6 +427,17 @@ public class GameScreen {
         Pane bg = new Pane();
         bg.getStyleClass().add("game-bg");
         bg.setPrefSize(screenWidth, screenHeight);
+
+        // Cria os quadrados
+        for (int i = 0; i < 5; i++) {
+            Effects.createSquareParticle(bg, screenWidth, screenHeight);
+        }
+
+        // Cria as partículas
+        for (int i = 0; i < 12; i++) {
+            Effects.createFireflyParticle(bg, screenWidth, screenHeight);
+        }
+
         return bg;
     }
 
@@ -440,3 +451,4 @@ public class GameScreen {
         return root;
     }
 }
+

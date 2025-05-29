@@ -4,7 +4,12 @@ import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Circle;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 /**
@@ -18,6 +23,8 @@ import javafx.util.Duration;
  *   <li>Animações de aterrissagem de peça</li>
  *   <li>Efeitos de transição e fade</li>
  *   <li>Efeitos de escala e rotação</li>
+ *   <li>Efeitos de partículas flutuantes estilo vagalume</li>
+ *   <li>Quadrados flutuantes com bordas</li>
  * </ul>
  * <p>
  * A centralização dos efeitos promove a reutilização e consistência visual.
@@ -49,6 +56,18 @@ public class Effects {
     
     /** Duração do efeito de pouso forte */
     public static final Duration HARD_LANDING_DURATION = Duration.millis(80);
+
+    /** Duração da animação de cada partícula flutuante */
+    public static final Duration FIREFLY_DURATION = Duration.seconds(12);
+
+    /** Tamanho das partículas flutuantes */
+    public static final double FIREFLY_SIZE = 8;
+
+    /** Tamanho dos quadrados flutuantes */
+    public static final double SQUARE_SIZE = 60;
+
+    /** Espessura da borda dos quadrados */
+    public static final double SQUARE_STROKE_WIDTH = 2;
 
     /**
      * Aplica um efeito de empurrar parede ao nó especificado.
@@ -92,16 +111,15 @@ public class Effects {
      * Aplica uma animação de pouso (shake vertical) ao nó especificado.
      * Útil para dar feedback visual quando uma peça atinge o fundo ou outra peça.
      *
-     * @param node O nó a ser animado
-     * @param intensity A intensidade do efeito shake (distância em pixels)
-     * @param duration A duração de cada ciclo da animação
+     * @param node       O nó a ser animado
+     * @param intensity  A intensidade do efeito shake (distância em pixels)
+     * @param duration   A duração de cada ciclo da animação
      * @param onComplete Ação a ser executada quando a animação terminar
-     * @return true se a animação foi iniciada, false se outra animação já estava em andamento
      */
-    public static boolean applyLandingEffect(Node node, double intensity, Duration duration, Runnable onComplete) {
+    public static void applyLandingEffect(Node node, double intensity, Duration duration, Runnable onComplete) {
         if (node.getProperties().containsKey("animating") &&
             (boolean) node.getProperties().get("animating")) {
-            return false;
+            return;
         }
 
         node.getProperties().put("animating", true);
@@ -120,7 +138,6 @@ public class Effects {
         });
 
         tt.play();
-        return true;
     }
 
     /**
@@ -226,35 +243,118 @@ public class Effects {
      * Aplica um efeito de pouso suave específico para aterrissagem de peças.
      * Wrapper para o método genérico com parâmetros pré-definidos.
      *
-     * @param node O nó a ser animado
+     * @param node       O nó a ser animado
      * @param onComplete Ação a ser executada quando a animação terminar
-     * @return true se a animação foi iniciada, false se outra animação já estava em andamento
      */
-    public static boolean applySoftLanding(Node node, Runnable onComplete) {
-        return applyLandingEffect(node, SOFT_LANDING_INTENSITY, SOFT_LANDING_DURATION, onComplete);
+    public static void applySoftLanding(Node node, Runnable onComplete) {
+        applyLandingEffect(node, SOFT_LANDING_INTENSITY, SOFT_LANDING_DURATION, onComplete);
     }
 
     /**
      * Aplica um efeito de pouso normal específico para aterrissagem de peças.
      * Wrapper para o método genérico com parâmetros pré-definidos.
      *
-     * @param node O nó a ser animado
+     * @param node       O nó a ser animado
      * @param onComplete Ação a ser executada quando a animação terminar
-     * @return true se a animação foi iniciada, false se outra animação já estava em andamento
      */
-    public static boolean applyNormalLanding(Node node, Runnable onComplete) {
-        return applyLandingEffect(node, NORMAL_LANDING_INTENSITY, NORMAL_LANDING_DURATION, onComplete);
+    public static void applyNormalLanding(Node node, Runnable onComplete) {
+        applyLandingEffect(node, NORMAL_LANDING_INTENSITY, NORMAL_LANDING_DURATION, onComplete);
     }
 
     /**
      * Aplica um efeito de pouso forte específico para hard drop de peças.
      * Wrapper para o método genérico com parâmetros pré-definidos.
      *
-     * @param node O nó a ser animado
+     * @param node       O nó a ser animado
      * @param onComplete Ação a ser executada quando a animação terminar
-     * @return true se a animação foi iniciada, false se outra animação já estava em andamento
      */
-    public static boolean applyHardLanding(Node node, Runnable onComplete) {
-        return applyLandingEffect(node, HARD_LANDING_INTENSITY, HARD_LANDING_DURATION, onComplete);
+    public static void applyHardLanding(Node node, Runnable onComplete) {
+        applyLandingEffect(node, HARD_LANDING_INTENSITY, HARD_LANDING_DURATION, onComplete);
+    }
+
+    /**
+     * Cria e anima uma partícula flutuante.
+     *
+     * @param container O contêiner onde a partícula será adicionada
+     * @param width Largura do container
+     * @param height Altura do container
+     */
+    public static void createFireflyParticle(Pane container, double width, double height) {
+        Circle particle = new Circle(FIREFLY_SIZE);
+        particle.setFill(Color.web("#fcd34d", 0.2));
+        particle.setBlendMode(BlendMode.ADD);
+        particle.setCache(true);
+        particle.setCacheHint(CacheHint.SPEED);
+
+        double startX = Math.random() * width;
+        double startY = Math.random() * height;
+        particle.setTranslateX(startX);
+        particle.setTranslateY(startY);
+
+        TranslateTransition move = new TranslateTransition(FIREFLY_DURATION, particle);
+        move.setByX((Math.random() - 0.5) * width * 0.7);
+        move.setByY((Math.random() - 0.5) * height * 0.7);
+        move.setCycleCount(TranslateTransition.INDEFINITE);
+        move.setAutoReverse(true);
+
+        FadeTransition fade = new FadeTransition(Duration.seconds(3), particle);
+        fade.setFromValue(0);
+        fade.setToValue(0.4);
+        fade.setCycleCount(TranslateTransition.INDEFINITE);
+        fade.setAutoReverse(true);
+
+        move.play();
+        fade.play();
+
+        container.getChildren().add(particle);
+    }
+
+    /**
+     * Cria e anima um quadrado flutuante.
+     *
+     * @param container O contêiner onde o quadrado será adicionado
+     * @param width Largura do container
+     * @param height Altura do container
+     */
+    public static void createSquareParticle(Pane container, double width, double height) {
+        javafx.scene.shape.Rectangle square = new javafx.scene.shape.Rectangle(SQUARE_SIZE, SQUARE_SIZE);
+        square.setFill(Color.TRANSPARENT);
+        square.setStroke(Color.web("#fcd34d", 0.3));
+        square.setStrokeWidth(SQUARE_STROKE_WIDTH);
+        square.setBlendMode(BlendMode.ADD);
+        square.setCache(true);
+        square.setCacheHint(CacheHint.SPEED);
+        square.setArcHeight(4);
+        square.setArcWidth(4);
+
+        // Posição inicial aleatória usando as dimensões do container
+        double startX = Math.random() * (width - SQUARE_SIZE);
+        double startY = Math.random() * (height - SQUARE_SIZE);
+        square.setTranslateX(startX);
+        square.setTranslateY(startY);
+
+        // Movimento mais lento e suave
+        TranslateTransition move = new TranslateTransition(Duration.seconds(15), square);
+        move.setByX((Math.random() - 0.5) * width * 0.6);
+        move.setByY((Math.random() - 0.5) * height * 0.5);
+        move.setCycleCount(TranslateTransition.INDEFINITE);
+        move.setAutoReverse(true);
+
+        RotateTransition rotate = new RotateTransition(Duration.seconds(20), square);
+        rotate.setByAngle((Math.random() - 0.5) * 180);
+        rotate.setCycleCount(TranslateTransition.INDEFINITE);
+        rotate.setAutoReverse(true);
+
+        FadeTransition fade = new FadeTransition(Duration.seconds(8), square);
+        fade.setFromValue(0);
+        fade.setToValue(0.4);
+        fade.setCycleCount(TranslateTransition.INDEFINITE);
+        fade.setAutoReverse(true);
+
+        move.play();
+        rotate.play();
+        fade.play();
+
+        container.getChildren().add(square);
     }
 }
