@@ -164,7 +164,7 @@ public class GameTimer extends AnimationTimer {
         long seconds = totalSeconds % 60;
         long minutes = totalSeconds / 60;
 
-        char[] result = new char[9];
+        char[] result = new char[8];
 
         final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
@@ -178,7 +178,6 @@ public class GameTimer extends AnimationTimer {
 
         result[6] = DIGITS[(int)((milliseconds / 100) % 10)];
         result[7] = DIGITS[(int)((milliseconds / 10) % 10)];
-        result[8] = DIGITS[(int)(milliseconds % 10)];
 
         return new String(result);
     }
