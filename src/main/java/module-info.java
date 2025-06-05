@@ -3,8 +3,10 @@ open module com.uneb.tetris {
     requires javafx.fxml;
     requires javafx.media;
     requires javafx.graphics;
+    requires java.desktop;
 
     requires transitive com.fasterxml.jackson.databind;
+    requires transitive com.fasterxml.jackson.core;
     requires transitive com.almasb.fxgl.all;
 
     exports com.uneb.tetris.game.core;
