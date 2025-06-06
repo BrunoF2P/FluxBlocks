@@ -47,7 +47,7 @@ public class SevenBagTetrominoProvider implements TetrominoProvider {
      */
     private void refillBag() {
         bag.clear();
-        List<Tetromino.Type> allTypes = new ArrayList<>(TetrominoUtil.VALID_TYPES);
+        List<Tetromino.Type> allTypes = new ArrayList<>(TetrominoUtil.STANDARD_TYPES);
         bag.addAll(allTypes);
         Collections.shuffle(bag);
         index = 0;

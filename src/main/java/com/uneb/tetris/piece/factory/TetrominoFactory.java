@@ -2,6 +2,7 @@ package com.uneb.tetris.piece.factory;
 
 import com.uneb.tetris.piece.entities.Cell;
 import com.uneb.tetris.piece.entities.Tetromino;
+import com.uneb.tetris.piece.factory.provider.FixedExtendedBagTetrominoProvider;
 import com.uneb.tetris.piece.factory.provider.SevenBagTetrominoProvider;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Random;
  */
 public class TetrominoFactory {
     private static final Random random = new Random();
-    private static final SevenBagTetrominoProvider sevenBagProvider = new SevenBagTetrominoProvider();
+    private static final FixedExtendedBagTetrominoProvider fixedExtendedBagProvider = new FixedExtendedBagTetrominoProvider();
     /**
      * Cria um novo Tetromino do tipo especificado.
      *
@@ -43,7 +44,7 @@ public class TetrominoFactory {
      * @return Um novo Tetromino de tipo aleatório
      */
     public static Tetromino createRandomTetromino() {
-        return sevenBagProvider.next();
+        return fixedExtendedBagProvider.next();
     }
 
     /**

@@ -44,7 +44,7 @@ public class FourteenBagTetrominoProvider implements TetrominoProvider {
     private void refillBag() {
         List<Tetromino.Type> doubleBag = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            doubleBag.addAll(TetrominoUtil.VALID_TYPES);
+            doubleBag.addAll(TetrominoUtil.STANDARD_TYPES);
         }
         Collections.shuffle(doubleBag);
         bag.addAll(doubleBag);

@@ -32,8 +32,8 @@ public class RandomTetrominoProvider implements TetrominoProvider {
      */
     @Override
     public Tetromino next() {
-        Tetromino.Type randomType = TetrominoUtil.VALID_TYPES.get(
-                random.nextInt(TetrominoUtil.VALID_TYPES.size())
+        Tetromino.Type randomType = TetrominoUtil.STANDARD_TYPES.get(
+                random.nextInt(TetrominoUtil.STANDARD_TYPES.size())
         );
         return TetrominoFactory.createTetromino(randomType);
     }

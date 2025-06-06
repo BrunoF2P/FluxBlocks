@@ -42,7 +42,7 @@ public class Memory2TetrominoProvider implements TetrominoProvider {
         Tetromino.Type next;
 
         do {
-            List<Tetromino.Type> validTypes = TetrominoUtil.VALID_TYPES;
+            List<Tetromino.Type> validTypes = TetrominoUtil.STANDARD_TYPES;
             next = validTypes.get(random.nextInt(validTypes.size()));
         } while (history.contains(next));
 

@@ -38,7 +38,7 @@ public class Memory1TetrominoProvider implements TetrominoProvider {
     public Tetromino next() {
         Tetromino.Type next;
         do {
-            next = TetrominoUtil.VALID_TYPES.get(random.nextInt(TetrominoUtil.VALID_TYPES.size()));
+            next = TetrominoUtil.STANDARD_TYPES.get(random.nextInt(TetrominoUtil.STANDARD_TYPES.size()));
         } while (next == lastType);
 
         lastType = next;
