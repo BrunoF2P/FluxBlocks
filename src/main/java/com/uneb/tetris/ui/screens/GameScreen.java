@@ -92,6 +92,9 @@ public class GameScreen {
     /** Componente otimizado para exibição de tempo */
     private TimeDisplay timeDisplay;
 
+    /** Painel de fundo com as partículas */
+    private Pane backgroundPane;
+
     /**
      * Constrói uma nova tela de jogo e configura os elementos de UI.
      *
@@ -163,6 +166,7 @@ public class GameScreen {
         mediator.receiver(UiEvents.LEVEL_UPDATE, level -> {
             currentLevel = level;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
+            Effects.applyLevelUpEffect(backgroundPane);
         });
         
         mediator.receiver(UiEvents.PIECE_LANDED_SOFT, data ->
@@ -195,7 +199,8 @@ public class GameScreen {
         layout.setLeft(leftPanel);
         layout.setRight(rightPanel);
 
-        root.getChildren().addAll(createBackground(), layout);
+        this.backgroundPane = createBackground();
+        root.getChildren().addAll(backgroundPane, layout);
     }
 
     /**

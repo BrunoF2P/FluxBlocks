@@ -69,6 +69,18 @@ public class Effects {
     /** Espessura da borda dos quadrados */
     public static final double SQUARE_STROKE_WIDTH = 2;
 
+    /** Intensidade do efeito de brilho ao subir de nível */
+    public static final double LEVEL_UP_GLOW_INTENSITY = 0.9;
+
+    /** Duração de cada ciclo do efeito de level up */
+    public static final Duration LEVEL_UP_CYCLE_DURATION = Duration.millis(200);
+
+    /** Fator de escala do efeito de level up */
+    public static final double LEVEL_UP_SCALE_FACTOR = 2.0;
+
+    /** Número de ciclos do efeito de level up */
+    public static final int LEVEL_UP_CYCLES = 1;
+
     /**
      * Aplica um efeito de empurrar parede ao nó especificado.
      * Move o nó na direção especificada para simular o efeito de empurrar contra uma parede.
@@ -273,6 +285,44 @@ public class Effects {
     }
 
     /**
+     * Intensifica temporariamente os efeitos visuais quando o jogador sobe de nível.
+     *
+     * @param container O contêiner que contém as partículas
+     */
+    public static void applyLevelUpEffect(Pane container) {
+        container.getChildren().stream()
+            .filter(node -> node.getProperties().containsKey("particle-type"))
+            .forEach(particle -> {
+                double originalOpacity = particle.getOpacity();
+
+                ScaleTransition pulse = new ScaleTransition(LEVEL_UP_CYCLE_DURATION, particle);
+                pulse.setFromX(1.0);
+                pulse.setFromY(1.0);
+                pulse.setToX(LEVEL_UP_SCALE_FACTOR);
+                pulse.setToY(LEVEL_UP_SCALE_FACTOR);
+                pulse.setCycleCount(LEVEL_UP_CYCLES * 2);
+                pulse.setAutoReverse(true);
+
+                // Aumenta o brilho significativamente
+                FadeTransition glow = new FadeTransition(LEVEL_UP_CYCLE_DURATION, particle);
+                glow.setFromValue(originalOpacity);
+                glow.setToValue(LEVEL_UP_GLOW_INTENSITY);
+                glow.setCycleCount(LEVEL_UP_CYCLES * 2);
+                glow.setAutoReverse(true);
+                glow.setOnFinished(e -> particle.setOpacity(originalOpacity));
+
+                RotateTransition spin = new RotateTransition(LEVEL_UP_CYCLE_DURATION.multiply(2), particle);
+                spin.setByAngle(360);
+                spin.setCycleCount(LEVEL_UP_CYCLES);
+                spin.setAutoReverse(false);
+
+                pulse.play();
+                glow.play();
+                spin.play();
+            });
+    }
+
+    /**
      * Cria e anima uma partícula flutuante.
      *
      * @param container O contêiner onde a partícula será adicionada
@@ -285,6 +335,7 @@ public class Effects {
         particle.setBlendMode(BlendMode.ADD);
         particle.setCache(true);
         particle.setCacheHint(CacheHint.SPEED);
+        particle.getProperties().put("particle-type", "firefly");
 
         double startX = Math.random() * width;
         double startY = Math.random() * height;
@@ -326,6 +377,7 @@ public class Effects {
         square.setCacheHint(CacheHint.SPEED);
         square.setArcHeight(4);
         square.setArcWidth(4);
+        square.getProperties().put("particle-type", "square");
 
         // Posição inicial aleatória usando as dimensões do container
         double startX = Math.random() * (width - SQUARE_SIZE);
