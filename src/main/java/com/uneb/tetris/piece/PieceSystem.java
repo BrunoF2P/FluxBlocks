@@ -15,6 +15,7 @@ import com.uneb.tetris.piece.rendering.PieceRenderer;
 import com.uneb.tetris.piece.rendering.ShadowPieceCalculator;
 import com.uneb.tetris.piece.scoring.ScoreCalculator;
 import com.uneb.tetris.piece.timing.LockDelayHandler;
+import com.uneb.tetris.ui.screens.GameBoardScreen;
 import javafx.util.Duration;
 
 /**
@@ -180,11 +181,13 @@ public class PieceSystem {
 
 
         if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
-            int softDropScore = scoreCalculator.calculateSoftDropScore(); // Supondo que este método exista
+            int softDropScore = scoreCalculator.calculateSoftDropScore();
             mediator.emit(GameplayEvents.SCORE_UPDATED, softDropScore);
         }
 
-        int linesCleared = board.removeCompletedLines();
+        // Usa a camada de efeitos específica
+        GameBoardScreen boardScreen = mediator.getGameBoardScreen();
+        int linesCleared = board.removeCompletedLines(boardScreen.getEffectsLayer());
         if (linesCleared > 0) {
             int linesClearedScore = scoreCalculator.calculateLinesClearedScore(linesCleared);
             mediator.emit(GameplayEvents.SCORE_UPDATED, linesClearedScore);

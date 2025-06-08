@@ -1,15 +1,13 @@
 package com.uneb.tetris.ui.effects;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.RotateTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 /**
@@ -80,6 +78,18 @@ public class Effects {
 
     /** Número de ciclos do efeito de level up */
     public static final int LEVEL_UP_CYCLES = 1;
+
+    /** Quantidade de partículas por linha eliminada */
+    public static final int PARTICLES_PER_LINE = 15;
+
+    /** Duração da animação de limpeza de linha */
+    public static final Duration LINE_CLEAR_DURATION = Duration.millis(600);
+
+    /** Tamanho máximo das partículas de limpeza de linha */
+    public static final double LINE_PARTICLE_MAX_SIZE = 12;
+
+    /** Tamanho mínimo das partículas de limpeza de linha */
+    public static final double LINE_PARTICLE_MIN_SIZE = 4;
 
     /**
      * Aplica um efeito de empurrar parede ao nó especificado.
@@ -408,5 +418,76 @@ public class Effects {
         fade.play();
 
         container.getChildren().add(square);
+    }
+
+    /**
+     * Aplica um efeito de flash ao limpar uma linha do tabuleiro.
+     *
+     * @param boardPane O painel que contém o tabuleiro
+     * @param lineY A posição Y da linha que está sendo removida
+     * @param cellSize O tamanho de cada célula do tabuleiro
+     */
+    public static void applyLineClearEffect(Pane boardPane, int lineY, int cellSize) {
+        boardPane.getChildren().removeIf(node ->
+            node.getUserData() != null && "line-clear-particle".equals(node.getUserData()));
+
+        double startX = 0;
+        double startY = lineY * cellSize + cellSize / 2.0;
+        double lineWidth = cellSize * 10;
+
+        for (int i = 0; i < PARTICLES_PER_LINE; i++) {
+            double size = LINE_PARTICLE_MIN_SIZE + Math.random() * (LINE_PARTICLE_MAX_SIZE - LINE_PARTICLE_MIN_SIZE);
+            Circle particle = new Circle(size);
+
+            double particleX = startX + Math.random() * lineWidth;
+            particle.setTranslateX(particleX);
+            particle.setTranslateY(startY);
+
+            particle.setFill(Color.web("#fcd34d", 0.8 + Math.random() * 0.2));
+            particle.setBlendMode(BlendMode.ADD);
+            particle.setEffect(new javafx.scene.effect.Glow(0.8));
+            particle.setUserData("line-clear-particle");
+
+            boardPane.getChildren().add(particle);
+
+            ParallelTransition pt = new ParallelTransition();
+
+            double angleRad = Math.toRadians(Math.random() * 360);
+            double distance = 100 + Math.random() * 150;
+            double targetX = Math.cos(angleRad) * distance;
+            double targetY = Math.sin(angleRad) * distance;
+
+            TranslateTransition move = new TranslateTransition(LINE_CLEAR_DURATION, particle);
+            move.setByX(targetX);
+            move.setByY(targetY);
+            move.setInterpolator(Interpolator.EASE_OUT);
+
+            RotateTransition rotate = new RotateTransition(LINE_CLEAR_DURATION, particle);
+            rotate.setByAngle(Math.random() * 720 - 360);
+
+            FadeTransition fade = new FadeTransition(LINE_CLEAR_DURATION, particle);
+            fade.setFromValue(1.0);
+            fade.setToValue(0.0);
+            fade.setInterpolator(Interpolator.EASE_IN);
+
+            pt.getChildren().addAll(move, rotate, fade);
+
+            pt.setOnFinished(event -> boardPane.getChildren().remove(particle));
+
+            pt.play();
+        }
+
+        Rectangle flash = new Rectangle(lineWidth, cellSize);
+        flash.setTranslateY(lineY * cellSize);
+        flash.setFill(Color.web("#fcd34d", 0.6));
+        flash.setBlendMode(BlendMode.ADD);
+        flash.setUserData("line-clear-particle");
+        boardPane.getChildren().add(flash);
+
+        FadeTransition flashFade = new FadeTransition(Duration.millis(200), flash);
+        flashFade.setFromValue(0.6);
+        flashFade.setToValue(0.0);
+        flashFade.setOnFinished(event -> boardPane.getChildren().remove(flash));
+        flashFade.play();
     }
 }

@@ -6,6 +6,7 @@ import com.uneb.tetris.ui.components.BoardCanvas;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 
 import java.util.Objects;
 
@@ -18,6 +19,7 @@ public class GameBoardScreen {
     private final GameMediator mediator;
     private final BoardCanvas boardCanvas;
     private final StackPane root;
+    private final Pane effectsLayer;  // Camada para efeitos visuais
 
     private final int width = 10;
     private final int height = 20;
@@ -31,7 +33,12 @@ public class GameBoardScreen {
     public GameBoardScreen(GameMediator mediator) {
         this.mediator = mediator;
         this.boardCanvas = new BoardCanvas(width, height, cellSize);
-        this.root = new StackPane(boardCanvas);
+        this.effectsLayer = new Pane();
+        this.root = new StackPane(boardCanvas, effectsLayer);
+
+        effectsLayer.setMouseTransparent(true);
+        effectsLayer.setPrefSize(width * cellSize, height * cellSize);
+        effectsLayer.setMaxSize(width * cellSize, height * cellSize);
 
         root.getStyleClass().add("game-board");
         root.setAlignment(Pos.CENTER);
@@ -79,5 +86,14 @@ public class GameBoardScreen {
      */
     public Parent getNode() {
         return root;
+    }
+
+    /**
+     * Retorna a camada de efeitos visuais do tabuleiro.
+     *
+     * @return O painel usado para efeitos visuais
+     */
+    public Pane getEffectsLayer() {
+        return effectsLayer;
     }
 }

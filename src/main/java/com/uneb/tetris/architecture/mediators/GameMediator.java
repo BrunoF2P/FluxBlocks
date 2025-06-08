@@ -1,6 +1,7 @@
 package com.uneb.tetris.architecture.mediators;
 
 import com.uneb.tetris.architecture.events.EventType;
+import com.uneb.tetris.ui.screens.GameBoardScreen;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GameMediator {
     private final Map<EventType<?>, NavigableSet<PrioritizedListener<?>>> listeners = new ConcurrentHashMap<>();
+    private GameBoardScreen gameBoardScreen;
 
     /**
      * Registra um listener para um tipo específico de evento com prioridade padrão (0).
@@ -61,6 +63,24 @@ public class GameMediator {
             Listener<T> typedListener = (Listener<T>) prioritizedListener.listener;
             typedListener.onEvent(payload);
         }
+    }
+
+    /**
+     * Define o GameBoardScreen para ser acessado por outros componentes.
+     *
+     * @param gameBoardScreen A instância do GameBoardScreen
+     */
+    public void setGameBoardScreen(GameBoardScreen gameBoardScreen) {
+        this.gameBoardScreen = gameBoardScreen;
+    }
+
+    /**
+     * Retorna o GameBoardScreen associado ao mediador.
+     *
+     * @return A instância do GameBoardScreen
+     */
+    public GameBoardScreen getGameBoardScreen() {
+        return gameBoardScreen;
     }
 
     /**

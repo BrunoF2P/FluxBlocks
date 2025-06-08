@@ -3,6 +3,8 @@ package com.uneb.tetris.game.logic;
 import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.ui.effects.Effects;
+import javafx.scene.layout.Pane;
 
 public class GameBoard {
     private final GameMediator mediator;
@@ -11,6 +13,7 @@ public class GameBoard {
     private final int visibleHeight = 20;
     private final int height = visibleHeight + bufferHeight;
     private final int[][] grid;
+    private final int cellSize = 35;  // Tamanho padrão das células do tabuleiro
 
     public GameBoard(GameMediator mediator) {
         this.mediator = mediator;
@@ -53,11 +56,12 @@ public class GameBoard {
     }
 
 
-    public int removeCompletedLines() {
+    public int removeCompletedLines(Pane effectsLayer) {
         int linesRemoved = 0;
 
         for (int y = height - 1; y >= 0; y--) {
             if (isLineComplete(y)) {
+                Effects.applyLineClearEffect(effectsLayer, y - bufferHeight, cellSize);
                 removeLine(y);
                 linesRemoved++;
                 y++;

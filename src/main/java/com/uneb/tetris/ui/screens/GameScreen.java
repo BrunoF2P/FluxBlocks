@@ -104,6 +104,7 @@ public class GameScreen {
         this.mediator = mediator;
         this.layout = new BorderPane();
         this.gameBoardScreen = new GameBoardScreen(mediator);
+        mediator.setGameBoardScreen(this.gameBoardScreen);
         this.nextPiecePreview = new StackPane();
         this.root = new StackPane();
         this.root.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/assets/ui/style.css")).toExternalForm());
@@ -456,4 +457,3 @@ public class GameScreen {
         return root;
     }
 }
-
