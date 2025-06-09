@@ -7,14 +7,13 @@ import com.uneb.tetris.game.logic.GameState;
 
 /**
  * Gerenciador de pontuação e níveis do jogo.
- * 
- * <p>Esta classe é responsável por:
+ * Esta classe é responsável por:
  * <ul>
  *   <li>Controlar a pontuação do jogador</li>
  *   <li>Gerenciar o sistema de níveis</li>
  *   <li>Controlar a progressão de dificuldade</li>
  *   <li>Emitir eventos relacionados a pontuação e níveis</li>
- * </ul></p>
+ * </ul>
  */
 public class ScoreTracker {
     /** Mediador para comunicação com outros componentes do jogo */

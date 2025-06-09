@@ -8,15 +8,16 @@ import java.util.Random;
 
 /**
  * Implementação de um provedor de peças que gera Tetrominós de forma completamente aleatória.
- * 
- * <p>Este provedor utiliza um gerador de números aleatórios para selecionar
+ * <p>
+ * Este provedor utiliza um gerador de números aleatórios para selecionar
  * o próximo Tetrominó dentre todos os tipos válidos disponíveis. Diferente
  * do sistema "Seven Bag", este provedor:
+ * </p>
  * <ul>
  *   <li>Não garante distribuição uniforme das peças ao longo do tempo</li>
  *   <li>Pode gerar sequências repetidas de uma mesma peça</li>
  *   <li>Oferece maior imprevisibilidade na sequência de peças</li>
- * </ul></p>
+ * </ul>
  */
 public class RandomTetrominoProvider implements TetrominoProvider {
     /** Gerador de números aleatórios utilizado para selecionar as peças */
