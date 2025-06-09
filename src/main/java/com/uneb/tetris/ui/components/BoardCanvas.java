@@ -1,5 +1,6 @@
 package com.uneb.tetris.ui.components;
 
+import com.uneb.tetris.ui.theme.TetrominoColors;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -23,23 +24,10 @@ import java.util.Map;
  */
 public class BoardCanvas extends Canvas {
 
-    /** Cache de cores associadas aos tipos de tetromino. */
-    private static final Map<Integer, Color> COLOR_CACHE = new HashMap<>();
-
     /** Cache global de imagens por tipo de célula com tamanho padrão (30px). */
     private static final Map<Integer, Image> IMAGE_CACHE = new HashMap<>();
 
     static {
-        COLOR_CACHE.put(1, Color.web("#00f0f0")); // I - Ciano
-        COLOR_CACHE.put(2, Color.web("#1a75ff")); // J - Azul
-        COLOR_CACHE.put(3, Color.web("#ff8c00")); // L - Laranja
-        COLOR_CACHE.put(4, Color.web("#ffd700")); // O - Amarelo
-        COLOR_CACHE.put(5, Color.web("#32cd32")); // S - Verde
-        COLOR_CACHE.put(6, Color.web("#bf3eff")); // T - Roxo
-        COLOR_CACHE.put(7, Color.web("#ffcbdb")); // Z - Rosa
-        COLOR_CACHE.put(8, Color.web("#ff3030")); // X - Vermelho
-        COLOR_CACHE.put(9, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
-
         int cellSize = 30;
         for (int type = 0; type <= 9; type++) {
             IMAGE_CACHE.put(type, createCellImage(type, cellSize));
@@ -103,7 +91,7 @@ public class BoardCanvas extends Canvas {
         gc.fillRect(0, 0, cellSize, cellSize);
 
         if (type != 0) {
-            Color tetroColor = getTetrominoColor(type);
+            Color tetroColor = TetrominoColors.getColor(type);
             gc.setFill(tetroColor);
             gc.fillRoundRect(spacing, spacing, innerSize, innerSize, 10, 10);
             gc.setLineWidth(0.5);
@@ -180,15 +168,5 @@ public class BoardCanvas extends Canvas {
                 gc.drawImage(emptyCell, x * cellSize, y * cellSize);
             }
         }
-    }
-
-    /**
-     * Retorna a cor associada ao tipo de tetromino especificado.
-     *
-     * @param type tipo de peça (1 a 8) ou valor especial (9 = ghost)
-     * @return cor correspondente ou {@link Color#TRANSPARENT} se inválido
-     */
-    private static Color getTetrominoColor(int type) {
-        return COLOR_CACHE.getOrDefault(type, Color.TRANSPARENT);
     }
 }

@@ -44,6 +44,6 @@ public abstract class UiEvents {
     };
     public static final EventType<Object> PIECE_NOT_PUSHING_WALL_RIGHT = new EventType<>() {
     };
-
-
+    public static final EventType<int[]> PIECE_TRAIL_EFFECT = new EventType<>() {
+    };
 }

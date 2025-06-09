@@ -5,7 +5,9 @@ import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.components.NextPiecePreview;
 import com.uneb.tetris.ui.components.TimeDisplay;
+import com.uneb.tetris.ui.effects.DropTrailEffect;
 import com.uneb.tetris.ui.effects.Effects;
+import com.uneb.tetris.ui.theme.TetrominoColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.CacheHint;
@@ -52,6 +54,9 @@ public class GameScreen {
 
     /** Componente que renderiza a próxima peça. */
     private NextPiecePreview nextPieceComponent;
+
+    /** Tamanho de cada célula do tabuleiro em pixels */
+    private static final int CELL_SIZE = 35;
 
     /** Largura da tela do jogo. */
     private final double screenWidth = 1368;
@@ -162,6 +167,27 @@ public class GameScreen {
             linesCleared += lines;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
         });
+
+        mediator.receiver(UiEvents.PIECE_TRAIL_EFFECT, data -> {
+            int[] params = (int[]) data;
+            int x = params[0] * CELL_SIZE;
+            int y = params[1] * CELL_SIZE;
+            int type = params[2];
+            int distance = params[3];
+
+            int pieceWidth = params.length > 4 ? params[4] : 4;
+            int pieceHeight = params.length > 5 ? params[5] : 4;
+
+            DropTrailEffect.createTrailEffect(
+                    gameBoardScreen.getEffectsLayer(),
+                    x, y,
+                    CELL_SIZE * pieceWidth,
+                    CELL_SIZE * pieceHeight,
+                    TetrominoColors.getColor(type),
+                    distance
+            );
+        });
+
         mediator.receiver(UiEvents.SCORE_UPDATE, this::updateScore);
         mediator.receiver(UiEvents.TIME_UPDATE, this::updateTime);
         mediator.receiver(UiEvents.LEVEL_UPDATE, level -> {

@@ -4,7 +4,10 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.effects.Effects;
+import javafx.animation.TranslateTransition;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 
 public class GameBoard {
     private final GameMediator mediator;
@@ -58,22 +61,70 @@ public class GameBoard {
 
     public int removeCompletedLines(Pane effectsLayer) {
         int linesRemoved = 0;
+        boolean[] isLineComplete = new boolean[height];
 
         for (int y = height - 1; y >= 0; y--) {
-            if (isLineComplete(y)) {
-                Effects.applyLineClearEffect(effectsLayer, y - bufferHeight, cellSize);
-                removeLine(y);
+            boolean complete = true;
+            for (int x = 0; x < width; x++) {
+                if (grid[y][x] == 0) {
+                    complete = false;
+                    break;
+                }
+            }
+            if (complete) {
+                isLineComplete[y] = true;
                 linesRemoved++;
-                y++;
             }
         }
 
         if (linesRemoved > 0) {
+            for (int y = 0; y < height; y++) {
+                if (isLineComplete[y]) {
+                    Effects.applyLineClearEffect(effectsLayer, y - bufferHeight, cellSize);
+                }
+            }
+
+            StackPane boardRoot = (StackPane) effectsLayer.getParent();
+            if (boardRoot != null) {
+                double intensity = Effects.SHAKE_INTENSITY_BASE +
+                                 (linesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
+                Duration shakeDuration = Duration.millis(100);
+
+                TranslateTransition shake = new TranslateTransition(shakeDuration, boardRoot);
+                shake.setByY(intensity);
+                shake.setCycleCount(2);
+                shake.setAutoReverse(true);
+                shake.setOnFinished(e -> boardRoot.setTranslateY(0));
+                shake.play();
+            }
+
+            removeCompleteLines(isLineComplete);
+
             notifyBoardUpdated();
             mediator.emit(GameplayEvents.LINE_CLEARED, linesRemoved);
         }
 
         return linesRemoved;
+    }
+
+    private void removeCompleteLines(boolean[] isLineComplete) {
+        int writeY = height - 1;  // Começamos do fundo
+
+        for (int readY = height - 1; readY >= 0; readY--) {
+            if (!isLineComplete[readY]) {
+                if (writeY != readY) {
+                    System.arraycopy(grid[readY], 0, grid[writeY], 0, width);
+                }
+                writeY--;
+            }
+        }
+
+        while (writeY >= 0) {
+            for (int x = 0; x < width; x++) {
+                grid[writeY][x] = 0;
+            }
+            writeY--;
+        }
     }
 
     private boolean isLineComplete(int y) {
@@ -83,16 +134,6 @@ public class GameBoard {
             }
         }
         return true;
-    }
-
-    private void removeLine(int lineY) {
-        for (int y = lineY; y > 0; y--) {
-            System.arraycopy(grid[y - 1], 0, grid[y], 0, width);
-        }
-
-        for (int x = 0; x < width; x++) {
-            grid[0][x] = 0;
-        }
     }
 
     public void clearGrid() {

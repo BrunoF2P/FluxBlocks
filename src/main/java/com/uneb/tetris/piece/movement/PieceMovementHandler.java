@@ -105,7 +105,22 @@ public class PieceMovementHandler {
         if (piece == null) return 0;
 
         int distance = 0;
+
         while (tryMove(piece, 0, 1)) {
+            // Calcula as dimensões reais da peça baseado nas células
+            int[] dimensions = calculatePieceDimensions(piece);
+            int pieceWidth = dimensions[0];
+            int pieceHeight = dimensions[1];
+
+            // Emite evento para criar o efeito de rastro a cada movimento
+            mediator.emit(UiEvents.PIECE_TRAIL_EFFECT, new int[]{
+                    piece.getX(),
+                    piece.getY(),
+                    piece.getType(),
+                    distance,
+                    pieceWidth,
+                    pieceHeight
+            });
             distance++;
         }
         mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
@@ -113,6 +128,39 @@ public class PieceMovementHandler {
 
         resetSoftDropTracking();
         return distance;
+    }
+
+    /**
+     * Calcula as dimensões reais da peça baseado na posição das suas células.
+     *
+     * @param piece A peça para calcular as dimensões
+     * @return Array com [largura, altura] da peça
+     */
+    private int[] calculatePieceDimensions(Tetromino piece) {
+        if (piece.getCells().isEmpty()) {
+            return new int[]{1, 1}; // Fallback
+        }
+
+        int minX = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxY = Integer.MIN_VALUE;
+
+        // Encontra os limites da peça baseado nas posições relativas das células
+        for (var cell : piece.getCells()) {
+            int relativeX = cell.getX() - piece.getX(); // Posição relativa ao centro
+            int relativeY = cell.getY() - piece.getY(); // Posição relativa ao centro
+
+            minX = Math.min(minX, relativeX);
+            maxX = Math.max(maxX, relativeX);
+            minY = Math.min(minY, relativeY);
+            maxY = Math.max(maxY, relativeY);
+        }
+
+        int width = maxX - minX + 1;
+        int height = maxY - minY + 1;
+
+        return new int[]{width, height};
     }
 
     /**

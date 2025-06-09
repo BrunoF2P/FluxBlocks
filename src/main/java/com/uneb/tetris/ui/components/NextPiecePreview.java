@@ -4,14 +4,12 @@ import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.piece.entities.Cell;
 import com.uneb.tetris.piece.entities.Tetromino;
+import com.uneb.tetris.ui.theme.TetrominoColors;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Componente visual responsável por exibir a próxima peça que será inserida no tabuleiro.
@@ -20,22 +18,6 @@ import java.util.Map;
  * @author Bruno Bispo
  */
 public class NextPiecePreview {
-
-    /**
-     * Mapeamento de tipo de peça para cor correspondente.
-     */
-    private static final Map<Integer, Color> COLOR_CACHE = new HashMap<>();
-    static {
-        COLOR_CACHE.put(1, Color.web("#00f0f0")); // I - Ciano
-        COLOR_CACHE.put(2, Color.web("#1a75ff")); // J - Azul
-        COLOR_CACHE.put(3, Color.web("#ff8c00")); // L - Laranja
-        COLOR_CACHE.put(4, Color.web("#ffd700")); // O - Amarelo
-        COLOR_CACHE.put(5, Color.web("#32cd32")); // S - Verde
-        COLOR_CACHE.put(6, Color.web("#bf3eff")); // T - Roxo
-        COLOR_CACHE.put(7, Color.web("#ffcbdb")); // Z - Rosa
-        COLOR_CACHE.put(8, Color.web("#ff3030")); // Z - Vermelho
-        COLOR_CACHE.put(9, Color.web("rgba(255, 255, 255, 0.15)")); // Ghost
-    }
 
     private final GameMediator mediator;
     private final StackPane container;
@@ -124,7 +106,7 @@ public class NextPiecePreview {
         int spacing = 1;
         int innerSize = cellSize - (spacing * 2);
 
-        Color tetroColor = getTetrominoColor(type);
+        Color tetroColor = TetrominoColors.getColor(type);
 
         gc.setFill(tetroColor);
         gc.fillRoundRect(
@@ -142,15 +124,5 @@ public class NextPiecePreview {
                 innerSize,
                 innerSize,
                 10, 10);
-    }
-
-    /**
-     * Retorna a cor associada ao tipo de peça especificado.
-     *
-     * @param type Tipo da peça.
-     * @return Cor correspondente ou {@link Color#TRANSPARENT} se inexistente.
-     */
-    private Color getTetrominoColor(int type) {
-        return COLOR_CACHE.getOrDefault(type, Color.TRANSPARENT);
     }
 }

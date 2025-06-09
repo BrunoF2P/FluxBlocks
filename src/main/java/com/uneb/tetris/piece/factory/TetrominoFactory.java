@@ -16,6 +16,7 @@ import java.util.Random;
 public class TetrominoFactory {
     private static final Random random = new Random();
     private static final FixedExtendedBagTetrominoProvider fixedExtendedBagProvider = new FixedExtendedBagTetrominoProvider();
+    private static final SevenBagTetrominoProvider sevenBagProvider = new SevenBagTetrominoProvider();
     /**
      * Cria um novo Tetromino do tipo especificado.
      *
@@ -44,7 +45,7 @@ public class TetrominoFactory {
      * @return Um novo Tetromino de tipo aleatório
      */
     public static Tetromino createRandomTetromino() {
-        return fixedExtendedBagProvider.next();
+        return sevenBagProvider.next();
     }
 
     /**
