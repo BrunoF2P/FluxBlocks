@@ -118,4 +118,34 @@ public class TimeDisplay extends StackPane {
             renderTime();
         }
     }
+
+
+    /**
+     * Limpa recursos e referências para evitar vazamentos de memória.
+     * Chame este método quando o componente não for mais necessário.
+     */
+    public void destroy() {
+        // Limpa o canvas
+        if (gc != null) {
+            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            gc = null;
+        }
+
+        // Remove o canvas dos filhos
+        if (canvas != null) {
+            getChildren().remove(canvas);
+            canvas = null;
+        }
+
+        // Limpa referências de texto
+        textMeasurer.setText("");
+
+        // Limpa referências de cores
+        textColor = null;
+        shadowColor = null;
+        timeFont = null;
+
+        // Limpa string atual
+        currentTime = null;
+    }
 }
