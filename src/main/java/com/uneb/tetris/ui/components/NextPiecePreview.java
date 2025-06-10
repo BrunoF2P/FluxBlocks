@@ -125,4 +125,20 @@ public class NextPiecePreview {
                 innerSize,
                 10, 10);
     }
+
+    /**
+     * Limpa recursos e listeners para evitar vazamentos de memória.
+     * Chame este método quando o componente não for mais necessário.
+     */
+    public void destroy() {
+        // Limpa o container
+        if (container != null) {
+            container.getChildren().clear();
+        }
+
+        // Remove o listener do mediator
+        if (mediator != null) {
+            mediator.removeReceiver(UiEvents.NEXT_PIECE_UPDATE, this::updateNextPiecePreview);
+        }
+    }
 }
