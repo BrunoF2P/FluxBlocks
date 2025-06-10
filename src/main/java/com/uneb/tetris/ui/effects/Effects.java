@@ -1,5 +1,6 @@
 package com.uneb.tetris.ui.effects;
 
+import javafx.animation.Animation;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
@@ -68,5 +69,45 @@ public class Effects {
     // Level Up Effect
     public static void applyLevelUpEffect(Pane container) {
         LevelUpEffects.applyLevelUpEffect(container);
+    }
+
+    /**
+     * Remove todos os efeitos visuais ativos de um container.
+     *
+     * @param container O container do qual remover os efeitos
+     */
+    public static void clearAllEffects(Pane container) {
+        if (container == null) return;
+
+        container.getChildren().forEach(node -> {
+            Animation animation = (Animation) node.getProperties().get("animation");
+            if (animation != null) {
+                animation.stop();
+                node.getProperties().remove("animation");
+            }
+        });
+
+        LineClearEffects.clearEffects(container);
+        ParticleEffects.clearAllParticles(container);
+        FloatingTextEffect.clearAllEffects(container);
+
+        container.getChildren().forEach(node -> {
+            if (node != null) {
+                // Limpa transformações
+                node.getTransforms().clear();
+                node.setTranslateX(0);
+                node.setTranslateY(0);
+                node.setScaleX(1);
+                node.setScaleY(1);
+                node.setRotate(0);
+                node.setOpacity(1);
+
+                // Limpa efeitos
+                node.setEffect(null);
+                node.setBlendMode(null);
+            }
+        });
+
+        EffectObjectPool.cleanupUnusedBlurEffects();
     }
 }

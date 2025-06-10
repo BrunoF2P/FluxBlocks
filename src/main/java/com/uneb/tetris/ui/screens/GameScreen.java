@@ -3,10 +3,12 @@ package com.uneb.tetris.ui.screens;
 import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.piece.scoring.ScoreCalculator;
 import com.uneb.tetris.ui.components.NextPiecePreview;
 import com.uneb.tetris.ui.components.TimeDisplay;
 import com.uneb.tetris.ui.effects.DropTrailEffect;
 import com.uneb.tetris.ui.effects.Effects;
+import com.uneb.tetris.ui.effects.FloatingTextEffect;
 import com.uneb.tetris.ui.theme.TetrominoColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,6 +24,7 @@ import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Text;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Classe responsável pela interface gráfica principal do jogo Tetris.
@@ -37,6 +40,16 @@ import java.util.Objects;
  * @author Bruno Bispo
  */
 public class GameScreen {
+    // Constantes para configuração
+    private static final int CELL_SIZE = 35;
+    private static final int LINES_PER_LEVEL = 10;
+    private static final double SCREEN_WIDTH = 1368;
+    private static final double SCREEN_HEIGHT = 768;
+
+    // Cores cacheadas para evitar parsing repetido
+    private static final Color YELLOW_COLOR = Color.web("#fcd34d");
+    private static final Color TRANSPARENT_BLACK = Color.color(0, 0, 0, 0.6);
+
     /** Contêiner principal da interface. */
     private final StackPane root;
 
@@ -55,23 +68,11 @@ public class GameScreen {
     /** Componente que renderiza a próxima peça. */
     private NextPiecePreview nextPieceComponent;
 
-    /** Tamanho de cada célula do tabuleiro em pixels */
-    private static final int CELL_SIZE = 35;
-
-    /** Largura da tela do jogo. */
-    private final double screenWidth = 1368;
-
-    /** Altura da tela do jogo. */
-    private final double screenHeight = 768;
-
     /** Nível atual do jogador. */
     private int currentLevel = 1;
 
     /** Número total de linhas eliminadas. */
     private int linesCleared = 0;
-
-    /** Número de linhas necessárias para avançar de nível. */
-    private final int LINES_PER_LEVEL = 10;
 
     /** Pontuação atual do jogador. */
     private int score = 0;
@@ -93,12 +94,15 @@ public class GameScreen {
     private Text levelTextNode;
     private Arc progressArcNode;
     private Text linesLabelNode;
-    
+
     /** Componente otimizado para exibição de tempo */
     private TimeDisplay timeDisplay;
 
     /** Painel de fundo com as partículas */
     private Pane backgroundPane;
+
+    // Flag para controlar se a tela foi destruída
+    private boolean isDestroyed = false;
 
     /**
      * Constrói uma nova tela de jogo e configura os elementos de UI.
@@ -112,7 +116,10 @@ public class GameScreen {
         mediator.setGameBoardScreen(this.gameBoardScreen);
         this.nextPiecePreview = new StackPane();
         this.root = new StackPane();
-        this.root.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/assets/ui/style.css")).toExternalForm());
+
+        // Configuração de estilo otimizada
+        this.root.getStylesheets().add(Objects.requireNonNull(
+                getClass().getResource("/assets/ui/style.css")).toExternalForm());
         root.getStyleClass().add("game-screen");
         root.setCursor(Cursor.NONE);
         nextPiecePreview.setId("next-piece-container");
@@ -127,17 +134,23 @@ public class GameScreen {
      */
     private void cacheUIReferences() {
         scoreTextNode = (Text) root.lookup("#score-text");
-        scoreTextNode.setCache(true);
-        scoreTextNode.setCacheHint(CacheHint.SPEED);
-        
+        if (scoreTextNode != null) {
+            scoreTextNode.setCache(true);
+            scoreTextNode.setCacheHint(CacheHint.SPEED);
+        }
+
         levelTextNode = (Text) root.lookup("#level-text");
-        levelTextNode.setCache(true);
-        levelTextNode.setCacheHint(CacheHint.SPEED);
-        
+        if (levelTextNode != null) {
+            levelTextNode.setCache(true);
+            levelTextNode.setCacheHint(CacheHint.SPEED);
+        }
+
         progressArcNode = (Arc) root.lookup("#progress-arc");
         linesLabelNode = (Text) root.lookup("#lines-label");
-        linesLabelNode.setCache(true);
-        linesLabelNode.setCacheHint(CacheHint.SPEED);
+        if (linesLabelNode != null) {
+            linesLabelNode.setCache(true);
+            linesLabelNode.setCacheHint(CacheHint.SPEED);
+        }
     }
 
     /**
@@ -163,13 +176,23 @@ public class GameScreen {
      * Gerencia eventos como linhas eliminadas, pontuação, tempo e mudança de nível.
      */
     private void registerEvents() {
-        mediator.receiver(GameplayEvents.LINE_CLEARED, lines -> {
+        // Wrapper para verificar se a tela foi destruída
+        Consumer<Runnable> safeExecute = (action) -> {
+            if (!isDestroyed) {
+                action.run();
+            }
+        };
+
+        mediator.receiver(GameplayEvents.LINE_CLEARED, data -> safeExecute.accept(() -> {
+            int lines = (int) data;
             linesCleared += lines;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
-        });
+        }));
 
-        mediator.receiver(UiEvents.PIECE_TRAIL_EFFECT, data -> {
+        mediator.receiver(UiEvents.PIECE_TRAIL_EFFECT, data -> safeExecute.accept(() -> {
             int[] params = (int[]) data;
+            if (params.length < 4) return; // Validação de segurança
+
             int x = params[0] * CELL_SIZE;
             int y = params[1] * CELL_SIZE;
             int type = params[2];
@@ -186,24 +209,35 @@ public class GameScreen {
                     TetrominoColors.getColor(type),
                     distance
             );
-        });
+        }));
 
-        mediator.receiver(UiEvents.SCORE_UPDATE, this::updateScore);
-        mediator.receiver(UiEvents.TIME_UPDATE, this::updateTime);
-        mediator.receiver(UiEvents.LEVEL_UPDATE, level -> {
+        mediator.receiver(UiEvents.SCORE_UPDATE, score -> safeExecute.accept(() -> updateScore(score)));
+        mediator.receiver(UiEvents.TIME_UPDATE, time -> safeExecute.accept(() -> updateTime(time)));
+
+        mediator.receiver(UiEvents.LEVEL_UPDATE, level -> safeExecute.accept(() -> {
             currentLevel = level;
             updateLevelProgress(currentLevel, linesCleared, LINES_PER_LEVEL);
             Effects.applyLevelUpEffect(backgroundPane);
-        });
-        
-        mediator.receiver(UiEvents.PIECE_LANDED_SOFT, data ->
-            Effects.applySoftLanding(centerContainer, null));
-        
-        mediator.receiver(UiEvents.PIECE_LANDED_NORMAL, data ->
-            Effects.applyNormalLanding(centerContainer, null));
-        
-        mediator.receiver(UiEvents.PIECE_LANDED_HARD, data ->
-            Effects.applyHardLanding(centerContainer, null));
+
+            // Cache dos cálculos de posição
+            int boardCenterX = gameBoardScreen.getWidth() / 2;
+            int boardCenterY = gameBoardScreen.getHeight() / 2;
+            FloatingTextEffect.showLevelUpText(
+                    gameBoardScreen.getEffectsLayer(),
+                    boardCenterX,
+                    boardCenterY,
+                    level
+            );
+        }));
+
+        mediator.receiver(UiEvents.PIECE_LANDED_SOFT, data -> safeExecute.accept(() ->
+                Effects.applySoftLanding(centerContainer, null)));
+
+        mediator.receiver(UiEvents.PIECE_LANDED_NORMAL, data -> safeExecute.accept(() ->
+                Effects.applyNormalLanding(centerContainer, null)));
+
+        mediator.receiver(UiEvents.PIECE_LANDED_HARD, data -> safeExecute.accept(() ->
+                Effects.applyHardLanding(centerContainer, null)));
 
         setupWallPushAnimationListeners();
     }
@@ -236,6 +270,7 @@ public class GameScreen {
      */
     private void setupWallPushAnimationListeners() {
         mediator.receiver(UiEvents.PIECE_PUSHING_WALL_LEFT, unused -> {
+            if (isDestroyed) return;
             if (isPushingRightWall) {
                 isPushingRightWall = false;
             }
@@ -244,6 +279,7 @@ public class GameScreen {
         });
 
         mediator.receiver(UiEvents.PIECE_PUSHING_WALL_RIGHT, unused -> {
+            if (isDestroyed) return;
             if (isPushingLeftWall) {
                 isPushingLeftWall = false;
             }
@@ -252,6 +288,7 @@ public class GameScreen {
         });
 
         mediator.receiver(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, unused -> {
+            if (isDestroyed) return;
             isPushingLeftWall = false;
             updateBoardPosition();
         });
@@ -358,7 +395,7 @@ public class GameScreen {
         timeLabel.getStyleClass().add("info-text");
 
         timeDisplay = new TimeDisplay(150, 40);
-        timeDisplay.setColors(Color.web("#fcd34d"), Color.color(0, 0, 0, 0.6));
+        timeDisplay.setColors(YELLOW_COLOR, TRANSPARENT_BLACK);
 
         timeBox.getChildren().addAll(timeLabel, timeDisplay);
 
@@ -458,19 +495,51 @@ public class GameScreen {
     private Pane createBackground() {
         Pane bg = new Pane();
         bg.getStyleClass().add("game-bg");
-        bg.setPrefSize(screenWidth, screenHeight);
+        bg.setPrefSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Cria os quadrados
-        for (int i = 0; i < 5; i++) {
-            Effects.createSquareParticle(bg, screenWidth, screenHeight);
+        for (int i = 0; i < 6; i++) {
+            Effects.createSquareParticle(bg, SCREEN_WIDTH, SCREEN_HEIGHT);
         }
 
         // Cria as partículas
         for (int i = 0; i < 12; i++) {
-            Effects.createFireflyParticle(bg, screenWidth, screenHeight);
+            Effects.createFireflyParticle(bg, SCREEN_WIDTH, SCREEN_HEIGHT);
         }
 
         return bg;
+    }
+
+    /**
+     * Limpa recursos e listeners para evitar vazamentos de memória.
+     * Chame este método quando a tela não for mais necessária.
+     */
+    public void destroy() {
+        isDestroyed = true;
+        // Limpa componentes
+        if (nextPieceComponent != null) {
+            nextPieceComponent.destroy();
+        }
+
+        if (timeDisplay != null) {
+            timeDisplay.destroy();
+        }
+
+        // Limpa referências de UI
+        scoreTextNode = null;
+        levelTextNode = null;
+        progressArcNode = null;
+        linesLabelNode = null;
+
+        // Limpa efeitos de fundo
+        if (backgroundPane != null) {
+            Effects.clearAllEffects(backgroundPane);
+        }
+
+        // Limpa efeitos do tabuleiro
+        if (gameBoardScreen != null) {
+            FloatingTextEffect.clearAllEffects(gameBoardScreen.getEffectsLayer());
+        }
     }
 
     /**

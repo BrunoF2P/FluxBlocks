@@ -80,6 +80,26 @@ public class GameBoardScreen {
     }
 
     /**
+     * Limpa os recursos e listeners para evitar vazamentos de memória.
+     * Este método deve ser chamado quando a tela não for mais necessária.
+     */
+    public void destroy() {
+        mediator.removeReceiver(UiEvents.BOARD_UPDATE, this::updateBoard);
+
+        if (boardCanvas != null) {
+            boardCanvas.clearBoard();
+        }
+
+        if (effectsLayer != null) {
+            effectsLayer.getChildren().clear();
+        }
+
+        if (root != null) {
+            root.getStylesheets().clear();
+        }
+    }
+
+    /**
      * Retorna o nó raiz da tela do tabuleiro.
      * 
      * @return O componente Parent que contém toda a interface do tabuleiro
@@ -95,5 +115,21 @@ public class GameBoardScreen {
      */
     public Pane getEffectsLayer() {
         return effectsLayer;
+    }
+
+    /**
+     * Retorna a largura total do tabuleiro em pixels.
+     * @return Largura do tabuleiro
+     */
+    public int getWidth() {
+        return width * cellSize;
+    }
+
+    /**
+     * Retorna a altura total do tabuleiro em pixels.
+     * @return Altura do tabuleiro
+     */
+    public int getHeight() {
+        return height * cellSize;
     }
 }

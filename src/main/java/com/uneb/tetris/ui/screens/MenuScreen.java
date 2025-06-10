@@ -19,8 +19,8 @@ public class MenuScreen {
     private final StackPane root;
 
 
-    private final double screenWidth = 1368;
-    private final double screenHeight = 768;
+    private static final double SCREEN_WIDTH = 1368;
+    private static final double SCREEN_HEIGHT = 768;
 
     public MenuScreen(GameMediator mediator) {
         this.mediator = mediator;
@@ -37,7 +37,7 @@ public class MenuScreen {
     private void setupLayout() {
         content.setAlignment(Pos.CENTER);
         content.getStyleClass().addAll("background", "content-box");
-        content.setPrefSize(screenWidth, screenHeight);
+        content.setPrefSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
         root.getStyleClass().add("background");
         root.getChildren().add(content);
@@ -62,6 +62,25 @@ public class MenuScreen {
             button.setOnAction(action);
         }
         return button;
+    }
+
+    /**
+     * Limpa os recursos e remove listeners para evitar vazamentos de memória.
+     * Este método deve ser chamado quando a tela não for mais necessária.
+     */
+    public void destroy() {
+        // Remove todos os botões e seus event handlers
+        content.getChildren().forEach(node -> {
+            if (node instanceof Button) {
+                ((Button) node).setOnAction(null);
+            }
+        });
+
+        // Limpa os nós filhos
+        content.getChildren().clear();
+
+        // Remove referência ao stylesheet
+        root.getStylesheets().clear();
     }
 
     public Parent getNode() {

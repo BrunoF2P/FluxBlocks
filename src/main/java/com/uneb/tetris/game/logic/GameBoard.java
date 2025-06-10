@@ -4,6 +4,7 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.effects.Effects;
+import com.uneb.tetris.ui.effects.FloatingTextEffect;
 import javafx.animation.TranslateTransition;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -62,6 +63,7 @@ public class GameBoard {
     public int removeCompletedLines(Pane effectsLayer) {
         int linesRemoved = 0;
         boolean[] isLineComplete = new boolean[height];
+        java.util.List<Integer> clearedLines = new java.util.ArrayList<>();
 
         for (int y = height - 1; y >= 0; y--) {
             boolean complete = true;
@@ -74,22 +76,31 @@ public class GameBoard {
             if (complete) {
                 isLineComplete[y] = true;
                 linesRemoved++;
+                clearedLines.add(y - bufferHeight);
             }
         }
 
         if (linesRemoved > 0) {
+            // Aplica efeito visual em todas as linhas limpas
             for (int y = 0; y < height; y++) {
                 if (isLineComplete[y]) {
                     Effects.applyLineClearEffect(effectsLayer, y - bufferHeight, cellSize);
                 }
             }
 
+            // Exibe o texto flutuante apenas na linha central das linhas limpas
+            if (!clearedLines.isEmpty()) {
+                int middleIdx = clearedLines.size() / 2;
+                int lineIdx = clearedLines.get(middleIdx);
+                FloatingTextEffect.showLineClearText(effectsLayer, lineIdx, cellSize, linesRemoved);
+            }
+
+            // Screen shake
             StackPane boardRoot = (StackPane) effectsLayer.getParent();
             if (boardRoot != null) {
                 double intensity = Effects.SHAKE_INTENSITY_BASE +
-                                 (linesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
+                        (linesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
                 Duration shakeDuration = Duration.millis(100);
-
                 TranslateTransition shake = new TranslateTransition(shakeDuration, boardRoot);
                 shake.setByY(intensity);
                 shake.setCycleCount(2);
@@ -99,7 +110,6 @@ public class GameBoard {
             }
 
             removeCompleteLines(isLineComplete);
-
             notifyBoardUpdated();
             mediator.emit(GameplayEvents.LINE_CLEARED, linesRemoved);
         }

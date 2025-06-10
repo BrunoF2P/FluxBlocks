@@ -16,6 +16,8 @@ import java.util.WeakHashMap;
 public class EffectObjectPool {
     private static final int INITIAL_PARTICLE_POOL_SIZE = 50;
     private static final int INITIAL_TRAIL_POOL_SIZE = 10;
+    private static final int MAX_PARTICLE_POOL_SIZE = 100;
+    private static final int MAX_TRAIL_POOL_SIZE = 20;
     private static final Map<Color, GaussianBlur> blurEffects = new WeakHashMap<>();
 
     private static final Queue<Circle> particlePool = new ConcurrentLinkedQueue<>();
@@ -42,23 +44,27 @@ public class EffectObjectPool {
 
     public static Circle getParticle() {
         Circle particle = particlePool.poll();
-        if (particle == null) {
+        if (particle == null && activeParticles < MAX_PARTICLE_POOL_SIZE) {
             particle = new Circle();
             particle.setCache(true);
             particle.setCacheHint(javafx.scene.CacheHint.SPEED);
         }
-        activeParticles++;
+        if (particle != null) {
+            activeParticles++;
+        }
         return particle;
     }
 
     public static Rectangle getTrail() {
         Rectangle trail = trailPool.poll();
-        if (trail == null) {
+        if (trail == null && activeTrails < MAX_TRAIL_POOL_SIZE) {
             trail = new Rectangle();
             trail.setCache(true);
             trail.setCacheHint(javafx.scene.CacheHint.SPEED);
         }
-        activeTrails++;
+        if (trail != null) {
+            activeTrails++;
+        }
         return trail;
     }
 
@@ -98,11 +104,15 @@ public class EffectObjectPool {
         });
     }
 
+    public static void cleanupUnusedBlurEffects() {
+        blurEffects.clear();
+    }
+
     public static boolean canCreateParticle() {
-        return activeParticles >= INITIAL_PARTICLE_POOL_SIZE;
+        return activeParticles < MAX_PARTICLE_POOL_SIZE;
     }
 
     public static boolean canCreateTrail() {
-        return activeTrails < INITIAL_TRAIL_POOL_SIZE;
+        return activeTrails < MAX_TRAIL_POOL_SIZE;
     }
 }

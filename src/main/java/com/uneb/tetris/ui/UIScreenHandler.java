@@ -14,6 +14,7 @@ public class UIScreenHandler {
     private final StackPane currentScreen = new StackPane();
     private GameScreen gameScreen;
     private GameController gameManager;
+    private MenuScreen menuScreen;
 
     public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
         this.gameScene = gameScene;
@@ -40,13 +41,26 @@ public class UIScreenHandler {
     }
 
     private void showMenuScreen() {
+        // Limpa a tela atual
+        if (gameScreen != null) {
+            gameScreen.destroy();
+            gameScreen = null;
+        }
+
         currentScreen.getChildren().clear();
-        currentScreen.getChildren().add(new MenuScreen(mediator).getNode());
+        menuScreen = new MenuScreen(mediator);
+        currentScreen.getChildren().add(menuScreen.getNode());
         gameScene.clearUINodes();
         gameScene.addUINode(currentScreen);
     }
 
     private void showGameScreen() {
+        // Limpa a tela anterior
+        if (menuScreen != null) {
+            menuScreen.destroy();
+            menuScreen = null;
+        }
+
         gameScene.clearUINodes();
 
         gameScreen = new GameScreen(mediator);

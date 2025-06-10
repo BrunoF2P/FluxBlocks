@@ -4,6 +4,7 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.game.logic.GameState;
+import com.uneb.tetris.ui.effects.FloatingTextEffect;
 
 /**
  * Gerenciador de pontuação e níveis do jogo.
@@ -61,6 +62,7 @@ public class ScoreTracker {
         level = 1;
         linesCleared = 0;
 
+        FloatingTextEffect.updateLevel(level); // Passar evento depois
         mediator.emit(UiEvents.SCORE_UPDATE, score);
         mediator.emit(UiEvents.LEVEL_UPDATE, level);
     }
@@ -97,6 +99,7 @@ public class ScoreTracker {
         level++;
         double newSpeed = gameState.calculateLevelSpeed(level);
 
+        FloatingTextEffect.updateLevel(level);
         mediator.emit(GameplayEvents.UPDATE_SPEED, newSpeed);
         mediator.emit(UiEvents.LEVEL_UPDATE, level);
     }
