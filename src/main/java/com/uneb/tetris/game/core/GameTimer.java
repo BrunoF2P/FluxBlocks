@@ -159,23 +159,31 @@ public class GameTimer extends AnimationTimer {
      * @return String formatada no padrão "MM:SS:mmm"
      */
     private String formatElapsedTime(long millisElapsed) {
+        // Garante que os valores sejam positivos
+        millisElapsed = Math.max(0, millisElapsed);
+
         long milliseconds = millisElapsed % 1000;
         long totalSeconds = millisElapsed / 1000;
         long seconds = totalSeconds % 60;
         long minutes = totalSeconds / 60;
 
-        char[] result = new char[8];
+        // Limita os minutos a 99 para evitar overflow
+        minutes = Math.min(99, minutes);
 
+        char[] result = new char[8];
         final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
+        // Formata minutos (00-99)
         result[0] = DIGITS[(int)((minutes / 10) % 10)];
         result[1] = DIGITS[(int)(minutes % 10)];
         result[2] = ':';
 
+        // Formata segundos (00-59)
         result[3] = DIGITS[(int)((seconds / 10) % 10)];
         result[4] = DIGITS[(int)(seconds % 10)];
         result[5] = ':';
 
+        // Formata centésimos de segundo (00-99)
         result[6] = DIGITS[(int)((milliseconds / 100) % 10)];
         result[7] = DIGITS[(int)((milliseconds / 10) % 10)];
 
