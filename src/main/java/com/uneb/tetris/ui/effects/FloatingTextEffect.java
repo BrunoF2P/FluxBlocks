@@ -15,7 +15,7 @@ import javafx.util.Duration;
 public class FloatingTextEffect {
     private static final Duration FLOAT_DURATION = Duration.millis(1500);
 
-    private static final Font SCORE_FONT = Font.loadFont(
+    private static final Font LEVEL_UP_FONT = Font.loadFont(
             FloatingTextEffect.class.getResourceAsStream("/assets/ui/fonts/thatsoundsgreat.ttf"), 24);
     private static final Font LINE_CLEAR_FONT = Font.loadFont(
             FloatingTextEffect.class.getResourceAsStream("/assets/ui/fonts/thatsoundsgreat.ttf"), 32);
@@ -23,10 +23,10 @@ public class FloatingTextEffect {
     private static final Color WHITE = Color.WHITE;
     private static final Color YELLOW = Color.web("#fcd34d");
 
-    private static final ScoreCalculator scoreCalculator = new ScoreCalculator(); // Passar evento depois
+    private static int currentLevel = 1;
 
     public static void updateLevel(int level) {
-        scoreCalculator.updateLevel(level);
+        currentLevel = level;
     }
 
     public static void showLineClearText(Pane effectsLayer, int clearedLine, int cellSize, int linesCleared) {
@@ -40,7 +40,7 @@ public class FloatingTextEffect {
 
         if (text.isEmpty()) return;
 
-        int score = scoreCalculator.calculateLinesClearedScore(linesCleared);
+        int score = ScoreCalculator.calculateLinesClearedScore(linesCleared, currentLevel);
 
         double lineY = clearedLine * cellSize;
         double centerX = effectsLayer.getWidth() / 2;
@@ -49,7 +49,7 @@ public class FloatingTextEffect {
         clearText.setStroke(Color.BLACK);
         clearText.setStrokeWidth(1.5);
 
-        Text scoreText = createCenteredText("+" + score, SCORE_FONT, YELLOW, centerX, lineY + cellSize / 2 + 30);
+        Text scoreText = createCenteredText("+" + score, LEVEL_UP_FONT, YELLOW, centerX, lineY + cellSize / 2 + 30);
         scoreText.setStroke(Color.BLACK);
         scoreText.setStrokeWidth(1.5);
 

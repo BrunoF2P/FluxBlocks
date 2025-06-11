@@ -5,6 +5,7 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.InputEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameState;
 import com.uneb.tetris.game.logic.GameBoard;
 import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.collision.CollisionDetector;
@@ -32,14 +33,14 @@ public class PieceSystem {
     /** Referência ao tabuleiro do jogo */
     private final GameBoard board;
 
+    /** Referência ao estado do jogo */
+    private final GameState gameState;
+
     /** Peça atual em jogo */
     private Tetromino currentPiece;
 
     /** Próxima peça a entrar em jogo */
     private Tetromino nextPiece;
-
-    /** Nível atual do jogo */
-    private int currentLevel = 1;
 
     private final CollisionDetector collisionDetector;
     private final LockDelayHandler lockDelayHandler;
@@ -47,17 +48,18 @@ public class PieceSystem {
     private final PieceRotationHandler rotationHandler;
     private final ShadowPieceCalculator shadowCalculator;
     private final PieceRenderer renderer;
-    private final ScoreCalculator scoreCalculator;
 
     /**
      * Cria um gerenciador de peças.
      *
      * @param mediator O mediador para comunicação entre componentes do jogo
      * @param board O tabuleiro do jogo onde as peças serão posicionadas
+     * @param gameState O estado do jogo, contendo informações como nível atual
      */
-    public PieceSystem(GameMediator mediator, GameBoard board) {
+    public PieceSystem(GameMediator mediator, GameBoard board, GameState gameState) {
         this.mediator = mediator;
         this.board = board;
+        this.gameState = gameState;
 
         this.collisionDetector = new CollisionDetector(board);
         this.lockDelayHandler = new LockDelayHandler();
@@ -65,7 +67,6 @@ public class PieceSystem {
         this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayHandler);
         this.shadowCalculator = new ShadowPieceCalculator(collisionDetector);
         this.renderer = new PieceRenderer(board, shadowCalculator);
-        this.scoreCalculator = new ScoreCalculator();
 
         this.renderer.setMediator(mediator);
 
@@ -108,8 +109,7 @@ public class PieceSystem {
      * @param level O novo nível do jogo
      */
     private void updateLevel(int level) {
-        this.currentLevel = level;
-        scoreCalculator.updateLevel(level);
+        gameState.setCurrentLevel(level);
     }
 
     /**
@@ -179,22 +179,21 @@ public class PieceSystem {
             mediator.emit(UiEvents.PIECE_LANDED_NORMAL, null);
         }
 
-
         if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
-            int softDropScore = scoreCalculator.calculateSoftDropScore();
+            int softDropScore = ScoreCalculator.calculateSoftDropScore(gameState.getCurrentLevel());
             mediator.emit(GameplayEvents.SCORE_UPDATED, softDropScore);
         }
 
-        // Usa a camada de efeitos específica
         GameBoardScreen boardScreen = mediator.getGameBoardScreen();
         int linesCleared = board.removeCompletedLines(boardScreen.getEffectsLayer());
         if (linesCleared > 0) {
-            int linesClearedScore = scoreCalculator.calculateLinesClearedScore(linesCleared);
+            int linesClearedScore = ScoreCalculator.calculateLinesClearedScore(linesCleared, gameState.getCurrentLevel());
             mediator.emit(GameplayEvents.SCORE_UPDATED, linesClearedScore);
-            scoreCalculator.updateTotalClearedLines(linesCleared);
+            mediator.emit(GameplayEvents.LINE_CLEARED, linesCleared);
+
         }
 
-        // Resetar estado e gerar nova peça
+
         lockDelayHandler.reset();
         spawnNewPiece();
     }
@@ -242,7 +241,7 @@ public class PieceSystem {
         updateBoardWithCurrentPiece();
 
         if (distance > 0) {
-            int hardDropScore = scoreCalculator.calculateHardDropScore(distance);
+            int hardDropScore = ScoreCalculator.calculateHardDropScore(distance);
             mediator.emit(GameplayEvents.SCORE_UPDATED, hardDropScore);
         }
 
@@ -283,6 +282,7 @@ public class PieceSystem {
      * @return O número total de linhas eliminadas
      */
     public int getLinesClearedTotal() {
-        return scoreCalculator.getLinesClearedTotal();
+        return gameState.getLinesCleared();
     }
+
 }

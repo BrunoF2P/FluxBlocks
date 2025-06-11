@@ -8,115 +8,65 @@ import com.uneb.tetris.ui.effects.FloatingTextEffect;
 import javafx.application.Platform;
 
 /**
- * Gerenciador de pontuação e níveis do jogo.
- * Esta classe é responsável por:
- * <ul>
- *   <li>Controlar a pontuação do jogador</li>
- *   <li>Gerenciar o sistema de níveis</li>
- *   <li>Controlar a progressão de dificuldade</li>
- *   <li>Emitir eventos relacionados a pontuação e níveis</li>
- * </ul>
+ * Gerencia eventos relacionados à pontuação e níveis.
+ * Delega o armazenamento do estado ao GameState.
  */
 public class ScoreTracker {
-    /** Mediador para comunicação com outros componentes do jogo */
     private final GameMediator mediator;
-    
-    /** Estado atual do jogo */
     private final GameState gameState;
 
-    /** Pontuação atual do jogador */
-    private int score = 0;
-    
-    /** Nível atual do jogo */
-    private int level = 1;
-    
-    /** Contador de linhas completadas no nível atual */
-    private int linesCleared = 0;
-
-    /**
-     * Cria um novo gerenciador de pontuação.
-     *
-     * @param mediator O mediador para comunicação entre componentes
-     * @param gameState O estado atual do jogo
-     */
     public ScoreTracker(GameMediator mediator, GameState gameState) {
         this.mediator = mediator;
         this.gameState = gameState;
-
         registerEvents();
     }
 
-    /**
-     * Registra os eventos necessários para o funcionamento do sistema de pontuação.
-     */
     private void registerEvents() {
-        mediator.receiver(GameplayEvents.SCORE_UPDATED, this::updateScore);
+        mediator.receiver(GameplayEvents.SCORE_UPDATED, this::handleScoreUpdate);
         mediator.receiver(GameplayEvents.LINE_CLEARED, this::handleLinesCleared);
     }
 
-    /**
-     * Reinicia todos os contadores do sistema de pontuação.
-     * Emite eventos para atualizar a interface do usuário.
-     */
     public void reset() {
-        score = 0;
-        level = 1;
-        linesCleared = 0;
-
-        Platform.runLater(() -> {
-            FloatingTextEffect.updateLevel(level);
-            mediator.emit(UiEvents.SCORE_UPDATE, score);
-            mediator.emit(UiEvents.LEVEL_UPDATE, level);
-        });
+        gameState.reset();
+        updateUI();
     }
 
-    /**
-     * Atualiza a pontuação atual adicionando novos pontos.
-     *
-     * @param points Quantidade de pontos a ser adicionada
-     */
-    public void updateScore(int points) {
-        score += points;
-        Platform.runLater(() -> {
-            mediator.emit(UiEvents.SCORE_UPDATE, score);
-        });
+    private void handleScoreUpdate(int points) {
+        gameState.addScore(points);
+        Platform.runLater(() ->
+            mediator.emit(UiEvents.SCORE_UPDATE, gameState.getScore())
+        );
     }
 
-    /**
-     * Processa linhas completadas e verifica se houve avanço de nível.
-     *
-     * @param lines Número de linhas completadas
-     */
     private void handleLinesCleared(int lines) {
-        linesCleared += lines;
-
-        while (linesCleared >= GameState.LINES_PER_LEVEL) {
-            linesCleared -= GameState.LINES_PER_LEVEL;
-            levelUp();
+        if (gameState.processLinesCleared(lines)) {
+            handleLevelUp();
         }
     }
 
-    /**
-     * Incrementa o nível do jogo e atualiza a velocidade de queda das peças.
-     * Emite eventos para atualizar a interface e a velocidade do jogo.
-     */
-    private void levelUp() {
-        level++;
-        double newSpeed = gameState.calculateLevelSpeed(level);
+    private void handleLevelUp() {
+        int newLevel = gameState.getCurrentLevel();
+        double newSpeed = gameState.calculateCurrentSpeed();
 
         Platform.runLater(() -> {
-            FloatingTextEffect.updateLevel(level);
-            mediator.emit(UiEvents.LEVEL_UPDATE, level);
+            FloatingTextEffect.updateLevel(newLevel);
+            mediator.emit(UiEvents.LEVEL_UPDATE, newLevel);
         });
         mediator.emit(GameplayEvents.UPDATE_SPEED, newSpeed);
     }
 
     /**
-     * Retorna a pontuação atual do jogador.
-     *
-     * @return A pontuação atual
+     * Retorna a pontuação atual do jogo.
      */
     public int getScore() {
-        return score;
+        return gameState.getScore();
+    }
+
+    private void updateUI() {
+        Platform.runLater(() -> {
+            FloatingTextEffect.updateLevel(gameState.getCurrentLevel());
+            mediator.emit(UiEvents.SCORE_UPDATE, gameState.getScore());
+            mediator.emit(UiEvents.LEVEL_UPDATE, gameState.getCurrentLevel());
+        });
     }
 }

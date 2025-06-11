@@ -50,9 +50,9 @@ public class GameController {
      */
     public GameController(GameMediator mediator) {
         this.mediator = mediator;
-        this.gameBoard = new GameBoard(mediator);
-        this.pieceManager = new PieceSystem(mediator, gameBoard);
         this.gameState = new GameState();
+        this.gameBoard = new GameBoard(mediator);
+        this.pieceManager = new PieceSystem(mediator, gameBoard, gameState);
         this.scoreTracker = new ScoreTracker(mediator, gameState);
         this.gameTimer = new GameTimer(mediator, gameState);
         this.inputHandler = new InputHandler(mediator, gameState);
@@ -115,5 +115,13 @@ public class GameController {
         gameState.setGameOver(true);
         gameTimer.stopTimer();
         mediator.emit(UiEvents.GAME_OVER, scoreTracker.getScore());
+    }
+
+    /**
+     * Retorna o estado atual do jogo.
+     * @return O estado atual do jogo
+     */
+    public GameState getGameState() {
+        return gameState;
     }
 }

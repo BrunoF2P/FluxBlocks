@@ -2,6 +2,7 @@ package com.uneb.tetris.ui.screens;
 
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.components.BoardCanvas;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -21,10 +22,6 @@ public class GameBoardScreen {
     private final StackPane root;
     private final Pane effectsLayer;  // Camada para efeitos visuais
 
-    private final int width = 10;
-    private final int height = 20;
-    private final int cellSize = 35;
-
     /**
      * Construtor da tela do tabuleiro do jogo.
      * 
@@ -32,19 +29,19 @@ public class GameBoardScreen {
      */
     public GameBoardScreen(GameMediator mediator) {
         this.mediator = mediator;
-        this.boardCanvas = new BoardCanvas(width, height, cellSize);
+        this.boardCanvas = new BoardCanvas(GameConfig.BOARD_WIDTH, GameConfig.BOARD_HEIGHT, GameConfig.CELL_SIZE);
         this.effectsLayer = new Pane();
         this.root = new StackPane(boardCanvas, effectsLayer);
 
         effectsLayer.setMouseTransparent(true);
-        effectsLayer.setPrefSize(width * cellSize, height * cellSize);
-        effectsLayer.setMaxSize(width * cellSize, height * cellSize);
+        effectsLayer.setPrefSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
+        effectsLayer.setMaxSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
 
         root.getStyleClass().add("game-board");
         root.setAlignment(Pos.CENTER);
 
-        double boardWidth = width * cellSize;
-        double boardHeight = height * cellSize;
+        double boardWidth = GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
+        double boardHeight = GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE;
         root.setPrefSize(boardWidth, boardHeight);
         root.setMaxSize(boardWidth, boardHeight);
 
@@ -122,7 +119,7 @@ public class GameBoardScreen {
      * @return Largura do tabuleiro
      */
     public int getWidth() {
-        return width * cellSize;
+        return GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
     }
 
     /**
@@ -130,6 +127,6 @@ public class GameBoardScreen {
      * @return Altura do tabuleiro
      */
     public int getHeight() {
-        return height * cellSize;
+        return GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE;
     }
 }

@@ -2,6 +2,7 @@ package com.uneb.tetris.ui.screens;
 
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.UIFactory;
 import com.uneb.tetris.ui.components.Button;
 import javafx.geometry.Pos;
@@ -18,10 +19,6 @@ public class MenuScreen {
     private final VBox content;
     private final StackPane root;
 
-
-    private static final double SCREEN_WIDTH = 1368;
-    private static final double SCREEN_HEIGHT = 768;
-
     public MenuScreen(GameMediator mediator) {
         this.mediator = mediator;
         this.content = new VBox();
@@ -37,7 +34,7 @@ public class MenuScreen {
     private void setupLayout() {
         content.setAlignment(Pos.CENTER);
         content.getStyleClass().addAll("background", "content-box");
-        content.setPrefSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        content.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
 
         root.getStyleClass().add("background");
         root.getChildren().add(content);

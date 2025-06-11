@@ -4,6 +4,7 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.game.logic.GameState;
+import com.uneb.tetris.configuration.GameConfig;
 import javafx.animation.AnimationTimer;
 
 import java.time.LocalTime;
@@ -38,10 +39,10 @@ public class GameTimer extends AnimationTimer {
     private long lastClockUpdate = 0;
 
     /** Velocidade atual do jogo em nanosegundos */
-    private long gameSpeed = (long)(GameState.INITIAL_SPEED * 1_000_000);
+    private long gameSpeed = (long)(GameConfig.INITIAL_GAME_SPEED * 1_000_000);
 
-    /** Intervalo do clock em nanosegundos (16.67ms = ~60fps) */
-    private static final long CLOCK_INTERVAL = (long)(16.67 * 1_000_000);
+    /** Intervalo do clock em nanosegundos */
+    private static final long CLOCK_INTERVAL = (long)(GameConfig.GAME_TICK_INTERVAL * 1_000_000);
 
     /**
      * Cria um novo controlador de tempo do jogo.

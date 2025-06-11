@@ -1,14 +1,11 @@
 package com.uneb.tetris.game.logic;
 
+import com.uneb.tetris.configuration.GameConfig;
+
 /**
  * Mantém e gerencia o estado atual do jogo Tetris.
- * 
- * <p>Esta classe é responsável por:</p>
- * <ul>
- *   <li>Controlar os estados de pausa e fim de jogo</li>
- *   <li>Definir constantes fundamentais do jogo</li>
- *   <li>Calcular velocidades baseadas no nível</li>
- * </ul>
+ * Esta classe é a única fonte de verdade para todo o estado do jogo,
+ * seguindo o padrão Single Source of Truth.
  */
 public class GameState {
     /** Estado de pausa do jogo */
@@ -17,74 +14,96 @@ public class GameState {
     /** Indica se o jogo terminou */
     private boolean isGameOver = false;
 
-    /** Número de linhas necessárias para avançar de nível */
-    public static final int LINES_PER_LEVEL = 10;
-    
-    /** Velocidade inicial de queda das peças em milissegundos */
-    public static final double INITIAL_SPEED = 1000.0;
+    /** Nível atual do jogo */
+    private int currentLevel = 1;
+
+    /** Número total de linhas eliminadas */
+    private int totalLinesCleared = 0;
+
+    /** Pontuação atual */
+    private int score = 0;
+
+    /** Tempo de jogo atual em formato "MM:SS:mmm" */
+    private String gameTime = "00:00:000";
+
+    /** Número de linhas eliminadas no nível atual */
+    private int linesInCurrentLevel = 0;
 
     /**
      * Reinicia o estado do jogo para seus valores padrão.
-     * Remove estados de pausa e game over.
      */
     public void reset() {
         isPaused = false;
         isGameOver = false;
+        currentLevel = 1;
+        totalLinesCleared = 0;
+        linesInCurrentLevel = 0;
+        score = 0;
+        gameTime = "00:00:000";
     }
 
     /**
-     * Verifica se o jogo está pausado.
-     *
-     * @return true se o jogo estiver pausado, false caso contrário
+     * Adiciona pontos à pontuação.
      */
-    public boolean isPaused() {
-        return isPaused;
+    public void addScore(int points) {
+        score += points;
     }
 
     /**
-     * Verifica se o jogo terminou.
-     *
-     * @return true se for game over, false caso contrário
+     * Processa linhas completadas e verifica progressão de nível.
+     * @return true se houve avanço de nível
      */
-    public boolean isGameOver() {
-        return isGameOver;
+    public boolean processLinesCleared(int lines) {
+        if (lines <= 0) return false;
+
+        int oldLevel = currentLevel;
+        linesInCurrentLevel += lines;
+        totalLinesCleared += lines; // Única atualização do totalLinesCleared
+
+        while (linesInCurrentLevel >= GameConfig.LINES_PER_LEVEL) {
+            linesInCurrentLevel -= GameConfig.LINES_PER_LEVEL;
+            currentLevel++;
+        }
+
+        return currentLevel > oldLevel;
     }
 
+
+
     /**
-     * Alterna o estado de pausa do jogo.
-     * Se estiver pausado, despausa, e vice-versa.
+     * Atualiza o tempo de jogo.
      */
+    public void updateGameTime(String newTime) {
+        this.gameTime = newTime;
+    }
+
     public void togglePause() {
         isPaused = !isPaused;
     }
 
-    /**
-     * Define o estado de game over do jogo.
-     *
-     * @param gameOver true para indicar game over, false para continuar o jogo
-     */
-    public void setGameOver(boolean gameOver) {
-        isGameOver = gameOver;
+    public void setCurrentLevel(int level) {
+        this.currentLevel = level;
     }
+
+    public boolean isPaused() { return isPaused; }
+    public boolean isGameOver() { return isGameOver; }
+    public int getCurrentLevel() { return currentLevel; }
+    public int getScore() { return score; }
+    public String getGameTime() { return gameTime; }
+    public int getLinesInCurrentLevel() { return linesInCurrentLevel; }
+    public int getLinesCleared() { return totalLinesCleared; }
+
+
+    // Setters
+    public void setPaused(boolean paused) { this.isPaused = paused; }
+    public void setGameOver(boolean gameOver) { this.isGameOver = gameOver; }
 
     /**
      * Calcula a velocidade de queda das peças com base no nível atual.
-     * A velocidade aumenta exponencialmente com o nível.
-     * 
-     * <p>A fórmula utilizada é: velocidade = velocidade_inicial * (0.8 ^ (nível - 1))</p>
-     * 
-     * <p>Exemplos de velocidades:</p>
-     * <ul>
-     *   <li>Nível 1: 1000ms</li>
-     *   <li>Nível 2: 800ms</li>
-     *   <li>Nível 3: 640ms</li>
-     *   <li>E assim por diante...</li>
-     * </ul>
-     *
-     * @param currentLevel O nível atual do jogo
-     * @return A velocidade calculada em milissegundos
      */
-    public double calculateLevelSpeed(int currentLevel) {
-        return INITIAL_SPEED * Math.pow(0.8, currentLevel - 1);
+    public double calculateCurrentSpeed() {
+        return GameConfig.INITIAL_GAME_SPEED * Math.pow(0.8, currentLevel - 1);
     }
+
+
 }

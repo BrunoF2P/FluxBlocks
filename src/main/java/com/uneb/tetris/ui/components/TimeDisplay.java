@@ -1,5 +1,6 @@
 package com.uneb.tetris.ui.components;
 
+import com.uneb.tetris.configuration.GameConfig;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
@@ -28,6 +29,8 @@ public class TimeDisplay extends StackPane {
     
     private final Text textMeasurer = new Text();
     
+    private final double defaultScale = GameConfig.UI_SCALE;
+
     /**
      * Cria um novo componente de exibição de tempo otimizado.
      * 
@@ -36,12 +39,9 @@ public class TimeDisplay extends StackPane {
      */
     public TimeDisplay(double width, double height) {
         super();
-        setPrefSize(width, height);
-        
-        canvas = new Canvas(width, height);
-        
-        timeFont = Font.loadFont(getClass().getResourceAsStream("/assets/ui/fonts/thatsoundsgreat.ttf"), 24);
-        
+        setPrefSize(width * defaultScale, height * defaultScale);
+        canvas = new Canvas(width * defaultScale, height * defaultScale);
+        timeFont = Font.loadFont(getClass().getResourceAsStream("/assets/ui/fonts/thatsoundsgreat.ttf"), 24 * defaultScale);
         gc = canvas.getGraphicsContext2D();
         gc.setFont(timeFont);
         gc.setTextAlign(TextAlignment.CENTER);
@@ -49,8 +49,7 @@ public class TimeDisplay extends StackPane {
         textMeasurer.setFont(timeFont);
         textMeasurer.setText(currentTime);
         
-        calculateTextPositions(width, height);
-        
+        calculateTextPositions(width * defaultScale, height * defaultScale);
         renderTime();
         
         getChildren().add(canvas);

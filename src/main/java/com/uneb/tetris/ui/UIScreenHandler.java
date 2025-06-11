@@ -63,7 +63,11 @@ public class UIScreenHandler {
 
         gameScene.clearUINodes();
 
-        gameScreen = new GameScreen(mediator);
+        if (gameManager == null) {
+            gameManager = new GameController(mediator);
+        }
+
+        gameScreen = new GameScreen(mediator, gameManager.getGameState());
         gameScreen.initialize();
 
         currentScreen.getChildren().setAll(gameScreen.getNode());

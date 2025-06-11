@@ -6,6 +6,7 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.InputEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.game.logic.GameState;
 import javafx.scene.input.KeyCode;
 
@@ -32,18 +33,6 @@ public class InputHandler {
 
     /** Acompanha a última tecla de direção horizontal pressionada para lidar com entradas sobrepostas */
     private KeyCode lastHorizontalKeyPressed = null;
-
-    /** Atraso inicial em segundos antes do início das ações repetidas */
-    private static final double INITIAL_DELAY = 0.2; // 200ms
-
-    /** Atraso entre movimentos horizontais repetidos em segundos */
-    private static final double HORIZONTAL_REPEAT_DELAY = 0.1; // 100ms
-
-    /** Atraso entre movimentos de queda suave em segundos */
-    private static final double SOFT_DROP_DELAY = 0.03; // 30ms
-
-    /** Atraso inicial para queda suave em segundos */
-    private static final double SOFT_DROP_INITIAL_DELAY = 0.05; // 50ms
 
     /**
      * Cria um novo InputHandler com o mediador e estado do jogo especificados.
@@ -92,6 +81,9 @@ public class InputHandler {
             protected void onActionBegin() {
                 leftKeyPressed = true;
                 lastHorizontalKeyPressed = KeyCode.LEFT;
+                mediator.emit(GameplayEvents.MOVE_LEFT, null);
+                lastMoveTime = FXGL.getGameTimer().getNow();
+                isFirstMove = false;
             }
 
             @Override
@@ -100,12 +92,11 @@ public class InputHandler {
                 if (lastHorizontalKeyPressed != KeyCode.LEFT) return;
 
                 double now = FXGL.getGameTimer().getNow();
-                double delay = isFirstMove ? INITIAL_DELAY : HORIZONTAL_REPEAT_DELAY;
+                double delay = isFirstMove ? GameConfig.MOVE_INITIAL_DELAY / 1000.0 : GameConfig.MOVE_REPEAT_DELAY / 1000.0;
 
-                if (isFirstMove || (now - lastMoveTime >= delay)) {
+                if (now - lastMoveTime >= delay) {
                     mediator.emit(GameplayEvents.MOVE_LEFT, null);
                     lastMoveTime = now;
-                    isFirstMove = false;
                 }
             }
 
@@ -136,6 +127,9 @@ public class InputHandler {
             protected void onActionBegin() {
                 rightKeyPressed = true;
                 lastHorizontalKeyPressed = KeyCode.RIGHT;
+                mediator.emit(GameplayEvents.MOVE_RIGHT, null);
+                lastMoveTime = FXGL.getGameTimer().getNow();
+                isFirstMove = false;
             }
 
             @Override
@@ -144,12 +138,11 @@ public class InputHandler {
                 if (lastHorizontalKeyPressed != KeyCode.RIGHT) return;
 
                 double now = FXGL.getGameTimer().getNow();
-                double delay = isFirstMove ? INITIAL_DELAY : HORIZONTAL_REPEAT_DELAY;
+                double delay = isFirstMove ? GameConfig.MOVE_INITIAL_DELAY / 1000.0 : GameConfig.MOVE_REPEAT_DELAY / 1000.0;
 
-                if (isFirstMove || (now - lastMoveTime >= delay)) {
+                if (now - lastMoveTime >= delay) {
                     mediator.emit(GameplayEvents.MOVE_RIGHT, null);
                     lastMoveTime = now;
-                    isFirstMove = false;
                 }
             }
 
@@ -190,12 +183,11 @@ public class InputHandler {
                 if (isGameNotPlayable()) return;
 
                 double now = FXGL.getGameTimer().getNow();
-                double delay = isFirstMove ? SOFT_DROP_INITIAL_DELAY : SOFT_DROP_DELAY;
+                double delay = isFirstMove ? GameConfig.SOFT_DROP_INITIAL_DELAY / 1000.0 : GameConfig.SOFT_DROP_DELAY / 1000.0;
 
                 if (now - lastMoveTime >= delay) {
                     mediator.emit(GameplayEvents.MOVE_DOWN, null);
                     lastMoveTime = now;
-                    isFirstMove = false;
                 }
             }
 

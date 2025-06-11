@@ -2,15 +2,13 @@ package com.uneb.tetris.piece.timing;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.uneb.tetris.piece.entities.Tetromino;
+import com.uneb.tetris.configuration.GameConfig;
 
 /**
  * Gerencia o sistema de lock delay, controlando quando uma peça
  * deve ser fixada no tabuleiro após atingir uma posição de descanso.
  */
 public class LockDelayHandler {
-    /** Tempo em milissegundos antes da peça ser fixada após pousar */
-    private static final double LOCK_DELAY = 500.0;
-
     /** Timer para controlar o lock delay */
     private double lockTimer = 0;
 
@@ -19,6 +17,9 @@ public class LockDelayHandler {
 
     /** Última posição Y onde a peça estava em posição de descanso */
     private int lastLandedY = -1;
+
+    /** Contador de resets do lock delay para a peça atual */
+    private int lockResets = 0;
 
     /**
      * Inicia o temporizador de lock delay.
@@ -33,22 +34,29 @@ public class LockDelayHandler {
 
     /**
      * Reinicia o temporizador de lock delay quando a peça é movida.
+     * Limita o número de resets possíveis para evitar infinite spin.
      *
      * @param piece A peça atual
      * @param isAtRest Se a peça está em posição de descanso
+     * @return false se o número máximo de resets foi atingido
      */
-    public void resetLockDelay(Tetromino piece, boolean isAtRest) {
+    public boolean resetLockDelay(Tetromino piece, boolean isAtRest) {
         if (!isAtRest) {
             lockPending = false;
-            return;
+            return true;
         }
 
         int currentY = piece.getY();
 
         if (currentY != lastLandedY) {
+            if (lockResets >= GameConfig.MAX_LOCK_RESETS) {
+                return false;
+            }
             lockTimer = FXGL.getGameTimer().getNow();
             lastLandedY = currentY;
+            lockResets++;
         }
+        return true;
     }
 
     /**
@@ -60,7 +68,7 @@ public class LockDelayHandler {
         if (!lockPending) return false;
 
         double currentTime = FXGL.getGameTimer().getNow();
-        return (currentTime - lockTimer >= LOCK_DELAY / 1000.0);
+        return (currentTime - lockTimer >= GameConfig.LOCK_DELAY / 1000.0);
     }
 
     /**
@@ -78,5 +86,6 @@ public class LockDelayHandler {
     public void reset() {
         lockPending = false;
         lastLandedY = -1;
+        lockResets = 0;
     }
 }
