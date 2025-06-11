@@ -106,8 +106,6 @@ public class GameScreen {
         this.root = new StackPane();
 
         // Configuração de estilo otimizada
-        this.root.getStylesheets().add(Objects.requireNonNull(
-                getClass().getResource("/assets/ui/style.css")).toExternalForm());
         root.getStyleClass().add("game-screen");
         root.setCursor(Cursor.NONE);
         nextPiecePreview.setId("next-piece-container");

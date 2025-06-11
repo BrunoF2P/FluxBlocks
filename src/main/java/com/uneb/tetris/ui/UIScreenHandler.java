@@ -6,6 +6,7 @@ import com.uneb.tetris.game.core.GameController;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.screens.GameScreen;
 import com.uneb.tetris.ui.screens.MenuScreen;
+import com.uneb.tetris.ui.screens.OptionScreen;
 import javafx.scene.layout.StackPane;
 
 public class UIScreenHandler {
@@ -15,6 +16,7 @@ public class UIScreenHandler {
     private GameScreen gameScreen;
     private GameController gameManager;
     private MenuScreen menuScreen;
+    private OptionScreen optionScreen;
 
     public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
         this.gameScene = gameScene;
@@ -33,21 +35,16 @@ public class UIScreenHandler {
             }
             showGameScreen();
         });
+        mediator.receiver(UiEvents.OPTIONS, unused -> showOptionScreen());
     }
-
 
     private void startUi() {
         showMenuScreen();
     }
 
     private void showMenuScreen() {
-        // Limpa a tela atual
-        if (gameScreen != null) {
-            gameScreen.destroy();
-            gameScreen = null;
-        }
+        clearCurrentScreen();
 
-        currentScreen.getChildren().clear();
         menuScreen = new MenuScreen(mediator);
         currentScreen.getChildren().add(menuScreen.getNode());
         gameScene.clearUINodes();
@@ -55,11 +52,7 @@ public class UIScreenHandler {
     }
 
     private void showGameScreen() {
-        // Limpa a tela anterior
-        if (menuScreen != null) {
-            menuScreen.destroy();
-            menuScreen = null;
-        }
+        clearCurrentScreen();
 
         gameScene.clearUINodes();
 
@@ -75,4 +68,31 @@ public class UIScreenHandler {
         mediator.emit(UiEvents.GAME_STARTED, null);
     }
 
+    private void showOptionScreen() {
+        clearCurrentScreen();
+
+        optionScreen = new OptionScreen(mediator);
+        currentScreen.getChildren().add(optionScreen.getNode());
+        gameScene.clearUINodes();
+        gameScene.addUINode(currentScreen);
+    }
+
+    private void clearCurrentScreen() {
+        if (gameScreen != null) {
+            gameScreen.destroy();
+            gameScreen = null;
+        }
+
+        if (menuScreen != null) {
+            menuScreen.destroy();
+            menuScreen = null;
+        }
+
+        if (optionScreen != null) {
+            optionScreen.destroy();
+            optionScreen = null;
+        }
+
+        currentScreen.getChildren().clear();
+    }
 }

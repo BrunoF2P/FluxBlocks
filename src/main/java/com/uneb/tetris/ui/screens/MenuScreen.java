@@ -24,7 +24,6 @@ public class MenuScreen {
         this.content = new VBox();
         this.root = new StackPane();
 
-        root.getStylesheets().add((Objects.requireNonNull(getClass().getResource("/assets/ui/style.css"))).toExternalForm());
         root.setCursor(Cursor.NONE);
 
         setupLayout();

@@ -1,7 +1,7 @@
 /* === GLOBAL === */
 @font-face {
     font-family: 'That Sounds Great';
-    src: url('fonts/thatsoundsgreat.ttf');
+    src: url('../fonts/thatsoundsgreat.ttf');
 }
 
 .root {
@@ -9,7 +9,7 @@
 }
 
 .background {
-    -fx-background-image: url("images/background.png");
+    -fx-background-image: url("../images/background.png");
     -fx-background-size: cover;
     -fx-background-position: center center;
     -fx-background-repeat: no-repeat;

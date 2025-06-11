@@ -45,8 +45,6 @@ public class GameBoardScreen {
         root.setPrefSize(boardWidth, boardHeight);
         root.setMaxSize(boardWidth, boardHeight);
 
-        root.getStylesheets().add((Objects.requireNonNull(getClass().getResource("/assets/ui/style.css"))).toExternalForm());
-
         registerEvents();
     }
 
