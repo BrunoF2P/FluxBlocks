@@ -4,6 +4,7 @@ import com.uneb.tetris.piece.scoring.ScoreCalculator;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -82,25 +83,27 @@ public class FloatingTextEffect {
     }
 
     private static void createFloatingAnimation(Pane effectsLayer, double floatDistance, Text... texts) {
-        ParallelTransition parallel = new ParallelTransition();
+        Platform.runLater(() -> {
+            ParallelTransition parallel = new ParallelTransition();
 
-        for (Text text : texts) {
-            TranslateTransition floatUp = new TranslateTransition(FLOAT_DURATION, text);
-            floatUp.setByY(floatDistance);
+            for (Text text : texts) {
+                TranslateTransition floatUp = new TranslateTransition(FLOAT_DURATION, text);
+                floatUp.setByY(floatDistance);
 
-            FadeTransition fade = new FadeTransition(FLOAT_DURATION, text);
-            fade.setFromValue(1.0);
-            fade.setToValue(0.0);
+                FadeTransition fade = new FadeTransition(FLOAT_DURATION, text);
+                fade.setFromValue(1.0);
+                fade.setToValue(0.0);
 
-            parallel.getChildren().addAll(floatUp, fade);
-        }
+                parallel.getChildren().addAll(floatUp, fade);
+            }
 
-        parallel.setOnFinished(e -> {
-            effectsLayer.getChildren().removeAll(texts);
-            parallel.getChildren().clear();
+            parallel.setOnFinished(e -> {
+                effectsLayer.getChildren().removeAll(texts);
+                parallel.getChildren().clear();
+            });
+
+            parallel.play();
         });
-
-        parallel.play();
     }
 
     public static void clearAllEffects(Pane effectsLayer) {

@@ -6,6 +6,7 @@ import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.ui.effects.Effects;
 import com.uneb.tetris.ui.effects.FloatingTextEffect;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
@@ -65,6 +66,7 @@ public class GameBoard {
         boolean[] isLineComplete = new boolean[height];
         java.util.List<Integer> clearedLines = new java.util.ArrayList<>();
 
+        // Lógica de detecção de linhas completas
         for (int y = height - 1; y >= 0; y--) {
             boolean complete = true;
             for (int x = 0; x < width; x++) {
@@ -81,33 +83,36 @@ public class GameBoard {
         }
 
         if (linesRemoved > 0) {
-            // Aplica efeito visual em todas as linhas limpas
-            for (int y = 0; y < height; y++) {
-                if (isLineComplete[y]) {
-                    Effects.applyLineClearEffect(effectsLayer, y - bufferHeight, cellSize);
+            int finalLinesRemoved = linesRemoved;
+            Platform.runLater(() -> {
+                // Aplica efeito visual em todas as linhas limpas
+                for (int y = 0; y < height; y++) {
+                    if (isLineComplete[y]) {
+                        Effects.applyLineClearEffect(effectsLayer, y - bufferHeight, cellSize);
+                    }
                 }
-            }
 
-            // Exibe o texto flutuante apenas na linha central das linhas limpas
-            if (!clearedLines.isEmpty()) {
-                int middleIdx = clearedLines.size() / 2;
-                int lineIdx = clearedLines.get(middleIdx);
-                FloatingTextEffect.showLineClearText(effectsLayer, lineIdx, cellSize, linesRemoved);
-            }
+                // Exibe o texto flutuante apenas na linha central das linhas limpas
+                if (!clearedLines.isEmpty()) {
+                    int middleIdx = clearedLines.size() / 2;
+                    int lineIdx = clearedLines.get(middleIdx);
+                    FloatingTextEffect.showLineClearText(effectsLayer, lineIdx, cellSize, finalLinesRemoved);
+                }
 
-            // Screen shake
-            StackPane boardRoot = (StackPane) effectsLayer.getParent();
-            if (boardRoot != null) {
-                double intensity = Effects.SHAKE_INTENSITY_BASE +
-                        (linesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
-                Duration shakeDuration = Duration.millis(100);
-                TranslateTransition shake = new TranslateTransition(shakeDuration, boardRoot);
-                shake.setByY(intensity);
-                shake.setCycleCount(2);
-                shake.setAutoReverse(true);
-                shake.setOnFinished(e -> boardRoot.setTranslateY(0));
-                shake.play();
-            }
+                // Screen shake
+                StackPane boardRoot = (StackPane) effectsLayer.getParent();
+                if (boardRoot != null) {
+                    double intensity = Effects.SHAKE_INTENSITY_BASE +
+                            (finalLinesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
+                    Duration shakeDuration = Duration.millis(100);
+                    TranslateTransition shake = new TranslateTransition(shakeDuration, boardRoot);
+                    shake.setByY(intensity);
+                    shake.setCycleCount(2);
+                    shake.setAutoReverse(true);
+                    shake.setOnFinished(e -> boardRoot.setTranslateY(0));
+                    shake.play();
+                }
+            });
 
             removeCompleteLines(isLineComplete);
             notifyBoardUpdated();

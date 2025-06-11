@@ -128,14 +128,13 @@ public class GameMediator {
     /**
      * Remove um listener específico de um tipo de evento.
      *
-     * @param type O tipo do evento do qual remover o listener
+     * @param type     O tipo do evento do qual remover o listener
      * @param listener O listener a ser removido
-     * @param <T> O tipo de dado do evento
-     * @return true se o listener foi removido, false caso contrário
+     * @param <T>      O tipo de dado do evento
      */
-    public <T> boolean removeReceiver(EventType<T> type, Listener<T> listener) {
+    public <T> void removeReceiver(EventType<T> type, Listener<T> listener) {
         NavigableSet<PrioritizedListener<?>> set = listeners.get(type);
-        if (set == null || set.isEmpty()) return false;
+        if (set == null || set.isEmpty()) return;
 
         // Encontra e remove o listener baseado na instância
         boolean removed = set.removeIf(prioritizedListener ->
@@ -147,6 +146,5 @@ public class GameMediator {
             listeners.remove(type);
         }
 
-        return removed;
     }
 }

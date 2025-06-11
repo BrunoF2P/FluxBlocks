@@ -1,6 +1,7 @@
 package com.uneb.tetris.ui.effects;
 
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.Pane;
@@ -21,24 +22,26 @@ public class ParticleEffects {
     public static void createFireflyParticle(Pane container, double width, double height) {
         if (!EffectObjectPool.canCreateParticle()) return;
 
-        Circle particle = EffectObjectPool.getParticle();
-        if (particle == null) return;
+        Platform.runLater(() -> {
+            Circle particle = EffectObjectPool.getParticle();
+            if (particle == null) return;
 
-        setupFireflyParticle(particle, width, height);
+            setupFireflyParticle(particle, width, height);
 
-        // Cria as animações em uma única transição paralela
-        ParallelTransition animation = new ParallelTransition();
-        animation.getChildren().addAll(
-            createFireflyMovement(particle, width, height),
-            createFireflyFade(particle)
-        );
+            // Cria as animações em uma única transição paralela
+            ParallelTransition animation = new ParallelTransition();
+            animation.getChildren().addAll(
+                createFireflyMovement(particle, width, height),
+                createFireflyFade(particle)
+            );
 
-        // Configura limpeza automática
-        particle.getProperties().put("animation", animation);
+            // Configura limpeza automática
+            particle.getProperties().put("animation", animation);
 
-        // Adiciona a partícula antes de iniciar a animação
-        container.getChildren().add(particle);
-        animation.play();
+            // Adiciona a partícula antes de iniciar a animação
+            container.getChildren().add(particle);
+            animation.play();
+        });
     }
 
     private static void setupFireflyParticle(Circle particle, double width, double height) {
@@ -77,25 +80,27 @@ public class ParticleEffects {
     public static void createSquareParticle(Pane container, double width, double height) {
         if (!EffectObjectPool.canCreateTrail()) return;
 
-        Rectangle square = EffectObjectPool.getTrail();
-        if (square == null) return;
+        Platform.runLater(() -> {
+            Rectangle square = EffectObjectPool.getTrail();
+            if (square == null) return;
 
-        setupSquareParticle(square, width, height);
+            setupSquareParticle(square, width, height);
 
-        // Cria todas as animações em uma única transição
-        ParallelTransition animation = new ParallelTransition();
-        animation.getChildren().addAll(
-            createSquareMovement(square, width, height),
-            createSquareRotation(square),
-            createSquareFade(square)
-        );
+            // Cria todas as animações em uma única transição
+            ParallelTransition animation = new ParallelTransition();
+            animation.getChildren().addAll(
+                createSquareMovement(square, width, height),
+                createSquareRotation(square),
+                createSquareFade(square)
+            );
 
-        // Configura limpeza automática
-        square.getProperties().put("animation", animation);
+            // Configura limpeza automática
+            square.getProperties().put("animation", animation);
 
-        // Adiciona o quadrado antes de iniciar a animação
-        container.getChildren().add(square);
-        animation.play();
+            // Adiciona o quadrado antes de iniciar a animação
+            container.getChildren().add(square);
+            animation.play();
+        });
     }
 
     private static void setupSquareParticle(Rectangle square, double width, double height) {

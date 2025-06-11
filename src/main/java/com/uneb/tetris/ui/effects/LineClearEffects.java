@@ -1,6 +1,7 @@
 package com.uneb.tetris.ui.effects;
 
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.scene.CacheHint;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.Pane;
@@ -86,25 +87,27 @@ public class LineClearEffects {
 
     private static void createDissolvingParticle(Pane boardPane, double startX, double startY,
                                                double lineWidth, double lineHeight) {
-        Circle particle = EffectObjectPool.getParticle();
-        if (particle == null) return;
+        Platform.runLater(() -> {
+            Circle particle = EffectObjectPool.getParticle();
+            if (particle == null) return;
 
-        double size = LINE_PARTICLE_MIN_SIZE + Math.random() * (LINE_PARTICLE_MAX_SIZE - LINE_PARTICLE_MIN_SIZE);
-        setupParticle(particle, size, startX, startY, lineWidth, lineHeight);
+            double size = LINE_PARTICLE_MIN_SIZE + Math.random() * (LINE_PARTICLE_MAX_SIZE - LINE_PARTICLE_MIN_SIZE);
+            setupParticle(particle, size, startX, startY, lineWidth, lineHeight);
 
-        boardPane.getChildren().add(particle);
+            boardPane.getChildren().add(particle);
 
-        ParallelTransition pt = createParticleAnimation(particle, startX, startY);
+            ParallelTransition pt = createParticleAnimation(particle, startX, startY);
 
-        particle.getProperties().put("animation", pt);
+            particle.getProperties().put("animation", pt);
 
-        pt.setOnFinished(event -> {
-            boardPane.getChildren().remove(particle);
-            EffectObjectPool.returnParticle(particle);
-            particle.getProperties().remove("animation");
+            pt.setOnFinished(event -> {
+                boardPane.getChildren().remove(particle);
+                EffectObjectPool.returnParticle(particle);
+                particle.getProperties().remove("animation");
+            });
+
+            pt.play();
         });
-
-        pt.play();
     }
 
     private static ParallelTransition createParticleAnimation(Circle particle, double startX, double startY) {
