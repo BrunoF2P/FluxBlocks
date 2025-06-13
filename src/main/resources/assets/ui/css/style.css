@@ -124,6 +124,15 @@
     -fx-translate-y: -2px;
 }
 
+
+.button-play:hover {
+    -fx-background-color: #ff9900;
+    -fx-text-fill: #ffffff;
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+
 /* === GAME BOARD === */
 .game-board,
 .game-board-background {

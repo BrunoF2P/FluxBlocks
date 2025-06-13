@@ -153,6 +153,14 @@ public class TetrominoFactory {
         cells.add(new Cell(1, 0, type));
     }
 
+
+    /**
+     * Configuração da peça X.
+     * Forma:
+     * [ ][X][ ]
+     * [X][X][X]
+     * [ ][X][ ]
+     */
     private static void createXPiece(List<Cell> cells) {
         int type = Tetromino.Type.X.ordinal();
         cells.add(new Cell(0, -1, type));

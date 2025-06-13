@@ -24,7 +24,7 @@ public class MenuScreen {
         this.content = new VBox();
         this.root = new StackPane();
 
-        root.setCursor(Cursor.NONE);
+        root.setCursor(Cursor.DEFAULT);
 
         setupLayout();
         initializeComponents();

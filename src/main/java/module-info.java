@@ -8,6 +8,7 @@ open module com.uneb.tetris {
     requires transitive com.fasterxml.jackson.databind;
     requires transitive com.fasterxml.jackson.core;
     requires transitive com.almasb.fxgl.all;
+    requires java.sql;
 
     exports com.uneb.tetris.game.core;
     exports com.uneb.tetris.ui;
