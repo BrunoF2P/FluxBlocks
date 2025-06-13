@@ -3,7 +3,7 @@ package com.uneb.tetris.DB;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class Connection {
+public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/tetris";
     private static final String USER = "root";
     private static final String PASSWORD = "";
