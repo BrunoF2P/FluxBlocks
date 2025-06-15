@@ -13,6 +13,7 @@ public class PieceRenderer {
     private final GameBoard board;
     private final ShadowPieceCalculator shadowCalculator;
     private GameMediator mediator;
+    private final int playerId;
 
     /** Código para representar células de sombra no grid */
     private static final int SHADOW_CELL_CODE = 9;
@@ -23,9 +24,10 @@ public class PieceRenderer {
      * @param board O tabuleiro do jogo
      * @param shadowCalculator O calculador de sombras
      */
-    public PieceRenderer(GameBoard board, ShadowPieceCalculator shadowCalculator) {
+    public PieceRenderer(GameBoard board, ShadowPieceCalculator shadowCalculator, int playerId) {
         this.board = board;
         this.shadowCalculator = shadowCalculator;
+        this.playerId = playerId;
     }
 
     /**
@@ -46,7 +48,7 @@ public class PieceRenderer {
         int[][] grid = createBoardGridWithShadow(currentPiece);
         addPieceToGrid(currentPiece, grid);
 
-        mediator.emit(UiEvents.BOARD_UPDATE, grid);
+        mediator.emit(UiEvents.BOARD_UPDATE, new UiEvents.BoardUpdateEvent(playerId, grid));
     }
 
     /**

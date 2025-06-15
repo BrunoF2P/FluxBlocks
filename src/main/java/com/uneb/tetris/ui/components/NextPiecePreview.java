@@ -18,20 +18,25 @@ import javafx.scene.paint.Color;
  * @author Bruno Bispo
  */
 public class NextPiecePreview {
-
+    private final int playerId;
     private final GameMediator mediator;
     private final StackPane container;
     private final int cellSize = 30;
-
+    private final GameMediator.Listener<UiEvents.NextPieceEvent> nextPieceListener;
     /**
      * Construtor do componente de pré-visualização da próxima peça.
      *
      * @param mediator  Instância do {@link GameMediator} responsável por gerenciar os eventos do jogo.
      * @param container Componente gráfico onde a peça será desenhada.
      */
-    public NextPiecePreview(GameMediator mediator, StackPane container) {
+    public NextPiecePreview(GameMediator mediator, StackPane container, int playerId) {
         this.mediator = mediator;
         this.container = container;
+        this.playerId = playerId;
+        this.nextPieceListener = ev -> {
+            if (ev.playerId() != this.playerId) return;
+            updateNextPiecePreview(ev.nextPiece());
+        };
         initializePreview();
     }
 
@@ -40,7 +45,7 @@ public class NextPiecePreview {
      * Deve ser chamado após a injeção do componente na hierarquia da UI.
      */
     public void initialize() {
-        registerEvents();
+        mediator.receiver(UiEvents.NEXT_PIECE_UPDATE, nextPieceListener);
     }
 
     /**
@@ -50,12 +55,6 @@ public class NextPiecePreview {
         container.setAlignment(Pos.CENTER);
     }
 
-    /**
-     * Registra o listener para o evento de atualização da próxima peça.
-     */
-    private void registerEvents() {
-        mediator.receiver(UiEvents.NEXT_PIECE_UPDATE, this::updateNextPiecePreview);
-    }
 
     /**
      * Atualiza a renderização da próxima peça na área de preview.
@@ -138,7 +137,7 @@ public class NextPiecePreview {
 
         // Remove o listener do mediator
         if (mediator != null) {
-            mediator.removeReceiver(UiEvents.NEXT_PIECE_UPDATE, this::updateNextPiecePreview);
+            mediator.removeReceiver(UiEvents.NEXT_PIECE_UPDATE, nextPieceListener);
         }
     }
 }

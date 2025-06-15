@@ -44,15 +44,18 @@ public class GameTimer extends AnimationTimer {
     /** Intervalo do clock em nanosegundos */
     private static final long CLOCK_INTERVAL = (long)(GameConfig.GAME_TICK_INTERVAL * 1_000_000);
 
+    private final int playerId;
+
     /**
      * Cria um novo controlador de tempo do jogo.
      *
      * @param mediator O mediador para comunicação entre componentes
      * @param gameState O estado atual do jogo
      */
-    public GameTimer(GameMediator mediator, GameState gameState) {
+    public GameTimer(GameMediator mediator, GameState gameState, int playerId) {
         this.mediator = mediator;
         this.gameState = gameState;
+        this.playerId = playerId;
         subscribeToEvents();
     }
 
@@ -121,10 +124,11 @@ public class GameTimer extends AnimationTimer {
     /**
      * Atualiza a velocidade do loop do jogo.
      *
-     * @param newSpeedMs Nova velocidade em milissegundos
+     * @param ev Nova velocidade em milissegundos
      */
-    private void onSpeedUpdate(double newSpeedMs) {
-        gameSpeed = (long)(newSpeedMs * 1_000_000);
+    private void onSpeedUpdate(GameplayEvents.UpdateSpeedEvent ev) {
+        if (ev.playerId() != this.playerId) return;
+        this.gameSpeed = (long)(ev.newSpeed() * 1_000_000);
     }
 
     /**

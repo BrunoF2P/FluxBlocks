@@ -42,12 +42,15 @@ public class PieceSystem {
     /** Próxima peça a entrar em jogo */
     private Tetromino nextPiece;
 
+    private final int playerId;
+
     private final CollisionDetector collisionDetector;
     private final LockDelayHandler lockDelayHandler;
     private final PieceMovementHandler movementHandler;
     private final PieceRotationHandler rotationHandler;
     private final ShadowPieceCalculator shadowCalculator;
     private final PieceRenderer renderer;
+    private final GameBoardScreen boardScreen;
 
     /**
      * Cria um gerenciador de peças.
@@ -56,17 +59,18 @@ public class PieceSystem {
      * @param board O tabuleiro do jogo onde as peças serão posicionadas
      * @param gameState O estado do jogo, contendo informações como nível atual
      */
-    public PieceSystem(GameMediator mediator, GameBoard board, GameState gameState) {
+    public PieceSystem(GameMediator mediator, GameBoard board, GameState gameState, GameBoardScreen boardScreen, int playerId) {
         this.mediator = mediator;
         this.board = board;
         this.gameState = gameState;
-
+        this.boardScreen = boardScreen;
         this.collisionDetector = new CollisionDetector(board);
+        this.playerId = playerId;
         this.lockDelayHandler = new LockDelayHandler();
-        this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayHandler, mediator);
+        this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayHandler, mediator, playerId);
         this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayHandler);
         this.shadowCalculator = new ShadowPieceCalculator(collisionDetector);
-        this.renderer = new PieceRenderer(board, shadowCalculator);
+        this.renderer = new PieceRenderer(board, shadowCalculator, playerId);
 
         this.renderer.setMediator(mediator);
 
@@ -88,16 +92,33 @@ public class PieceSystem {
      * Registra os eventos necessários no mediador para controle das peças.
      */
     private void registerEvents() {
-        mediator.receiver(GameplayEvents.MOVE_LEFT, unused -> moveLeft());
-        mediator.receiver(GameplayEvents.MOVE_RIGHT, unused -> moveRight());
-        mediator.receiver(GameplayEvents.MOVE_DOWN, unused -> moveDown());
+        mediator.receiver(GameplayEvents.MOVE_LEFT, (ev) -> {
+            if (ev.playerId() == playerId) moveLeft();
+        });
+
+        mediator.receiver(GameplayEvents.MOVE_RIGHT, (ev) -> {
+            if (ev.playerId() == playerId) moveRight();
+        });
+
+        mediator.receiver(GameplayEvents.MOVE_DOWN, (ev) -> {
+            if (ev.playerId() == playerId) moveDown();
+        });
         mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, unused -> moveDown());
-        mediator.receiver(GameplayEvents.ROTATE, unused -> rotate());
-        mediator.receiver(GameplayEvents.DROP, unused -> hardDrop());
-        mediator.receiver(InputEvents.ROTATE_RESET, unused -> rotationHandler.resetRotateDelay());
-        mediator.receiver(UiEvents.LEVEL_UPDATE, level -> updateLevel((int)level));
+        mediator.receiver(GameplayEvents.ROTATE, (ev) -> {
+            if (ev.playerId() == playerId) rotate();
+        });
+        mediator.receiver(GameplayEvents.DROP, (ev) -> {
+            if (ev.playerId() == playerId) hardDrop();
+        });
+        mediator.receiver(InputEvents.ROTATE_RESET, unused ->
+                rotationHandler.resetRotateDelay()
+        );
+        mediator.receiver(UiEvents.LEVEL_UPDATE, ev -> {
+            if (ev.playerId() != this.playerId) return;
+            updateLevel(ev.level());
+        });
         mediator.receiver(UiEvents.GAME_STARTED, unused -> {
-            mediator.emit(UiEvents.NEXT_PIECE_UPDATE, nextPiece);
+            mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         });
 
         FXGL.getGameTimer().runAtInterval(this::checkLockDelay, Duration.millis(16.67)); // 60 FPS
@@ -130,7 +151,7 @@ public class PieceSystem {
         nextPiece = TetrominoFactory.createRandomTetromino();
         nextPiece.setPosition(board.getWidth() / 2, 0);
 
-        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, nextPiece);
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         movementHandler.resetWallPushState();
 
         if (!collisionDetector.isValidPosition(currentPiece)) {
@@ -158,9 +179,7 @@ public class PieceSystem {
      * @param isHardDrop Indica se o encaixe foi resultado de um hard drop.
      */
     public void lockPiece(boolean isHardDrop) {
-        if (currentPiece == null || board == null) {
-            return;
-        }
+        if (currentPiece == null || board == null) return;
 
         currentPiece.getCells().forEach(cell -> {
             if (board.isValidPosition(cell.getX(), cell.getY())) {
@@ -168,31 +187,42 @@ public class PieceSystem {
             }
         });
 
-        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
 
         if (isHardDrop) {
-            mediator.emit(UiEvents.PIECE_LANDED_HARD, null);
+            mediator.emit(UiEvents.PIECE_LANDED_HARD, new UiEvents.BoardEvent(playerId));
         } else if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
-            mediator.emit(UiEvents.PIECE_LANDED_SOFT, null);
+            mediator.emit(UiEvents.PIECE_LANDED_SOFT, new UiEvents.BoardEvent(playerId));
         } else {
-            mediator.emit(UiEvents.PIECE_LANDED_NORMAL, null);
+            mediator.emit(UiEvents.PIECE_LANDED_NORMAL, new UiEvents.BoardEvent(playerId));
         }
 
-        if (movementHandler.isSoftDropping() && movementHandler.getSoftDropDistance() > 0) {
-            int softDropScore = ScoreCalculator.calculateSoftDropScore(gameState.getCurrentLevel());
-            mediator.emit(GameplayEvents.SCORE_UPDATED, softDropScore);
-        }
+        int totalPoints = 0;
 
-        GameBoardScreen boardScreen = mediator.getGameBoardScreen();
         int linesCleared = board.removeCompletedLines(boardScreen.getEffectsLayer());
         if (linesCleared > 0) {
-            int linesClearedScore = ScoreCalculator.calculateLinesClearedScore(linesCleared, gameState.getCurrentLevel());
-            mediator.emit(GameplayEvents.SCORE_UPDATED, linesClearedScore);
-            mediator.emit(GameplayEvents.LINE_CLEARED, linesCleared);
+            boolean leveledUp = gameState.processLinesCleared(linesCleared);
 
+            int linesClearedScore = ScoreCalculator.calculateLinesClearedScore(linesCleared, gameState.getCurrentLevel());
+            gameState.addScore(linesClearedScore);
+
+            mediator.emit(GameplayEvents.LINE_CLEARED, new GameplayEvents.LineClearEvent(playerId, linesCleared));
+            mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
+
+            if (leveledUp) {
+                mediator.emit(UiEvents.LEVEL_UPDATE, new UiEvents.LevelUiEvent(playerId, gameState.getCurrentLevel()));
+            }
         }
 
+        if (movementHandler.isSoftDropping()) {
+            int distance = movementHandler.getSoftDropDistance();
+            if (distance > 0) {
+                int softDropScore = ScoreCalculator.calculateSoftDropScore(distance);
+                gameState.addScore(softDropScore);
+                mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
+            }
+        }
 
         lockDelayHandler.reset();
         spawnNewPiece();
@@ -242,7 +272,8 @@ public class PieceSystem {
 
         if (distance > 0) {
             int hardDropScore = ScoreCalculator.calculateHardDropScore(distance);
-            mediator.emit(GameplayEvents.SCORE_UPDATED, hardDropScore);
+            gameState.addScore(hardDropScore);
+            mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
         }
 
         lockPiece(true);

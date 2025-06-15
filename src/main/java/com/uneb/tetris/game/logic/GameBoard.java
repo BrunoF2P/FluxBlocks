@@ -12,6 +12,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameBoard {
     private final GameMediator mediator;
     private final int width = GameConfig.BOARD_WIDTH;
@@ -20,9 +23,11 @@ public class GameBoard {
     private final int height = visibleHeight + bufferHeight;
     private final int[][] grid;
     private final int cellSize = GameConfig.CELL_SIZE;
+    private final int playerId;
 
-    public GameBoard(GameMediator mediator) {
+    public GameBoard(GameMediator mediator, int playerId) {
         this.mediator = mediator;
+        this.playerId = playerId;
         this.grid = new int[height][width];
         clearGrid();
     }
@@ -65,7 +70,7 @@ public class GameBoard {
     public int removeCompletedLines(Pane effectsLayer) {
         int linesRemoved = 0;
         boolean[] isLineComplete = new boolean[height];
-        java.util.List<Integer> clearedLines = new java.util.ArrayList<>();
+        List<Integer> clearedLines = new ArrayList<>();
 
         // Lógica de detecção de linhas completas
         for (int y = height - 1; y >= 0; y--) {
@@ -177,6 +182,6 @@ public class GameBoard {
             System.arraycopy(grid[y], 0, gridCopy[y], 0, width);
         }
 
-        mediator.emit(UiEvents.BOARD_UPDATE, gridCopy);
+        mediator.emit(UiEvents.BOARD_UPDATE, new UiEvents.BoardUpdateEvent(playerId, gridCopy));
     }
 }

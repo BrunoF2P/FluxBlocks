@@ -33,16 +33,48 @@ public class InputHandler {
 
     /** Acompanha a última tecla de direção horizontal pressionada para lidar com entradas sobrepostas */
     private KeyCode lastHorizontalKeyPressed = null;
+    private final int playerId;
 
+
+    private KeyCode keyLeft;
+    private KeyCode keyRight;
+    private KeyCode keyDown;
+    private KeyCode keyRotate;
+    private KeyCode keyDrop;
+    private KeyCode keyPause;
+    private KeyCode keyRestart;
+
+    private boolean actionsRegistered = false;
     /**
      * Cria um novo InputHandler com o mediador e estado do jogo especificados.
      *
      * @param mediator O mediador do jogo para notificar sobre eventos de entrada
      * @param gameState O estado atual do jogo para verificar o tratamento de entrada válido
      */
-    public InputHandler(GameMediator mediator, GameState gameState) {
+    public InputHandler(GameMediator mediator, GameState gameState, int playerId) {
         this.mediator = mediator;
         this.gameState = gameState;
+        this.playerId = playerId;
+
+
+        if (playerId == 1) {
+            keyLeft    = KeyCode.A;
+            keyRight   = KeyCode.D;
+            keyDown    = KeyCode.S;
+            keyRotate  = KeyCode.W;
+            keyDrop    = KeyCode.SPACE;
+            keyPause   = KeyCode.ESCAPE;
+            keyRestart = KeyCode.R;
+
+        } else {
+            keyLeft    = KeyCode.LEFT;
+            keyRight   = KeyCode.RIGHT;
+            keyDown    = KeyCode.DOWN;
+            keyRotate  = KeyCode.UP;
+            keyDrop    = KeyCode.ENTER;
+            keyPause   = KeyCode.P;
+            keyRestart = KeyCode.BACK_SPACE;
+        }
     }
 
     /**
@@ -50,6 +82,8 @@ public class InputHandler {
      * Deve ser chamado uma vez durante a inicialização do jogo.
      */
     public void setupInputHandling() {
+        if (actionsRegistered)
+            return;
         setupMoveLeftAction();
         setupMoveRightAction();
         setupSoftDropAction();
@@ -57,6 +91,8 @@ public class InputHandler {
         setupHardDropAction();
         setupPauseAction();
         setupRestartAction();
+
+        actionsRegistered = true;
     }
 
     /**
@@ -73,15 +109,15 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupMoveLeftAction() {
-        FXGL.getInput().addAction(new UserAction("Move Left") {
+        FXGL.getInput().addAction(new UserAction("Move Left P"+ playerId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
             @Override
             protected void onActionBegin() {
                 leftKeyPressed = true;
-                lastHorizontalKeyPressed = KeyCode.LEFT;
-                mediator.emit(GameplayEvents.MOVE_LEFT, null);
+                lastHorizontalKeyPressed = keyLeft;
+                mediator.emit(GameplayEvents.MOVE_LEFT, new GameplayEvents.MoveEvent(playerId));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -89,13 +125,13 @@ public class InputHandler {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
-                if (lastHorizontalKeyPressed != KeyCode.LEFT) return;
+                if (lastHorizontalKeyPressed != keyLeft) return;
 
                 double now = FXGL.getGameTimer().getNow();
                 double delay = isFirstMove ? GameConfig.MOVE_INITIAL_DELAY / 1000.0 : GameConfig.MOVE_REPEAT_DELAY / 1000.0;
 
                 if (now - lastMoveTime >= delay) {
-                    mediator.emit(GameplayEvents.MOVE_LEFT, null);
+                    mediator.emit(GameplayEvents.MOVE_LEFT, new GameplayEvents.MoveEvent(playerId));
                     lastMoveTime = now;
                 }
             }
@@ -104,14 +140,14 @@ public class InputHandler {
             protected void onActionEnd() {
                 leftKeyPressed = false;
                 isFirstMove = true;
-                mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+                mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
                 if (!rightKeyPressed) {
                     lastHorizontalKeyPressed = null;
                 } else {
-                    lastHorizontalKeyPressed = KeyCode.RIGHT;
+                    lastHorizontalKeyPressed = keyRight;
                 }
             }
-        }, KeyCode.LEFT);
+        }, keyLeft);
     }
 
     /**
@@ -119,15 +155,15 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupMoveRightAction() {
-        FXGL.getInput().addAction(new UserAction("Move Right") {
+        FXGL.getInput().addAction(new UserAction("Move Right P"+ playerId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
             @Override
             protected void onActionBegin() {
                 rightKeyPressed = true;
-                lastHorizontalKeyPressed = KeyCode.RIGHT;
-                mediator.emit(GameplayEvents.MOVE_RIGHT, null);
+                lastHorizontalKeyPressed = keyRight;
+                mediator.emit(GameplayEvents.MOVE_RIGHT, new GameplayEvents.MoveEvent(playerId));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -135,13 +171,13 @@ public class InputHandler {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
-                if (lastHorizontalKeyPressed != KeyCode.RIGHT) return;
+                if (lastHorizontalKeyPressed != keyRight) return;
 
                 double now = FXGL.getGameTimer().getNow();
                 double delay = isFirstMove ? GameConfig.MOVE_INITIAL_DELAY / 1000.0 : GameConfig.MOVE_REPEAT_DELAY / 1000.0;
 
                 if (now - lastMoveTime >= delay) {
-                    mediator.emit(GameplayEvents.MOVE_RIGHT, null);
+                    mediator.emit(GameplayEvents.MOVE_RIGHT, new GameplayEvents.MoveEvent(playerId));
                     lastMoveTime = now;
                 }
             }
@@ -150,14 +186,14 @@ public class InputHandler {
             protected void onActionEnd() {
                 rightKeyPressed = false;
                 isFirstMove = true;
-                mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+                mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
                 if (!leftKeyPressed) {
                     lastHorizontalKeyPressed = null;
                 } else {
-                    lastHorizontalKeyPressed = KeyCode.LEFT;
+                    lastHorizontalKeyPressed = keyLeft;
                 }
             }
-        }, KeyCode.RIGHT);
+        }, keyRight);
     }
 
     /**
@@ -165,7 +201,7 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupSoftDropAction() {
-        FXGL.getInput().addAction(new UserAction("Soft Drop") {
+        FXGL.getInput().addAction(new UserAction("Soft Drop P"+ playerId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
@@ -173,7 +209,7 @@ public class InputHandler {
             protected void onActionBegin() {
                 if (isGameNotPlayable()) return;
 
-                mediator.emit(GameplayEvents.MOVE_DOWN, null);
+                mediator.emit(GameplayEvents.MOVE_DOWN, new GameplayEvents.MoveEvent(playerId));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -186,7 +222,7 @@ public class InputHandler {
                 double delay = isFirstMove ? GameConfig.SOFT_DROP_INITIAL_DELAY / 1000.0 : GameConfig.SOFT_DROP_DELAY / 1000.0;
 
                 if (now - lastMoveTime >= delay) {
-                    mediator.emit(GameplayEvents.MOVE_DOWN, null);
+                    mediator.emit(GameplayEvents.MOVE_DOWN, new GameplayEvents.MoveEvent(playerId));
                     lastMoveTime = now;
                 }
             }
@@ -195,63 +231,63 @@ public class InputHandler {
             protected void onActionEnd() {
                 isFirstMove = true;
             }
-        }, KeyCode.DOWN);
+        }, keyDown);
     }
 
     /**
      * Configura a ação de rotação para o tetrominó atual.
      */
     private void setupRotateAction() {
-        FXGL.getInput().addAction(new UserAction("Rotate") {
+        FXGL.getInput().addAction(new UserAction("Rotate P"+ playerId) {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
-                mediator.emit(GameplayEvents.ROTATE, null);
+                mediator.emit(GameplayEvents.ROTATE, new GameplayEvents.MoveEvent(playerId));
             }
 
             @Override
             protected void onActionEnd() {
                 if (isGameNotPlayable()) return;
-                mediator.emit(InputEvents.ROTATE_RESET, null);
+                mediator.emit(InputEvents.ROTATE_RESET, new InputEvents.MoveEvent(playerId));
             }
-        }, KeyCode.UP);
+        }, keyRotate);
     }
 
     /**
      * Configura a ação de queda rápida (queda instantânea).
      */
     private void setupHardDropAction() {
-        FXGL.getInput().addAction(new UserAction("Hard Drop") {
+        FXGL.getInput().addAction(new UserAction("Hard Drop P"+ playerId) {
             @Override
             protected void onActionBegin() {
                 if (isGameNotPlayable()) return;
 
-                mediator.emit(GameplayEvents.DROP, null);
+                mediator.emit(GameplayEvents.DROP, new GameplayEvents.MoveEvent(playerId));
             }
-        }, KeyCode.SPACE);
+        }, keyDrop);
     }
 
     /**
      * Configura a ação de pausa do jogo.
      */
     private void setupPauseAction() {
-        FXGL.getInput().addAction(new UserAction("Pause") {
+        FXGL.getInput().addAction(new UserAction("Pause P"+ playerId) {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.PAUSE, null);
             }
-        }, KeyCode.P);
+        }, keyPause);
     }
 
     /**
      * Configura a ação de reinício do jogo.
      */
     private void setupRestartAction() {
-        FXGL.getInput().addAction(new UserAction("Restart") {
+        FXGL.getInput().addAction(new UserAction("Restart P"+ playerId) {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.RESTART, null);
             }
-        }, KeyCode.R);
+        }, keyRestart);
     }
 }

@@ -1,9 +1,11 @@
 package com.uneb.tetris.ui.screens;
 
+import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.components.BoardCanvas;
+import com.uneb.tetris.ui.effects.LineClearEffects;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
@@ -21,14 +23,15 @@ public class GameBoardScreen {
     private final BoardCanvas boardCanvas;
     private final StackPane root;
     private final Pane effectsLayer;  // Camada para efeitos visuais
-
+    private final int playerId;
     /**
      * Construtor da tela do tabuleiro do jogo.
-     * 
+     *
      * @param mediator O mediador usado para comunicação entre componentes do jogo
      */
-    public GameBoardScreen(GameMediator mediator) {
+    public GameBoardScreen(GameMediator mediator, int playerId) {
         this.mediator = mediator;
+        this.playerId = playerId;
         this.boardCanvas = new BoardCanvas(GameConfig.BOARD_WIDTH, GameConfig.BOARD_HEIGHT, GameConfig.CELL_SIZE);
         this.effectsLayer = new Pane();
         this.root = new StackPane(boardCanvas, effectsLayer);
@@ -52,12 +55,15 @@ public class GameBoardScreen {
      * Registra os eventos necessários para atualização do tabuleiro.
      */
     private void registerEvents() {
-        mediator.receiver(UiEvents.BOARD_UPDATE, this::updateBoard);
+        mediator.receiver(UiEvents.BOARD_UPDATE, (ev) -> {
+            if (ev.playerId() == playerId) {
+                updateBoard(ev.grid());
+            }
+        });
     }
-
     /**
      * Atualiza o estado visual do tabuleiro com base na grade fornecida.
-     * 
+     *
      * @param grid A matriz que representa o estado atual do tabuleiro
      */
     private void updateBoard(int[][] grid) {
@@ -65,6 +71,11 @@ public class GameBoardScreen {
             return;
         }
         boardCanvas.updateBoard(grid);
+    }
+
+    public void applyLineClearEffect(int row) {
+        double y = row * GameConfig.CELL_SIZE;
+        LineClearEffects.applyLineClearEffect(effectsLayer, y, GameConfig.CELL_SIZE);
     }
 
     /**
@@ -79,8 +90,11 @@ public class GameBoardScreen {
      * Este método deve ser chamado quando a tela não for mais necessária.
      */
     public void destroy() {
-        mediator.removeReceiver(UiEvents.BOARD_UPDATE, this::updateBoard);
-
+        mediator.removeReceiver(UiEvents.BOARD_UPDATE, (ev) -> {
+                    if (ev.playerId() == playerId) {
+                        updateBoard(ev.grid());
+                    };
+                });
         if (boardCanvas != null) {
             boardCanvas.clearBoard();
         }
@@ -96,7 +110,7 @@ public class GameBoardScreen {
 
     /**
      * Retorna o nó raiz da tela do tabuleiro.
-     * 
+     *
      * @return O componente Parent que contém toda a interface do tabuleiro
      */
     public Parent getNode() {

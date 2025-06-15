@@ -57,12 +57,12 @@ public class GameState {
         if (lines <= 0) return false;
 
         int oldLevel = currentLevel;
+        totalLinesCleared += lines;
         linesInCurrentLevel += lines;
-        totalLinesCleared += lines; // Única atualização do totalLinesCleared
 
-        while (linesInCurrentLevel >= GameConfig.LINES_PER_LEVEL) {
-            linesInCurrentLevel -= GameConfig.LINES_PER_LEVEL;
+        if (linesInCurrentLevel >= GameConfig.LINES_PER_LEVEL) {
             currentLevel++;
+            linesInCurrentLevel = linesInCurrentLevel % GameConfig.LINES_PER_LEVEL;
         }
 
         return currentLevel > oldLevel;

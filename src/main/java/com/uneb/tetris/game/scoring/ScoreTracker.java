@@ -14,10 +14,12 @@ import javafx.application.Platform;
 public class ScoreTracker {
     private final GameMediator mediator;
     private final GameState gameState;
+    private final int playerId;
 
-    public ScoreTracker(GameMediator mediator, GameState gameState) {
+    public ScoreTracker(GameMediator mediator, GameState gameState, int playerId) {
         this.mediator = mediator;
         this.gameState = gameState;
+        this.playerId = playerId;
         registerEvents();
     }
 
@@ -31,17 +33,18 @@ public class ScoreTracker {
         updateUI();
     }
 
-    private void handleScoreUpdate(int points) {
-        gameState.addScore(points);
+    private void handleScoreUpdate(GameplayEvents.ScoreEvent ev) {
+        if (ev.playerId() != this.playerId) return;
+
         Platform.runLater(() ->
-            mediator.emit(UiEvents.SCORE_UPDATE, gameState.getScore())
+            mediator.emit(UiEvents.SCORE_UPDATE, new UiEvents.ScoreUiEvent(playerId, gameState.getScore()))
         );
     }
 
-    private void handleLinesCleared(int lines) {
-        if (gameState.processLinesCleared(lines)) {
-            handleLevelUp();
-        }
+    private void handleLinesCleared(GameplayEvents.LineClearEvent ev) {
+        if (ev.playerId() != this.playerId) return;
+        Platform.runLater(() -> mediator.emit(UiEvents.SCORE_UPDATE,
+            new UiEvents.ScoreUiEvent(playerId, gameState.getScore())));
     }
 
     private void handleLevelUp() {
@@ -50,9 +53,15 @@ public class ScoreTracker {
 
         Platform.runLater(() -> {
             FloatingTextEffect.updateLevel(newLevel);
-            mediator.emit(UiEvents.LEVEL_UPDATE, newLevel);
+            mediator.emit(
+                    UiEvents.LEVEL_UPDATE,
+                    new UiEvents.LevelUiEvent(playerId, newLevel)
+            );
         });
-        mediator.emit(GameplayEvents.UPDATE_SPEED, newSpeed);
+        mediator.emit(
+                GameplayEvents.UPDATE_SPEED,
+                new GameplayEvents.UpdateSpeedEvent(playerId, newSpeed)
+        );
     }
 
     /**
@@ -65,8 +74,14 @@ public class ScoreTracker {
     private void updateUI() {
         Platform.runLater(() -> {
             FloatingTextEffect.updateLevel(gameState.getCurrentLevel());
-            mediator.emit(UiEvents.SCORE_UPDATE, gameState.getScore());
-            mediator.emit(UiEvents.LEVEL_UPDATE, gameState.getCurrentLevel());
+            mediator.emit(
+                    UiEvents.SCORE_UPDATE,
+                    new UiEvents.ScoreUiEvent(playerId, gameState.getScore())
+            );
+            mediator.emit(
+                    UiEvents.LEVEL_UPDATE,
+                    new UiEvents.LevelUiEvent(playerId, gameState.getCurrentLevel())
+            );
         });
     }
 }

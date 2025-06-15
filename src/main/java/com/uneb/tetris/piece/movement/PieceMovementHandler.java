@@ -13,6 +13,7 @@ public class PieceMovementHandler {
     private final CollisionDetector collisionDetector;
     private final LockDelayHandler lockDelayHandler;
     private final GameMediator mediator;
+    private final int playerId;
 
     /** Flag que indica se o jogador está realizando soft drop */
     private boolean isSoftDropping = false;
@@ -27,10 +28,11 @@ public class PieceMovementHandler {
      * @param lockDelayHandler Gerenciador de atraso de bloqueio
      * @param mediator O mediador para comunicação entre componentes do jogo
      */
-    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayHandler lockDelayHandler, GameMediator mediator) {
+    public PieceMovementHandler(CollisionDetector collisionDetector, LockDelayHandler lockDelayHandler, GameMediator mediator, int playerId) {
         this.collisionDetector = collisionDetector;
         this.lockDelayHandler = lockDelayHandler;
         this.mediator = mediator;
+        this.playerId = playerId;
     }
 
     /**
@@ -44,12 +46,12 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, -1, 0);
 
         if (moved) {
-            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
             lockDelayHandler.resetLockDelay(piece, isAtRest);
         } else {
-            mediator.emit(UiEvents.PIECE_PUSHING_WALL_LEFT, null);
+            mediator.emit(UiEvents.PIECE_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
         }
         return moved;
     }
@@ -64,12 +66,12 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, 1, 0);
 
         if (moved) {
-            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
-            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
             boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
             lockDelayHandler.resetLockDelay(piece, isAtRest);
         } else {
-            mediator.emit(UiEvents.PIECE_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
         }
         return moved;
     }
@@ -89,8 +91,8 @@ public class PieceMovementHandler {
         if (moved) {
             lockDelayHandler.resetLockDelay(piece, collisionDetector.isAtRestingPosition(piece));
             softDropDistance++;
-            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
+            mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
         }
         return moved;
     }
@@ -113,18 +115,21 @@ public class PieceMovementHandler {
             int pieceHeight = dimensions[1];
 
             // Emite evento para criar o efeito de rastro a cada movimento
-            mediator.emit(UiEvents.PIECE_TRAIL_EFFECT, new int[]{
-                    piece.getX(),
-                    piece.getY(),
-                    piece.getType(),
-                    distance,
-                    pieceWidth,
-                    pieceHeight
-            });
+            mediator.emit(UiEvents.PIECE_TRAIL_EFFECT, new UiEvents.PieceTrailEffectEvent(
+                    this.playerId,
+                    new int[]{
+                            piece.getX(),
+                            piece.getY(),
+                            piece.getType(),
+                            distance,
+                            pieceWidth,
+                            pieceHeight
+                    }
+            ));
             distance++;
         }
-        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(this.playerId));
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(this.playerId));
 
         resetSoftDropTracking();
         return distance;
@@ -215,7 +220,7 @@ public class PieceMovementHandler {
      * Chamado quando uma nova peça é gerada ou rotacionada.
      */
     public void resetWallPushState() {
-        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, null);
-        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, null);
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
+        mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
     }
 }

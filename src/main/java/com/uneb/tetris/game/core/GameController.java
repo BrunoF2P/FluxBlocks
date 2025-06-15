@@ -8,6 +8,7 @@ import com.uneb.tetris.game.logic.GameState;
 import com.uneb.tetris.piece.PieceSystem;
 import com.uneb.tetris.game.scoring.ScoreTracker;
 import com.uneb.tetris.ui.controllers.InputHandler;
+import com.uneb.tetris.ui.screens.GameBoardScreen;
 
 /**
  * Gerenciador principal do jogo Tetris.
@@ -43,19 +44,28 @@ public class GameController {
     /** Estado atual do jogo */
     private final GameState gameState;
 
+    private final GameBoardScreen boardScreen;
+
+    private final int playerId;
+
     /**
      * Cria um novo gerenciador do jogo e inicializa todos os subsistemas.
      *
      * @param mediator O mediador central para comunicação entre componentes
+     * @param boardScreen Tela do tabuleiro
+     * @param playerId Id do jogador
+     * @param gameState Estado do jogo compartilhado
      */
-    public GameController(GameMediator mediator) {
+    public GameController(GameMediator mediator, GameBoardScreen boardScreen, int playerId, GameState gameState) {
         this.mediator = mediator;
-        this.gameState = new GameState();
-        this.gameBoard = new GameBoard(mediator);
-        this.pieceManager = new PieceSystem(mediator, gameBoard, gameState);
-        this.scoreTracker = new ScoreTracker(mediator, gameState);
-        this.gameTimer = new GameTimer(mediator, gameState);
-        this.inputHandler = new InputHandler(mediator, gameState);
+        this.boardScreen = boardScreen;
+        this.playerId = playerId;
+        this.gameState = gameState;
+        this.gameBoard = new GameBoard(mediator, playerId);
+        this.pieceManager = new PieceSystem(mediator, gameBoard, gameState, boardScreen, playerId);
+        this.inputHandler = new InputHandler(mediator, gameState, playerId);
+        this.scoreTracker = new ScoreTracker(mediator, gameState, playerId);
+        this.gameTimer = new GameTimer(mediator, gameState, playerId);
 
         registerEvents();
         start();
@@ -68,7 +78,7 @@ public class GameController {
     private void registerEvents() {
         mediator.receiver(GameplayEvents.GAME_OVER, unused -> handleGameOver());
         mediator.receiver(GameplayEvents.PAUSE, unused -> togglePause());
-        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, pieceManager.getNextPiece());
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, pieceManager.getNextPiece()));
     }
 
     /**
