@@ -65,6 +65,17 @@ public class GameTimer extends AnimationTimer {
     private void subscribeToEvents() {
         mediator.receiver(GameplayEvents.UPDATE_SPEED, this::onSpeedUpdate);
         mediator.receiver(GameplayEvents.RESTART, unused -> restartGame());
+        mediator.receiver(UiEvents.LEVEL_UPDATE, ev -> {
+            if (ev.playerId() == playerId) {
+                updateGameSpeed();
+            }
+        });
+    }
+
+    private void updateGameSpeed() {
+        double speed = gameState.calculateCurrentSpeed();
+        gameSpeed = (long)(speed * 1_000_000);
+
     }
 
     @Override
@@ -135,7 +146,7 @@ public class GameTimer extends AnimationTimer {
      * Processa um tick do loop principal do jogo.
      */
     private void onGameLoopTick() {
-        mediator.emit(GameplayEvents.AUTO_MOVE_DOWN, null);
+        mediator.emit(GameplayEvents.AUTO_MOVE_DOWN, new GameplayEvents.MoveEvent(playerId));
     }
 
     /**

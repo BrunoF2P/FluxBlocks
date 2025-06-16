@@ -103,7 +103,10 @@ public class PieceSystem {
         mediator.receiver(GameplayEvents.MOVE_DOWN, (ev) -> {
             if (ev.playerId() == playerId) moveDown();
         });
-        mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, unused -> moveDown());
+        mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, (GameplayEvents.MoveEvent ev) -> {
+            if (ev.playerId() == playerId) moveDown();
+        });
+
         mediator.receiver(GameplayEvents.ROTATE, (ev) -> {
             if (ev.playerId() == playerId) rotate();
         });
