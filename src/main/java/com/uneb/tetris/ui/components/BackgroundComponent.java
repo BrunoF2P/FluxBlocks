@@ -1,12 +1,13 @@
 package com.uneb.tetris.ui.components;
 
-
 import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.effects.Effects;
+import javafx.animation.Timeline;
 import javafx.scene.layout.Pane;
 
 public class BackgroundComponent {
     private final Pane background;
+    private Timeline particleTimeline;
 
     public BackgroundComponent() {
         background = new Pane();
@@ -21,8 +22,21 @@ public class BackgroundComponent {
     }
 
     private void createParticles() {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 6; i++) {
             Effects.createSquareParticle(background, GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        }
+        for (int i = 0; i < 12; i++) {
+            Effects.createFireflyParticle(background, GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        }
+    }
+
+    public void destroy() {
+        if (particleTimeline != null) {
+            particleTimeline.stop();
+            particleTimeline = null;
+        }
+        if (background != null) {
+            Effects.clearAllEffects(background);
         }
     }
 
@@ -30,3 +44,4 @@ public class BackgroundComponent {
         return background;
     }
 }
+
