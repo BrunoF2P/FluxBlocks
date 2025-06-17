@@ -2,6 +2,7 @@ package com.uneb.fluxblocks.ui.components;
 
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.screens.GameScreen;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -12,11 +13,11 @@ import javafx.scene.layout.VBox;
 public class PlayerContainer {
     private final VBox container;
 
-    public PlayerContainer(String playerName, GameScreen gameScreen) {
-        container = createContainer(playerName, gameScreen);
+    public PlayerContainer(String playerName, GameScreen gameScreen, boolean showTitle) {
+        container = createContainer(playerName, gameScreen, showTitle);
     }
 
-    private VBox createContainer(String playerName, GameScreen gameScreen) {
+    private VBox createContainer(String playerName, GameScreen gameScreen, boolean showTitle) {
         VBox container = new VBox(10);
         container.setAlignment(Pos.CENTER);
         container.setPadding(new Insets(5));
@@ -24,10 +25,13 @@ public class PlayerContainer {
         container.setMaxWidth(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE);
         container.getStyleClass().add("content-box");
 
-        HBox labelContainer = createLabelContainer(playerName);
-        StackPane gameContainer = createGameContainer(gameScreen);
+        if (showTitle) {
+            HBox labelContainer = createLabelContainer(playerName);
+            container.getChildren().add(labelContainer);
+        }
 
-        container.getChildren().addAll(labelContainer, gameContainer);
+        StackPane gameContainer = createGameContainer(gameScreen);
+        container.getChildren().add(gameContainer);
         return container;
     }
 

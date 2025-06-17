@@ -104,7 +104,7 @@ public class UIScreenHandler {
         screen1.initialize();
         controller1.restart();
 
-        PlayerContainer playerContainer = new PlayerContainer("Jogador", screen1);
+        PlayerContainer playerContainer = new PlayerContainer("Jogador", screen1, false);
         StackPane centerContainer = new StackPane(playerContainer.getNode());
         centerContainer.setAlignment(Pos.CENTER);
         currentScreen.getChildren().add(centerContainer);
@@ -146,8 +146,8 @@ public class UIScreenHandler {
         playersContainer.setAlignment(Pos.CENTER);
         playersContainer.setPadding(new Insets(20));
 
-        PlayerContainer player1Container = new PlayerContainer("Jogador 1", screen1);
-        PlayerContainer player2Container = new PlayerContainer("Jogador 2", screen2);
+        PlayerContainer player1Container = new PlayerContainer("Jogador 1", screen1, true);
+        PlayerContainer player2Container = new PlayerContainer("Jogador 2", screen2, true);
 
         playersContainer.getChildren().addAll(player1Container.getNode(), player2Container.getNode());
         return playersContainer;
