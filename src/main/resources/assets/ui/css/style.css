@@ -196,39 +196,39 @@
     -fx-stroke-width: 1;
 }
 
-.tetromino-1 {
+.blockshape-1 {
     -fx-fill: #00f0f0;
 }
 
-.tetromino-2 {
+.blockshape-2 {
     -fx-fill: #1a75ff;
 }
 
-.tetromino-3 {
+.blockshape-3 {
     -fx-fill: #ff8c00;
 }
 
-.tetromino-4 {
+.blockshape-4 {
     -fx-fill: #ffd700;
 }
 
-.tetromino-5 {
+.blockshape-5 {
     -fx-fill: #32cd32;
 }
 
-.tetromino-6 {
+.blockshape-6 {
     -fx-fill: #bf3eff;
 }
 
-.tetromino-7 {
+.blockshape-7 {
     -fx-fill: #ffcbdb;
 }
 
-.tetromino-8 {
+.blockshape-8 {
     -fx-fill: #ff3030;
 }
 
-.tetromino-9 {
+.blockshape-9 {
     -fx-fill: rgba(255, 255, 255, 0.15);
     -fx-stroke: rgba(255, 255, 255, 0.3);
 }

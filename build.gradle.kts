@@ -9,7 +9,7 @@ plugins {
 
 group = "com.uneb"
 version = "1.0-SNAPSHOT"
-description = "Tetris"
+description = "FluxBlocks"
 
 repositories {
     mavenLocal()
@@ -33,13 +33,13 @@ jlink {
     options.set(listOf("--strip-debug", "--compress", "zip-6", "--no-header-files", "--no-man-pages"))
 
     launcher {
-        name = "Tetris"
-        moduleName = "com.uneb.tetris"
-        mainClass = "com.uneb.tetris.Main"
+        name = "FluxBlocks"
+        moduleName = "com.uneb.fluxblocks"
+        mainClass = "com.uneb.fluxblocks.Main"
     }
 
     jpackage {
-        imageName = "Tetris"
+        imageName = "FluxBlocks"
         appVersion = "1.0.0"
 
         // Configuração específica por plataforma
@@ -71,8 +71,8 @@ jlink {
                 installerType = "dmg"
 
                 installerOptions.addAll(listOf(
-                    "--mac-package-name", "Tetris",
-                    "--mac-package-identifier", "com.uneb.tetris"
+                    "--mac-package-name", "FluxBlocks",
+                    "--mac-package-identifier", "com.uneb.fluxblocks"
                 ))
             }
 
@@ -82,7 +82,7 @@ jlink {
                 installerType = "deb"
 
                 installerOptions.addAll(listOf(
-                    "--linux-package-name", "tetris",
+                    "--linux-package-name", "fluxblocks",
                     "--linux-app-category", "Game",
                     "--linux-shortcut"
                 ))
@@ -91,7 +91,7 @@ jlink {
 
         // Configurações gerais
         vendor = "UNEB"
-        description = "Um jogo de Tetris desenvolvido em JavaFX"
+        description = "Um jogo FluxBlocks desenvolvido em JavaFX"
 
         // Argumentos da JVM para todas as plataformas
         jvmArgs.addAll(listOf(
@@ -126,7 +126,7 @@ dependencies {
 }
 
 application {
-    mainClass = "com.uneb.tetris.Main"
+    mainClass = "com.uneb.fluxblocks.Main"
     applicationDefaultJvmArgs = listOf(
         "--add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED",
         "--add-opens=javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED",
@@ -174,7 +174,7 @@ tasks {
             attributes(
                 "Implementation-Title" to project.name,
                 "Implementation-Version" to project.version,
-                "Main-Class" to "com.uneb.tetris.Main"
+                "Main-Class" to "com.uneb.fluxblocks.Main"
             )
         }
     }
