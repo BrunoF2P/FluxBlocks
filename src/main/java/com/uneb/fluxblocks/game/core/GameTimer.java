@@ -1,14 +1,14 @@
 package com.uneb.fluxblocks.game.core;
 
+import java.time.LocalTime;
+
 import com.uneb.fluxblocks.architecture.events.GameplayEvents;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
-import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.configuration.GameConfig;
-import javafx.animation.AnimationTimer;
+import com.uneb.fluxblocks.game.logic.GameState;
 
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
+import javafx.animation.AnimationTimer;
 
 /**
  * Controlador de tempo do jogo, responsável pelo loop principal e cronômetro.
@@ -26,22 +26,12 @@ public class GameTimer extends AnimationTimer {
     /** Estado atual do jogo */
     private final GameState gameState;
 
-    /** Horário de início da partida */
-    private LocalTime startTime;
-
-    /** Última atualização do AnimationTimer */
+    private long gameStartTime = 0;
     private long lastUpdate = 0;
-
-    /** Última vez que o game loop foi executado */
     private long lastGameLoop = 0;
-
-    /** Última vez que o clock foi atualizado */
     private long lastClockUpdate = 0;
 
-    /** Velocidade atual do jogo em nanosegundos */
     private long gameSpeed = (long)(GameConfig.INITIAL_GAME_SPEED * 1_000_000);
-
-    /** Intervalo do clock em nanosegundos */
     private static final long CLOCK_INTERVAL = (long)(GameConfig.GAME_TICK_INTERVAL * 1_000_000);
 
     private final int playerId;
@@ -84,6 +74,7 @@ public class GameTimer extends AnimationTimer {
             lastUpdate = now;
             lastGameLoop = now;
             lastClockUpdate = now;
+            gameStartTime = now;
             return;
         }
 
@@ -96,7 +87,8 @@ public class GameTimer extends AnimationTimer {
 
         if (!gameState.isGameOver()) {
             if (now - lastClockUpdate >= CLOCK_INTERVAL) {
-                onClockTick();
+                updateGameTime(now);
+                onClockTick(now);
                 lastClockUpdate = now;
             }
         }
@@ -104,13 +96,28 @@ public class GameTimer extends AnimationTimer {
         lastUpdate = now;
     }
 
+    private void updateGameTime(long currentTimeNanos) {
+        if (gameStartTime == 0) return;
+
+        long deltaNanos = currentTimeNanos - lastClockUpdate;
+        long deltaMs = deltaNanos / 1_000_000;
+
+        long currentTimeMs = gameState.getGameTimeMs() + deltaMs;
+        gameState.setGameTimeMs(currentTimeMs);
+    }
+
+    private void onClockTick(long currentTimeNanos) {
+        mediator.emit(UiEvents.TIME_UPDATE, gameState.getGameTime());
+    }
+
+
+
     /**
      * Inicia o timer do jogo.
      * @throws IllegalStateException se o timer já estiver iniciado
      */
     public void startTimer() {
         validateStart();
-        startTime = LocalTime.now();
         start();
     }
 
@@ -119,7 +126,8 @@ public class GameTimer extends AnimationTimer {
      */
     public void stopTimer() {
         stop();
-        startTime = null;
+        gameStartTime = 0;
+
     }
 
     /**
@@ -149,68 +157,16 @@ public class GameTimer extends AnimationTimer {
         mediator.emit(GameplayEvents.AUTO_MOVE_DOWN, new GameplayEvents.MoveEvent(playerId));
     }
 
-    /**
-     * Processa um tick do cronômetro.
-     */
-    private void onClockTick() {
-        updateElapsedTime();
-    }
-
-    /**
-     * Atualiza e emite o tempo decorrido de jogo.
-     */
-    private void updateElapsedTime() {
-        if (startTime == null) return;
-
-        LocalTime now = LocalTime.now();
-        long millisElapsed = ChronoUnit.MILLIS.between(startTime, now);
-        String timeFormatted = formatElapsedTime(millisElapsed);
-        mediator.emit(UiEvents.TIME_UPDATE, timeFormatted);
-    }
-
-    /**
-     * Formata o tempo decorrido em minutos, segundos e milliseconds.
-     *
-     * @param millisElapsed Total de milliseconds decorridos
-     * @return String formatada no padrão "MM:SS:mmm"
-     */
-    private String formatElapsedTime(long millisElapsed) {
-        // Garante que os valores sejam positivos
-        millisElapsed = Math.max(0, millisElapsed);
-
-        long milliseconds = millisElapsed % 1000;
-        long totalSeconds = millisElapsed / 1000;
-        long seconds = totalSeconds % 60;
-        long minutes = totalSeconds / 60;
-
-        // Limita os minutos a 99 para evitar overflow
-        minutes = Math.min(99, minutes);
-
-        char[] result = new char[8];
-        final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
-        // Formata minutos (00-99)
-        result[0] = DIGITS[(int)((minutes / 10) % 10)];
-        result[1] = DIGITS[(int)(minutes % 10)];
-        result[2] = ':';
-
-        // Formata segundos (00-59)
-        result[3] = DIGITS[(int)((seconds / 10) % 10)];
-        result[4] = DIGITS[(int)(seconds % 10)];
-        result[5] = ':';
-
-        // Formata centésimos de segundo (00-99)
-        result[6] = DIGITS[(int)((milliseconds / 100) % 10)];
-        result[7] = DIGITS[(int)((milliseconds / 10) % 10)];
-
-        return new String(result);
-    }
-
 
     /**
      * Reinicia o jogo emitindo o evento apropriado.
      */
     private void restartGame() {
+        gameStartTime = 0;
+        lastUpdate = 0;
+        lastGameLoop = 0;
+        lastClockUpdate = 0;
+
         mediator.emit(GameplayEvents.RESTART_GAME, null);
     }
 
@@ -219,7 +175,7 @@ public class GameTimer extends AnimationTimer {
      * @throws IllegalStateException se o timer já estiver iniciado
      */
     private void validateStart() {
-        if (startTime != null) {
+        if (gameStartTime != 0) {
             throw new IllegalStateException("Timer já iniciado");
         }
     }

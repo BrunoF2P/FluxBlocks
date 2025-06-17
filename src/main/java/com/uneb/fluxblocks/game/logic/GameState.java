@@ -23,8 +23,8 @@ public class GameState {
     /** Pontuação atual */
     private int score = 0;
 
-    /** Tempo de jogo atual em formato "MM:SS:mmm" */
-    private String gameTime = "00:00:000";
+    /** Tempo de jogo atual em milissegundos */
+    private long gameTimeMs = 0;
 
     /** Número de linhas eliminadas no nível atual */
     private int linesInCurrentLevel = 0;
@@ -39,7 +39,7 @@ public class GameState {
         totalLinesCleared = 0;
         linesInCurrentLevel = 0;
         score = 0;
-        gameTime = "00:00:000";
+        gameTimeMs = 0;
     }
 
     /**
@@ -73,22 +73,30 @@ public class GameState {
         isPaused = !isPaused;
     }
 
-    public void setCurrentLevel(int level) {
-        this.currentLevel = level;
-    }
 
     public boolean isPaused() { return isPaused; }
     public boolean isGameOver() { return isGameOver; }
     public int getCurrentLevel() { return currentLevel; }
     public int getScore() { return score; }
-    public String getGameTime() { return gameTime; }
     public int getLinesInCurrentLevel() { return linesInCurrentLevel; }
     public int getLinesCleared() { return totalLinesCleared; }
+    public long getGameTimeMs() { return gameTimeMs; }
 
+    public String getGameTime() {
+        long milliseconds = gameTimeMs % 10;
+        long totalSeconds = gameTimeMs / 1000;
+        long seconds = totalSeconds % 60;
+        long minutes = Math.min(99, totalSeconds / 60);
+
+        return String.format("%02d:%02d:%02d", minutes, seconds, milliseconds);
+    }
 
     // Setters
     public void setPaused(boolean paused) { this.isPaused = paused; }
     public void setGameOver(boolean gameOver) { this.isGameOver = gameOver; }
+    public void setCurrentLevel(int level) {
+        this.currentLevel = level;
+    }
 
     /**
      * Calcula a velocidade de queda das peças com base no nível atual.
@@ -97,5 +105,11 @@ public class GameState {
         return GameConfig.INITIAL_GAME_SPEED * Math.pow(0.8, currentLevel - 1);
     }
 
+    /**
+     * Define o tempo de jogo em milissegundos (usado pelo GameTimer)
+     */
+    public void setGameTimeMs(long gameTimeMs) {
+        this.gameTimeMs = Math.max(0, gameTimeMs);
+    }
 
 }

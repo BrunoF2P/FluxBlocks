@@ -319,7 +319,7 @@ public class GameScreen {
 
         mediator.receiver(UiEvents.TIME_UPDATE, time -> safeExecute.accept(() -> {
             if (timeDisplay != null) {
-                timeDisplay.updateTime((String) time);
+                timeDisplay.updateTime(time);
             }
         }));
 
