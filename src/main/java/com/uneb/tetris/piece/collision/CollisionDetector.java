@@ -1,5 +1,6 @@
 package com.uneb.tetris.piece.collision;
 
+import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.game.logic.GameBoard;
 import com.uneb.tetris.piece.entities.Cell;
 import com.uneb.tetris.piece.entities.Tetromino;
@@ -7,6 +8,7 @@ import com.uneb.tetris.piece.entities.Tetromino;
 /**
  * Responsável por detectar colisões de peças com outras peças
  * ou com os limites do tabuleiro.
+ * Implementa lógica compatível com TETR.IO.
  */
 public class CollisionDetector {
     private final GameBoard board;
@@ -34,7 +36,20 @@ public class CollisionDetector {
         int x = cell.getX();
         int y = cell.getY();
 
-        return !board.isValidPosition(x, y) || board.getCell(x, y) != 0;
+        if (x < 0 || x >= board.getWidth()) {
+            return true;
+        }
+
+
+        if (y < -4) {
+            return true;
+        }
+
+        if (board.isValidPosition(x, y)) {
+            return board.getCell(x, y) != 0;
+        }
+
+        return y >= board.getHeight() - GameConfig.BOARD_VISIBLE_ROW;
     }
 
     /**
@@ -56,5 +71,28 @@ public class CollisionDetector {
         piece.setPosition(originalX, originalY);
 
         return wouldCollide;
+    }
+
+    /**
+     * Verifica se é possível spawnar uma peça na posição especificada.
+     * Esta é a verificação principal para game over no estilo TETR.IO.
+     *
+     * @param piece A peça a ser spawnada
+     * @param spawnX Posição X de spawn
+     * @param spawnY Posição Y de spawn
+     * @return true se é possível spawnar, false se causaria game over
+     */
+    public boolean canSpawn(Tetromino piece, int spawnX, int spawnY) {
+        if (piece == null) return false;
+
+        int originalX = piece.getX();
+        int originalY = piece.getY();
+
+        piece.setPosition(spawnX, spawnY);
+        boolean canSpawn = isValidPosition(piece);
+
+        piece.setPosition(originalX, originalY);
+
+        return canSpawn;
     }
 }

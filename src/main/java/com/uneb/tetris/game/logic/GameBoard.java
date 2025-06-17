@@ -1,19 +1,20 @@
 package com.uneb.tetris.game.logic;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.effects.Effects;
 import com.uneb.tetris.ui.effects.FloatingTextEffect;
+
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GameBoard {
     private final GameMediator mediator;
@@ -30,10 +31,6 @@ public class GameBoard {
         this.playerId = playerId;
         this.grid = new int[height][width];
         clearGrid();
-    }
-
-    public int[][] getGrid() {
-        return grid;
     }
 
     public int getWidth() {
@@ -147,14 +144,6 @@ public class GameBoard {
         }
     }
 
-    private boolean isLineComplete(int y) {
-        for (int x = 0; x < width; x++) {
-            if (grid[y][x] == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public void clearGrid() {
         for (int y = 0; y < height; y++) {
@@ -165,16 +154,6 @@ public class GameBoard {
         notifyBoardUpdated();
     }
 
-    public boolean isGameOver() {
-        for (int y = 0; y < 2; y++) {
-            for (int x = 0; x < width; x++) {
-                if (grid[y][x] != 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     private void notifyBoardUpdated() {
         int[][] gridCopy = new int[height][width];

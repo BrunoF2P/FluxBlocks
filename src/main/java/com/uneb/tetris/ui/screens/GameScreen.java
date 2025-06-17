@@ -1,30 +1,36 @@
 package com.uneb.tetris.ui.screens;
 
+import java.util.function.Consumer;
+
 import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.game.logic.GameState;
+import com.uneb.tetris.ui.components.BackgroundComponent;
 import com.uneb.tetris.ui.components.NextPiecePreview;
 import com.uneb.tetris.ui.components.TimeDisplay;
 import com.uneb.tetris.ui.effects.DropTrailEffect;
 import com.uneb.tetris.ui.effects.Effects;
 import com.uneb.tetris.ui.effects.FloatingTextEffect;
 import com.uneb.tetris.ui.theme.TetrominoColors;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Parent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Text;
-
-import java.util.function.Consumer;
 
 /**
  * Classe responsável pela interface gráfica principal do jogo.
@@ -49,6 +55,7 @@ public class GameScreen {
     private final GameMediator mediator;
     private final GameState gameState;
     private final int playerId;
+    private final BackgroundComponent backgroundComponent;
 
     /** Contêiner para visualização da próxima peça. */
     private final StackPane nextPiecePreview;
@@ -68,10 +75,11 @@ public class GameScreen {
 
     private boolean isDestroyed = false;
 
-    public GameScreen(GameMediator mediator, GameState gameState, int playerId) {
+    public GameScreen(GameMediator mediator, GameState gameState, int playerId, BackgroundComponent backgroundComponent) {
         this.mediator = mediator;
         this.gameState = gameState;
         this.playerId = playerId;
+        this.backgroundComponent = backgroundComponent;
         this.layout = new BorderPane();
         this.gameBoardScreen = new GameBoardScreen(mediator, playerId);
         this.nextPiecePreview = new StackPane();
@@ -313,6 +321,8 @@ public class GameScreen {
 
             int boardCenterX = gameBoardScreen.getWidth() / 2;
             int boardCenterY = gameBoardScreen.getHeight() / 2;
+
+            Effects.applyLevelUpEffect(backgroundComponent.getBackground());
 
             FloatingTextEffect.showLevelUpText(
                     gameBoardScreen.getEffectsLayer(),

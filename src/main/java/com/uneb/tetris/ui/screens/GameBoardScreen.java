@@ -1,6 +1,5 @@
 package com.uneb.tetris.ui.screens;
 
-import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.configuration.GameConfig;
@@ -8,10 +7,8 @@ import com.uneb.tetris.ui.components.BoardCanvas;
 import com.uneb.tetris.ui.effects.LineClearEffects;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Pane;
-
-import java.util.Objects;
+import javafx.scene.layout.StackPane;
 
 /**
  * Classe responsável por gerir a tela do tabuleiro do jogo Tetris.

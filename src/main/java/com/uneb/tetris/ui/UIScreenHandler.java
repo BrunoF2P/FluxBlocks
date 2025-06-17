@@ -2,28 +2,35 @@ package com.uneb.tetris.ui;
 
 import com.almasb.fxgl.app.scene.GameScene;
 import com.uneb.tetris.architecture.events.UiEvents;
-import com.uneb.tetris.ui.components.BackgroundComponent;
-import com.uneb.tetris.game.core.GameController;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.core.GameController;
 import com.uneb.tetris.game.logic.GameState;
+import com.uneb.tetris.ui.components.BackgroundComponent;
 import com.uneb.tetris.ui.components.PlayerContainer;
 import com.uneb.tetris.ui.effects.Effects;
+import com.uneb.tetris.ui.screens.GameModeScreen;
 import com.uneb.tetris.ui.screens.GameScreen;
 import com.uneb.tetris.ui.screens.MenuScreen;
 import com.uneb.tetris.ui.screens.OptionScreen;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+
 
 public class UIScreenHandler {
     private final GameScene gameScene;
     private final GameMediator mediator;
     private final StackPane currentScreen = new StackPane();
     private BackgroundComponent backgroundComponent;
+    private GameState gameState;
+    private int playerId;
 
     // Screens
     private MenuScreen menuScreen;
     private OptionScreen optionScreen;
+    private GameModeScreen gameModeScreen;
     private GameScreen screen1;
     private GameScreen screen2;
 
@@ -34,9 +41,10 @@ public class UIScreenHandler {
     public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
         this.gameScene = gameScene;
         this.mediator = mediator;
+        this.gameState = new GameState();
+        this.playerId = 1;
 
         configurarStackPanePrincipal();
-        initializeBackground();
         registerEvents();
         startUi();
     }
@@ -47,19 +55,21 @@ public class UIScreenHandler {
     }
 
     private void initializeBackground() {
-        backgroundComponent = new BackgroundComponent();
+        if (backgroundComponent == null) {
+            backgroundComponent = new BackgroundComponent();
+        }
         currentScreen.getChildren().clear();
         currentScreen.getChildren().add(backgroundComponent.getBackground());
     }
 
     private void registerEvents() {
         mediator.receiver(UiEvents.START, unused -> showMenuScreen());
-
-        mediator.receiver(UiEvents.PLAY_GAME, unused -> {
-            showGameScreen();
-        });
-
+        mediator.receiver(UiEvents.PLAY_GAME, unused -> showGameModeScreen());
         mediator.receiver(UiEvents.OPTIONS, unused -> showOptionScreen());
+        mediator.receiver(UiEvents.BACK_TO_MENU, unused -> showMenuScreen());
+
+        mediator.receiver(UiEvents.START_SINGLE_PLAYER, unused -> startSinglePlayerGame());
+        mediator.receiver(UiEvents.START_LOCAL_MULTIPLAYER, unused -> startLocalMultiplayerGame());
     }
 
     private void startUi() {
@@ -69,24 +79,51 @@ public class UIScreenHandler {
     private void showMenuScreen() {
         clearCurrentScreen();
         menuScreen = new MenuScreen(mediator);
-        initializeBackground();
         currentScreen.getChildren().add(menuScreen.getNode());
         gameScene.clearUINodes();
         gameScene.addUINode(currentScreen);
     }
 
-    /**
-     * Versão simplificada da tela de jogo com background único
-     */
-    private void showGameScreen() {
+    private void showGameModeScreen() {
+        clearCurrentScreen();
+        gameModeScreen = new GameModeScreen(mediator);
+        currentScreen.getChildren().add(gameModeScreen.getNode());
+        gameScene.clearUINodes();
+        gameScene.addUINode(currentScreen);
+    }
+
+    private void startSinglePlayerGame() {
         clearCurrentScreen();
         gameScene.clearUINodes();
+
+        initializeBackground();
+
+        GameState gameState = new GameState();
+        screen1 = new GameScreen(mediator, gameState, 1, backgroundComponent);
+        controller1 = new GameController(mediator, screen1.getGameBoardScreen(), 1, gameState);
+        screen1.initialize();
+        controller1.restart();
+
+        PlayerContainer playerContainer = new PlayerContainer("Jogador", screen1);
+        StackPane centerContainer = new StackPane(playerContainer.getNode());
+        centerContainer.setAlignment(Pos.CENTER);
+        currentScreen.getChildren().add(centerContainer);
+
+        gameScene.addUINode(currentScreen);
+        mediator.emit(UiEvents.GAME_STARTED, null);
+    }
+
+    private void startLocalMultiplayerGame() {
+        clearCurrentScreen();
+        gameScene.clearUINodes();
+
+        initializeBackground();
 
         GameState gameState1 = new GameState();
         GameState gameState2 = new GameState();
 
-        screen1 = new GameScreen(mediator, gameState1, 1);
-        screen2 = new GameScreen(mediator, gameState2, 2);
+        screen1 = new GameScreen(mediator, gameState1, 1, backgroundComponent);
+        screen2 = new GameScreen(mediator, gameState2, 2, backgroundComponent);
 
         controller1 = new GameController(mediator, screen1.getGameBoardScreen(), 1, gameState1);
         controller2 = new GameController(mediator, screen2.getGameBoardScreen(), 2, gameState2);
@@ -97,7 +134,6 @@ public class UIScreenHandler {
         controller1.restart();
         controller2.restart();
 
-        initializeBackground();
         HBox playersContainer = createPlayersContainer();
         currentScreen.getChildren().add(playersContainer);
 
@@ -105,11 +141,6 @@ public class UIScreenHandler {
         mediator.emit(UiEvents.GAME_STARTED, null);
     }
 
-    /**
-     * Cria o container principal que contém as telas dos jogadores
-     *
-     * @return HBox contendo os containers dos jogadores
-     */
     private HBox createPlayersContainer() {
         HBox playersContainer = new HBox(300);
         playersContainer.setAlignment(Pos.CENTER);
@@ -125,13 +156,11 @@ public class UIScreenHandler {
     private void showOptionScreen() {
         clearCurrentScreen();
         optionScreen = new OptionScreen(mediator);
-
-        initializeBackground();
         currentScreen.getChildren().add(optionScreen.getNode());
-
         gameScene.clearUINodes();
         gameScene.addUINode(currentScreen);
     }
+
 
     private void clearCurrentScreen() {
         if (screen1 != null) {
@@ -154,16 +183,19 @@ public class UIScreenHandler {
             optionScreen = null;
         }
 
+        if (gameModeScreen != null) {
+            gameModeScreen.destroy();
+            gameModeScreen = null;
+        }
+
         currentScreen.getChildren().clear();
     }
 
-    /**
-     * Limpa todos os efeitos do background quando necessário
-     */
     public void destroy() {
         clearCurrentScreen();
         if (backgroundComponent != null) {
             Effects.clearAllEffects(backgroundComponent.getBackground());
+            backgroundComponent = null;
         }
     }
 }

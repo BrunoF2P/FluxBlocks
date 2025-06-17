@@ -1,8 +1,8 @@
 package com.uneb.tetris.piece.rendering;
 
 import com.uneb.tetris.architecture.events.UiEvents;
-import com.uneb.tetris.game.logic.GameBoard;
 import com.uneb.tetris.architecture.mediators.GameMediator;
+import com.uneb.tetris.game.logic.GameBoard;
 import com.uneb.tetris.piece.entities.Cell;
 import com.uneb.tetris.piece.entities.Tetromino;
 

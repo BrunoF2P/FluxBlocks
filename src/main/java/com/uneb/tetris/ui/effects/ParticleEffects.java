@@ -47,7 +47,7 @@ public class ParticleEffects {
     private static void setupFireflyParticle(Circle particle, double width, double height) {
         particle.setRadius(FIREFLY_SIZE);
         particle.setFill(Color.web("#fcd34d", 0.2));
-        particle.setBlendMode(BlendMode.ADD);
+        particle.setBlendMode(BlendMode.SCREEN);
         particle.getProperties().put("particle-type", "firefly");
 
         double startX = Math.random() * width;
@@ -67,8 +67,8 @@ public class ParticleEffects {
 
     private static FadeTransition createFireflyFade(Circle particle) {
         FadeTransition fade = new FadeTransition(Duration.seconds(3), particle);
-        fade.setFromValue(0.4);
-        fade.setToValue(0.8);
+        fade.setFromValue(0.6);
+        fade.setToValue(1.0);
         fade.setCycleCount(TranslateTransition.INDEFINITE);
         fade.setAutoReverse(true);
         return fade;
@@ -107,9 +107,9 @@ public class ParticleEffects {
         square.setWidth(SQUARE_SIZE);
         square.setHeight(SQUARE_SIZE);
         square.setFill(Color.TRANSPARENT);
-        square.setStroke(Color.web("#fcd34d", 0.3));
+        square.setStroke(Color.web("#fcd34d", 0.6));
         square.setStrokeWidth(SQUARE_STROKE_WIDTH);
-        square.setBlendMode(BlendMode.ADD);
+        square.setBlendMode(BlendMode.SCREEN);
         square.setArcHeight(4);
         square.setArcWidth(4);
         square.getProperties().put("particle-type", "square");

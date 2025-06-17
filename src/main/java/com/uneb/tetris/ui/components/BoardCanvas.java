@@ -1,6 +1,12 @@
 package com.uneb.tetris.ui.components;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.theme.TetrominoColors;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -8,10 +14,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@code BoardCanvas} é um componente visual customizado baseado em {@link Canvas},

@@ -5,10 +5,11 @@ import com.uneb.tetris.architecture.events.GameplayEvents;
 import com.uneb.tetris.architecture.events.InputEvents;
 import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
-import com.uneb.tetris.game.logic.GameState;
+import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.game.logic.GameBoard;
-import com.uneb.tetris.piece.entities.Tetromino;
+import com.uneb.tetris.game.logic.GameState;
 import com.uneb.tetris.piece.collision.CollisionDetector;
+import com.uneb.tetris.piece.entities.Tetromino;
 import com.uneb.tetris.piece.factory.TetrominoFactory;
 import com.uneb.tetris.piece.movement.PieceMovementHandler;
 import com.uneb.tetris.piece.movement.PieceRotationHandler;
@@ -17,6 +18,7 @@ import com.uneb.tetris.piece.rendering.ShadowPieceCalculator;
 import com.uneb.tetris.piece.scoring.ScoreCalculator;
 import com.uneb.tetris.piece.timing.LockDelayHandler;
 import com.uneb.tetris.ui.screens.GameBoardScreen;
+
 import javafx.util.Duration;
 
 /**
@@ -51,6 +53,7 @@ public class PieceSystem {
     private final ShadowPieceCalculator shadowCalculator;
     private final PieceRenderer renderer;
     private final GameBoardScreen boardScreen;
+    private boolean isGameOver = false;
 
     /**
      * Cria um gerenciador de peças.
@@ -93,25 +96,25 @@ public class PieceSystem {
      */
     private void registerEvents() {
         mediator.receiver(GameplayEvents.MOVE_LEFT, (ev) -> {
-            if (ev.playerId() == playerId) moveLeft();
+            if (ev.playerId() == playerId && !isGameOver) moveLeft();
         });
 
         mediator.receiver(GameplayEvents.MOVE_RIGHT, (ev) -> {
-            if (ev.playerId() == playerId) moveRight();
+            if (ev.playerId() == playerId && !isGameOver) moveRight();
         });
 
         mediator.receiver(GameplayEvents.MOVE_DOWN, (ev) -> {
-            if (ev.playerId() == playerId) moveDown();
+            if (ev.playerId() == playerId && !isGameOver) moveDown();
         });
         mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, (GameplayEvents.MoveEvent ev) -> {
-            if (ev.playerId() == playerId) moveDown();
+            if (ev.playerId() == playerId && !isGameOver) moveDown();
         });
 
         mediator.receiver(GameplayEvents.ROTATE, (ev) -> {
-            if (ev.playerId() == playerId) rotate();
+            if (ev.playerId() == playerId && !isGameOver) rotate();
         });
         mediator.receiver(GameplayEvents.DROP, (ev) -> {
-            if (ev.playerId() == playerId) hardDrop();
+            if (ev.playerId() == playerId && !isGameOver) hardDrop();
         });
         mediator.receiver(InputEvents.ROTATE_RESET, unused ->
                 rotationHandler.resetRotateDelay()
@@ -149,18 +152,27 @@ public class PieceSystem {
      * Gera uma nova peça e a posiciona no topo do tabuleiro.
      */
     public void spawnNewPiece() {
+        if (isGameOver) return;
+
         currentPiece = nextPiece;
 
+        int spawnX = board.getWidth() / 2 - 1;
+        int spawnY = -2;
+
         nextPiece = TetrominoFactory.createRandomTetromino();
-        nextPiece.setPosition(board.getWidth() / 2, 0);
+        nextPiece.setPosition(board.getWidth() / 2 - 1, spawnY);
 
         mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         movementHandler.resetWallPushState();
 
-        if (!collisionDetector.isValidPosition(currentPiece)) {
+        if (!collisionDetector.canSpawn(currentPiece, spawnX, spawnY)) {
+            isGameOver = true;
             mediator.emit(GameplayEvents.GAME_OVER, null);
             return;
         }
+
+        // Define a posição da peça atual
+        currentPiece.setPosition(spawnX, spawnY);
 
         lockDelayHandler.reset();
         movementHandler.resetSoftDropTracking();

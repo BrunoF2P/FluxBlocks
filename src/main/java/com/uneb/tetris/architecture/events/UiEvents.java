@@ -52,4 +52,10 @@ public abstract class UiEvents {
     };
     public static final EventType<PieceTrailEffectEvent> PIECE_TRAIL_EFFECT = new EventType<>() {
     };
+    public static final EventType<Void> BACK_TO_MENU = new EventType<>() {
+    };
+    public static final EventType<Void> START_SINGLE_PLAYER = new EventType<>() {
+    };
+    public static final EventType<Void> START_LOCAL_MULTIPLAYER = new EventType<>() {
+    };
 }

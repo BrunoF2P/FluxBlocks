@@ -5,8 +5,8 @@ import com.uneb.tetris.architecture.events.UiEvents;
 import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.game.logic.GameBoard;
 import com.uneb.tetris.game.logic.GameState;
-import com.uneb.tetris.piece.PieceSystem;
 import com.uneb.tetris.game.scoring.ScoreTracker;
+import com.uneb.tetris.piece.PieceSystem;
 import com.uneb.tetris.ui.controllers.InputHandler;
 import com.uneb.tetris.ui.screens.GameBoardScreen;
 

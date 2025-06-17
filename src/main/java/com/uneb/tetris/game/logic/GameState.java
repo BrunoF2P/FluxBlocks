@@ -9,7 +9,7 @@ import com.uneb.tetris.configuration.GameConfig;
  */
 public class GameState {
     /** Estado de pausa do jogo */
-    private boolean isPaused = false;
+    private boolean isPaused = true;
     
     /** Indica se o jogo terminou */
     private boolean isGameOver = false;
@@ -68,14 +68,6 @@ public class GameState {
         return currentLevel > oldLevel;
     }
 
-
-
-    /**
-     * Atualiza o tempo de jogo.
-     */
-    public void updateGameTime(String newTime) {
-        this.gameTime = newTime;
-    }
 
     public void togglePause() {
         isPaused = !isPaused;
