@@ -72,6 +72,7 @@ public class GameScreen {
     private Arc progressArcNode;
     private Text linesLabelNode;
     private TimeDisplay timeDisplay;
+    private Text countdownText;
 
     private boolean isDestroyed = false;
 
@@ -100,6 +101,14 @@ public class GameScreen {
         this.centerContainer = new StackPane(gameBoardScreen.getNode());
         this.centerContainer.setAlignment(Pos.CENTER);
         layout.setCenter(this.centerContainer);
+
+        countdownText = new Text("5");
+        countdownText.getStyleClass().add("countdown-text");
+        countdownText.setVisible(false);
+        StackPane.setAlignment(countdownText, Pos.CENTER);
+        StackPane.setMargin(countdownText, new Insets(0, 0, 0, 0));
+        centerContainer.getChildren().add(countdownText);
+
         VBox leftPanel = createPlayerLeftPanel();
         VBox rightPanel = createPlayerRightPanel();
 
@@ -314,7 +323,6 @@ public class GameScreen {
             }
         }));
 
-        // Atualiza o nível quando receber o evento de level up
         mediator.receiver(UiEvents.LEVEL_UPDATE, level -> safeExecute.accept(() -> {
             if (level.playerId() != playerId) return;
             updateLevelProgress();
@@ -345,6 +353,23 @@ public class GameScreen {
         mediator.receiver(UiEvents.PIECE_LANDED_HARD, event -> safeExecute.accept(() -> {
             if (event.playerId() != playerId) return;
             Effects.applyHardLanding(centerContainer, null);
+        }));
+
+        mediator.receiver(UiEvents.COUNTDOWN, (UiEvents.CountdownEvent event) -> safeExecute.accept(() -> {
+            if (event.playerId() != playerId) return;
+            
+            if (countdownText != null) {
+                if (event.seconds() > 0) {
+                    countdownText.setText(String.valueOf(event.seconds()));
+                    countdownText.setVisible(true);
+                    countdownText.toFront();
+                } else {
+                    countdownText.setVisible(false);
+                }
+            }
+        }));
+
+        mediator.receiver(UiEvents.GAME_STARTED, unused -> safeExecute.accept(() -> {
         }));
 
         setupWallPushAnimationListeners();
