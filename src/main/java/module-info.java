@@ -9,6 +9,8 @@ open module com.uneb.fluxblocks {
     requires transitive com.fasterxml.jackson.core;
     requires transitive com.almasb.fxgl.all;
 
+    exports com.uneb.fluxblocks.piece.timing;
+    exports com.uneb.fluxblocks.piece.collision;
     exports com.uneb.fluxblocks.game.core;
     exports com.uneb.fluxblocks.ui;
     exports com.uneb.fluxblocks.ui.components;
