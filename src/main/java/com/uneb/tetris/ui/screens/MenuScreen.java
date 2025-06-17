@@ -5,6 +5,8 @@ import com.uneb.tetris.architecture.mediators.GameMediator;
 import com.uneb.tetris.configuration.GameConfig;
 import com.uneb.tetris.ui.UIFactory;
 import com.uneb.tetris.ui.components.Button;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Parent;
@@ -23,8 +25,6 @@ public class MenuScreen {
         this.mediator = mediator;
         this.content = new VBox();
         this.root = new StackPane();
-
-        root.setCursor(Cursor.NONE);
 
         setupLayout();
         initializeComponents();
@@ -52,7 +52,7 @@ public class MenuScreen {
         );
     }
 
-    private Button createMenuButton(String text, Button.ButtonType type, javafx.event.EventHandler<javafx.event.ActionEvent> action) {
+    private Button createMenuButton(String text, Button.ButtonType type, EventHandler<ActionEvent> action) {
         Button button = UIFactory.createButton(text, type);
         if (action != null) {
             button.setOnAction(action);
