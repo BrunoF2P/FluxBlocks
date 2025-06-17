@@ -9,6 +9,7 @@ import com.uneb.fluxblocks.game.scoring.ScoreTracker;
 import com.uneb.fluxblocks.piece.PieceSystem;
 import com.uneb.fluxblocks.ui.controllers.InputHandler;
 import com.uneb.fluxblocks.ui.screens.GameBoardScreen;
+import com.almasb.fxgl.dsl.FXGL;
 
 /**
  * Gerenciador principal do jogo FluxBlocks.
@@ -89,12 +90,36 @@ public class GameController {
     public void start() {
         gameBoard.clearGrid();
         gameState.reset();
+        gameState.setPaused(true);
 
         gameTimer.startTimer();
         scoreTracker.reset();
         inputHandler.setupInputHandling();
 
-        mediator.emit(UiEvents.GAME_STARTED, null);
+        startCountdown();
+    }
+
+    private void startCountdown() {
+        int[] countdown = {3};
+        FXGL.getInput().setProcessInput(false);
+        gameTimer.stopTimer();
+
+        FXGL.getGameTimer().runAtInterval(() -> {
+            if (countdown[0] > 0) {
+                mediator.emit(UiEvents.COUNTDOWN, new UiEvents.CountdownEvent(playerId, countdown[0]));
+                countdown[0]--;
+            } else {
+                gameState.setPaused(false);
+                FXGL.getInput().setProcessInput(true);
+                try {
+                    gameTimer.startTimer();
+                } catch (IllegalStateException e) {
+                    gameState.setPaused(false);
+                }
+                mediator.emit(UiEvents.GAME_STARTED, null);
+                mediator.emit(UiEvents.COUNTDOWN, new UiEvents.CountdownEvent(playerId, 0));
+            }
+        }, javafx.util.Duration.seconds(1));
     }
 
     /**

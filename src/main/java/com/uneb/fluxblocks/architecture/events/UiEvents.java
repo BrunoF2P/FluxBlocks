@@ -9,6 +9,7 @@ public abstract class UiEvents {
     public record LevelUiEvent(int playerId, int level) {}
     public record BoardUpdateEvent(int playerId, int[][] grid) {}
     public record PieceTrailEffectEvent(int playerId, int[] position) {}
+    public record CountdownEvent(int playerId, int seconds) {}
     private UiEvents() {
     }
 
@@ -51,6 +52,8 @@ public abstract class UiEvents {
     public static final EventType<BoardEvent> PIECE_NOT_PUSHING_WALL_RIGHT = new EventType<>() {
     };
     public static final EventType<PieceTrailEffectEvent> PIECE_TRAIL_EFFECT = new EventType<>() {
+    };
+    public static final EventType<CountdownEvent> COUNTDOWN = new EventType<>() {
     };
     public static final EventType<Void> BACK_TO_MENU = new EventType<>() {
     };

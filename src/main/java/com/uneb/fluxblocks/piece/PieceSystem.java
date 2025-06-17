@@ -106,7 +106,7 @@ public class PieceSystem {
             if (ev.playerId() == playerId && !isGameOver) moveDown();
         });
         mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, (GameplayEvents.MoveEvent ev) -> {
-            if (ev.playerId() == playerId && !isGameOver) moveDown();
+            if (ev.playerId() == playerId && !isGameOver && !gameState.isPaused()) moveDown();
         });
 
         mediator.receiver(GameplayEvents.ROTATE, (ev) -> {

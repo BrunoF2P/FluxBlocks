@@ -351,3 +351,12 @@
     -fx-spacing: 30;
     -fx-alignment: center;
 }
+
+.countdown-text {
+    -fx-font-size: 120px;
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-font-weight: bold;
+    -fx-fill: #fcd34d;
+    -fx-stroke-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 15, 0, 0, 3);
+}
