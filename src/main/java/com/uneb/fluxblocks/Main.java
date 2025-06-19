@@ -1,13 +1,13 @@
 package com.uneb.fluxblocks;
 
+import java.util.List;
+
 import com.almasb.fxgl.app.ApplicationMode;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
-import com.uneb.fluxblocks.game.core.GameInitializer;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
-
-import java.util.List;
+import com.uneb.fluxblocks.game.core.GameInitializer;
 
 public class Main extends GameApplication {
     private GameMediator mediator;
@@ -25,6 +25,7 @@ public class Main extends GameApplication {
         settings.setManualResizeEnabled(false);
         settings.setPreserveResizeRatio(true);
         settings.setScaleAffectedOnResize(true);
+        settings.setGameMenuEnabled(false);
 
         settings.setCSSList(List.of("style.css"));
         settings.setFontGame("thatsoundsgreat.ttf");

@@ -4,32 +4,6 @@
     src: url('../fonts/thatsoundsgreat.ttf');
 }
 
-.root {
-    -fx-font-family: "That Sounds Great", sans-serif;
-}
-
-.background {
-    -fx-background-image: url("../images/background.png");
-    -fx-background-size: cover;
-    -fx-background-position: center center;
-    -fx-background-repeat: no-repeat;
-}
-
-/* === LAYOUT CONTAINERS === */
-.content-box {
-    -fx-spacing: 30;
-    -fx-alignment: center;
-}
-
-.game-screen,
-.game-bg {
-    -fx-background-color: linear-gradient(
-            to bottom,
-            #0f2027,
-            #203a43,
-            #2c5364
-    );
-}
 
 /* === TYPOGRAPHY === */
 .game-title {
@@ -70,80 +44,6 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 1, 0.1, 1, 1);
 }
 
-/* === BOTÕES === */
-.button-play {
-    -base-color: #4CAF50;
-}
-
-.button-ranking {
-    -base-color: #FFC107;
-}
-
-.button-options {
-    -base-color: #2196F3;
-}
-
-.button-exit {
-    -base-color: #f44336;
-}
-
-.button-secondary {
-    -base-color: #9E9E9E;
-}
-
-.button-primary {
-    -base-color: #2196F3;
-}
-
-.button-mode {
-    -base-color: #9C27B0;
-}
-
-.button-confirm {
-    -base-color: #4CAF50;
-}
-
-.button-cancel {
-    -base-color: #f44336;
-}
-
-.game-button {
-    -fx-font-family: "That Sounds Great", sans-serif;
-    -fx-font-size: 28px;
-    -fx-pref-width: 260px;
-    -fx-pref-height: 70px;
-    -fx-background-color: -base-color;
-    -fx-border-color: derive(-base-color, 30%) derive(-base-color, -30%) derive(-base-color, -30%) derive(-base-color, 30%);
-    -fx-border-width: 4px;
-    -fx-background-radius: 20px;
-    -fx-border-radius: 20px;
-    -fx-text-fill: white;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0.3, 0, 2);
-    -fx-padding: 10px 20px;
-    -fx-translate-y: 0;
-    -fx-cursor: hand;
-    -fx-transition: all 0.3s ease;
-}
-
-.game-button:pressed {
-    -fx-background-color: derive(-base-color, -10%);
-    -fx-border-color: derive(-base-color, -30%) derive(-base-color, 30%) derive(-base-color, 30%) derive(-base-color, -30%);
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0.0, 0, 1);
-    -fx-padding: 12px 20px 8px 20px;
-    -fx-translate-y: 1px;
-}
-
-.game-button:focused,
-.game-button:hover {
-    -fx-background-color: derive(-base-color, 15%);
-    -fx-text-fill: #ffffff;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
-    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.3), 20, 0.5, 0, 0),
-                dropshadow(three-pass-box, rgba(0,0,0,0.7), 15, 0.3, 0, 3);
-    -fx-translate-y: -2px;
-}
-
 /* === GAME BOARD === */
 .game-board,
 .game-board-background {
@@ -159,8 +59,6 @@
     -fx-border-radius: 9px;
     -fx-background-radius: 15px;
 }
-
-
 
 .game-board-cell {
     -fx-fill: #15202b;
@@ -185,7 +83,6 @@
     -fx-alignment: center;
     -fx-padding: 5px;
 }
-
 
 .cell-empty {
     -fx-fill: transparent;
@@ -292,6 +189,114 @@
     -fx-fill: transparent;
     -fx-stroke: rgba(255, 255, 255, 0.1);
     -fx-stroke-width: 8px;
+}
+
+.countdown-text {
+    -fx-font-size: 120px;
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-font-weight: bold;
+    -fx-fill: #fcd34d;
+    -fx-stroke-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 15, 0, 0, 3);
+}
+
+/* === MENU PRINCIPAL === */
+.menu-layout {
+    -fx-alignment: center;
+}
+
+/* === TÍTULO PRINCIPAL === */
+.title-flux {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 100px;
+    -fx-fill: linear-gradient(to right, #40e0d0, #80e0ff, #40e0d0);
+}
+
+.title-blocks {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 120px;
+    -fx-font-weight: 900;
+    -fx-fill: linear-gradient(to bottom, #e0e0e0, #a0a0a0);
+    -fx-stroke: #1a1a2e;
+    -fx-stroke-width: 3px;
+    -fx-letter-spacing: 15px;
+}
+
+.menu-buttons {
+    -fx-spacing: 15px;
+    -fx-alignment: center-left;
+}
+
+.game-button {
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-font-size: 24px;
+    -fx-pref-width: 380px;
+    -fx-pref-height: 50px;
+    -fx-background-color: linear-gradient(to right, rgba(0, 0, 0, 0.35), transparent);
+    -fx-text-fill: #bfc9d1;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 40px;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-transition: all 0.2s ease-in-out;
+}
+
+.game-button.selected {
+    -fx-text-fill: #1a1a2e;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(to bottom, #4df0e7, #40e0d0, #33d1c0);
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-width: 1px 0 0 0;
+    -fx-shape: "M 0 0 L 310 0 L 290 50 L 0 50 Z";
+}
+
+/* === RODAPÉ === */
+.menu-footer {
+    -fx-background-color: transparent;
+    -fx-padding: 20px 40px;
+    -fx-spacing: 25px;
+    -fx-alignment: center-right;
+}
+
+.footer-item {
+    -fx-spacing: 12px;
+    -fx-alignment: center;
+    -fx-padding: 8px 16px;
+    -fx-background-color: linear-gradient(to right,
+    transparent 0%,
+    rgba(26, 42, 58, 0.9) 20%,
+    rgba(26, 42, 58, 0.9) 80%,
+    transparent 100%);
+}
+
+.footer-label {
+    -fx-font-size: 14px;
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-fill: #bfc9d1;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 2px;
+}
+
+.footer-key-container {
+    -fx-background-color:
+            linear-gradient(to bottom, #1a3a4e, #122d3d),
+            linear-gradient(to bottom, #4df0e7, #40e0d0);
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0, 1;
+    -fx-border-color: linear-gradient(to bottom, #60efff, #2a9d8f);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-padding: 2px;
+}
+
+.footer-key {
+    -fx-font-size: 16px;
+    -fx-font-family: "Consolas", monospace;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e0fbfc;
+    -fx-padding: 3px 12px;
+    -fx-letter-spacing: 1px;
 }
 
 /* === GAME MODE SCREEN === */

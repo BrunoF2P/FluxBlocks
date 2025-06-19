@@ -1,8 +1,8 @@
 package com.uneb.fluxblocks.ui.components;
 
-import javafx.scene.Cursor;
+import javafx.scene.control.Button;
 
-public class Button extends javafx.scene.control.Button {
+public class ButtonGame extends Button {
 
     public enum ButtonType {
         PLAY("Jogar", "button-play"),
@@ -27,13 +27,8 @@ public class Button extends javafx.scene.control.Button {
         }
     }
 
-    public Button(String text, ButtonType type) {
+    public ButtonGame(String text, ButtonType type) {
         super(text != null ? text : type.getDefaultText());
         getStyleClass().addAll("game-button", type.getStyleClass());
-        setCursor(Cursor.HAND);
-    }
-
-    public Button(ButtonType type) {
-        this(type.getDefaultText(), type);
     }
 }
