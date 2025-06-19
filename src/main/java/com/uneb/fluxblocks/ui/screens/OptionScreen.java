@@ -1,30 +1,301 @@
 package com.uneb.fluxblocks.ui.screens;
 
+import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
-import javafx.scene.Node;
+import com.uneb.fluxblocks.configuration.GameConfig;
+import com.uneb.fluxblocks.ui.components.ButtonGame;
+import com.uneb.fluxblocks.ui.components.DynamicBackground;
+import static com.uneb.fluxblocks.ui.screens.GameModeScreen.gethBox;
+
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.util.Duration;
 
-public class OptionScreen  {
-    private final VBox content;
-    private final StackPane root;
+public class OptionScreen {
     private final GameMediator mediator;
+    private final StackPane root;
+    private final BorderPane mainLayout;
+    private final VBox titleContainer;
+    private final VBox optionsContainer;
+    private final HBox footerContainer;
+    private final ButtonGame[] optionButtons;
+    private int selectedIndex = 0;
 
-    public OptionScreen( GameMediator mediator) {
+    private static final String[] OPTION_LABELS = {"Configurações de Som", "Configurações de Vídeo", "Controles", "Voltar"};
+    private static final ButtonGame.ButtonType[] OPTION_TYPES = {
+            ButtonGame.ButtonType.OPTIONS,
+            ButtonGame.ButtonType.OPTIONS,
+            ButtonGame.ButtonType.OPTIONS,
+            ButtonGame.ButtonType.EXIT
+    };
+
+    public OptionScreen(GameMediator mediator) {
         this.mediator = mediator;
-        this.content = new VBox(20);
         this.root = new StackPane();
+        this.mainLayout = new BorderPane();
+        this.titleContainer = new VBox();
+        this.optionsContainer = new VBox();
+        this.footerContainer = new HBox();
+        this.optionButtons = new ButtonGame[OPTION_LABELS.length];
+
+        root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        initializeComponents();
+        setupKeyNavigation();
+        playEntryAnimations();
     }
 
+    private void initializeComponents() {
+        setupBackground();
+        setupTitle();
+        setupOptions();
+        setupFooter();
+        setupLayout();
+    }
 
+    private void setupBackground() {
+        DynamicBackground background = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        root.getChildren().addFirst(background);
+    }
 
-    public Node getNode() {
-        return root;
+    private void setupTitle() {
+        VBox titleBox = new VBox(10);
+        titleBox.setAlignment(Pos.CENTER);
+
+        Text titleText = new Text("OPÇÕES");
+        titleText.getStyleClass().add("title-flux");
+       
+        titleBox.getChildren().add(titleText);
+        titleContainer.getChildren().add(titleBox);
+        titleContainer.setAlignment(Pos.CENTER);
+    }
+
+    private void setupOptions() {
+        optionsContainer.getStyleClass().add("menu-buttons");
+        optionsContainer.setAlignment(Pos.CENTER_LEFT);
+        for (int i = 0; i < OPTION_LABELS.length; i++) {
+            ButtonGame btn = createOptionButton(i);
+            optionButtons[i] = btn;
+
+            if (i == OPTION_LABELS.length - 1) {
+                VBox.setMargin(btn, new Insets(32, 0, 0, 0));
+            }
+            optionsContainer.getChildren().add(btn);
+        }
+        updateButtonSelection();
+    }
+
+    private ButtonGame createOptionButton(int index) {
+        ButtonGame btn = new ButtonGame(OPTION_LABELS[index].toUpperCase(), OPTION_TYPES[index]);
+        btn.getStyleClass().add("menu-button");
+
+        btn.setOnAction(e -> handleOptionAction(index));
+        btn.setOnMouseEntered(e -> selectButton(index));
+
+        return btn;
+    }
+
+    private void selectButton(int index) {
+        if (selectedIndex != index) {
+            selectedIndex = index;
+            updateButtonSelection();
+        }
+    }
+
+    private void setupFooter() {
+        footerContainer.getStyleClass().add("menu-footer");
+        footerContainer.setAlignment(Pos.CENTER_RIGHT);
+
+        footerContainer.getChildren().addAll(
+                createFooterItem("VOLTAR", "ESC"),
+                createFooterItem("SELECIONAR", "ENTER")
+        );
+    }
+
+    private HBox createFooterItem(String label, String key) {
+        return gethBox(label, key);
+    }
+
+    private void setupLayout() {
+        mainLayout.setMaxSize(1920, 1080);
+
+        mainLayout.setTop(footerContainer);
+        mainLayout.setLeft(titleContainer);
+        mainLayout.setRight(optionsContainer);
+
+        BorderPane.setAlignment(titleContainer, Pos.CENTER);
+        BorderPane.setAlignment(optionsContainer, Pos.CENTER);
+
+        BorderPane.setMargin(titleContainer, new Insets(0, 0, 0, 100));
+        BorderPane.setMargin(optionsContainer, new Insets(0, 100, 0, 30));
+
+        root.getChildren().add(mainLayout);
+    }
+
+    private void setupKeyNavigation() {
+        root.setOnKeyPressed(event -> {
+            KeyCode code = event.getCode();
+            switch (code) {
+                case ESCAPE:
+                    mediator.emit(UiEvents.BACK_TO_MENU, null);
+                    break;
+                case UP:
+                    navigateUp();
+                    break;
+                case DOWN:
+                    navigateDown();
+                    break;
+                case ENTER:
+                    activateSelectedButton();
+                    break;
+                default:
+                    break;
+            }
+        });
+        root.setFocusTraversable(true);
+        root.requestFocus();
+    }
+
+    private void navigateUp() {
+        selectedIndex = (selectedIndex - 1 + optionButtons.length) % optionButtons.length;
+        updateButtonSelection();
+    }
+
+    private void navigateDown() {
+        selectedIndex = (selectedIndex + 1) % optionButtons.length;
+        updateButtonSelection();
+    }
+
+    private void activateSelectedButton() {
+        optionButtons[selectedIndex].fire();
+    }
+
+    private void updateButtonSelection() {
+        for (int i = 0; i < optionButtons.length; i++) {
+            updateButtonState(i, i == selectedIndex);
+        }
+    }
+
+    private void updateButtonState(int index, boolean isSelected) {
+        ButtonGame btn = optionButtons[index];
+        String originalText = OPTION_LABELS[index].toUpperCase();
+
+        if (isSelected) {
+            btn.setText("> " + originalText);
+            if (!btn.getStyleClass().contains("selected")) {
+                btn.getStyleClass().add("selected");
+            }
+        } else {
+            btn.setText(originalText);
+            btn.getStyleClass().remove("selected");
+        }
+    }
+
+    private void playEntryAnimations() {
+        ParallelTransition titleAnimation = createTitleEntryAnimation();
+        ParallelTransition optionsAnimation = createOptionsEntryAnimation();
+        ParallelTransition footerAnimation = createFooterEntryAnimation();
+
+        titleAnimation.play();
+        optionsAnimation.play();
+        footerAnimation.play();
+    }
+
+    private ParallelTransition createTitleEntryAnimation() {
+        titleContainer.setOpacity(0);
+        titleContainer.setTranslateY(-50);
+
+        return new ParallelTransition(
+                createFadeTransition(titleContainer, Duration.millis(800)),
+                createSlideTransition(titleContainer, Duration.millis(800), -50)
+        );
+    }
+
+    private ParallelTransition createOptionsEntryAnimation() {
+        optionsContainer.setOpacity(0);
+        optionsContainer.setTranslateX(80);
+
+        return new ParallelTransition(
+                createFadeTransition(optionsContainer, Duration.millis(800)),
+                createSlideTransition(optionsContainer, Duration.millis(800), 80)
+        );
+    }
+
+    private ParallelTransition createFooterEntryAnimation() {
+        footerContainer.setOpacity(0);
+        footerContainer.setTranslateY(30);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(1000), footerContainer);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(1000), footerContainer);
+        slide.setFromY(30);
+        slide.setToY(0);
+
+        return new ParallelTransition(fade, slide);
+    }
+
+    private FadeTransition createFadeTransition(Parent node, Duration duration) {
+        FadeTransition fade = new FadeTransition(duration, node);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        return fade;
+    }
+
+    private TranslateTransition createSlideTransition(Parent node, Duration duration, double fromValue) {
+        TranslateTransition slide = new TranslateTransition(duration, node);
+        slide.setFromY(fromValue);
+        slide.setToY(0);
+        slide.setInterpolator(Interpolator.EASE_OUT);
+        return slide;
+    }
+
+    private void handleOptionAction(int idx) {
+        switch (idx) {
+            case 0:
+                // SOM
+                break;
+            case 1:
+                // VIDEO
+                break;
+            case 2:
+                // CONTROLE
+                break;
+            case 3:
+                mediator.emit(UiEvents.BACK_TO_MENU, null);
+                break;
+            default:
+                break;
+        }
     }
 
     public void destroy() {
-        content.getChildren().clear();
-        root.getStylesheets().clear();
+        for (ButtonGame btn : optionButtons) {
+            if (btn != null) {
+                btn.setOnAction(null);
+                btn.setOnMouseEntered(null);
+            }
+        }
+        root.getChildren().removeIf(node -> node instanceof DynamicBackground);
+
+        optionsContainer.getChildren().clear();
+        titleContainer.getChildren().clear();
+        footerContainer.getChildren().clear();
+        root.getChildren().clear();
     }
 
-}
+    public Parent getNode() {
+        return root;
+    }
+} 
