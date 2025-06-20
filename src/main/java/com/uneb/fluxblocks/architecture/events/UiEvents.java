@@ -10,6 +10,7 @@ public abstract class UiEvents {
     public record BoardUpdateEvent(int playerId, int[][] grid) {}
     public record PieceTrailEffectEvent(int playerId, int[] position) {}
     public record CountdownEvent(int playerId, int seconds) {}
+    public record ScreenShakeEvent(int playerId, double intensity) {}
     private UiEvents() {
     }
 
@@ -22,6 +23,8 @@ public abstract class UiEvents {
     public static final EventType<Void> RANKING = new EventType<Void>() {
     };
     public static final EventType<BoardUpdateEvent> BOARD_UPDATE = new EventType<>() {
+    };
+    public static final EventType<ScreenShakeEvent> SCREEN_SHAKE = new EventType<>() {
     };
     public static final EventType<NextPieceEvent> NEXT_PIECE_UPDATE = new EventType<>() {
     };

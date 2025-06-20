@@ -6,10 +6,12 @@ import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.BoardCanvas;
 import com.uneb.fluxblocks.ui.effects.LineClearEffects;
 
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 
 /**
  * Classe responsável por gerir a tela do tabuleiro do jogo FluxBlocks.
@@ -58,7 +60,24 @@ public class GameBoardScreen {
                 updateBoard(ev.grid());
             }
         });
+        mediator.receiver(UiEvents.SCREEN_SHAKE, (ev) -> {
+            if (ev.playerId() == playerId) {
+                handleScreenShake(ev);
+            }
+        });
     }
+
+    private void handleScreenShake(UiEvents.ScreenShakeEvent event) {
+        if (event.playerId() == playerId) {
+            TranslateTransition shake = new TranslateTransition(Duration.millis(100), root);
+            shake.setByY(event.intensity());
+            shake.setCycleCount(2);
+            shake.setAutoReverse(true);
+            shake.setOnFinished(e -> root.setTranslateY(0));
+            shake.play();
+        }
+    }
+
     /**
      * Atualiza o estado visual do tabuleiro com base na grade fornecida.
      *
@@ -89,10 +108,15 @@ public class GameBoardScreen {
      */
     public void destroy() {
         mediator.removeReceiver(UiEvents.BOARD_UPDATE, (ev) -> {
-                    if (ev.playerId() == playerId) {
-                        updateBoard(ev.grid());
-                    };
-                });
+            if (ev.playerId() == playerId) {
+                updateBoard(ev.grid());
+            }
+        });
+        mediator.removeReceiver(UiEvents.SCREEN_SHAKE, (ev) -> {
+            if (ev.playerId() == playerId) {
+                handleScreenShake(ev);
+            }
+        });
         if (boardCanvas != null) {
             boardCanvas.clearBoard();
         }
