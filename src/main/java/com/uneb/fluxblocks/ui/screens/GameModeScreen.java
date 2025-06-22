@@ -1,18 +1,10 @@
 package com.uneb.fluxblocks.ui.screens;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
-
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -31,8 +23,12 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Tela de seleção de modo de jogo.
+ * Tela de seleção de modos de jogo.
+ * Permite ao usuário escolher entre diferentes modos de jogo, como solo, multiplayer local e online.
  */
 public class GameModeScreen {
     private final GameMediator mediator;
@@ -48,6 +44,7 @@ public class GameModeScreen {
     private ScaleTransition cardScaleTransition;
     
     private Text titleText;
+    private DynamicBackground dynamicBackground;
     
     private static final Duration CARD_SCALE_DURATION = Duration.millis(200);
 
@@ -81,8 +78,8 @@ public class GameModeScreen {
     }
 
     private void setupBackground() {
-        DynamicBackground background = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().addFirst(background);
+        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        root.getChildren().add(dynamicBackground.getCanvas());
         root.getStyleClass().add("game-mode-screen");
     }
 
@@ -141,10 +138,6 @@ public class GameModeScreen {
     }
 
     private HBox createFooterItem(String label, String key) {
-        return gethBox(label, key);
-    }
-
-    static HBox gethBox(String label, String key) {
         HBox box = new HBox(12);
         box.getStyleClass().add("footer-item");
         box.setAlignment(Pos.CENTER);
@@ -310,7 +303,11 @@ public class GameModeScreen {
         modeCards.clear();
         cardActions.clear();
         
-        root.getChildren().removeIf(node -> node instanceof DynamicBackground);
+        if (dynamicBackground != null) {
+            dynamicBackground.destroy();
+            dynamicBackground = null;
+        }
+        
         cardsContainer.getChildren().clear();
         titleContainer.getChildren().clear();
         footerContainer.getChildren().clear();

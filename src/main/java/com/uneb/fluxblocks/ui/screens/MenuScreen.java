@@ -5,31 +5,25 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
-
-import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PauseTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.Timeline;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import static com.uneb.fluxblocks.ui.screens.GameModeScreen.gethBox;
-
+/**
+ * Tela principal do menu do jogo.
+ * Gerencia recursos automaticamente através do sistema FXGL.
+ */
 public class MenuScreen {
-    private final GameMediator mediator;
     private final StackPane root;
     private final BorderPane mainLayout;
     private final VBox titleContainer;
@@ -37,6 +31,7 @@ public class MenuScreen {
     private final HBox footerContainer;
     private final ButtonGame[] menuButtons;
     private int selectedIndex = 0;
+    private final GameMediator mediator;
     private Timeline blocksShakeTimeline;
     private boolean isBlocksStable = false;
 
@@ -79,8 +74,8 @@ public class MenuScreen {
     }
 
     private void setupBackground() {
-        DynamicBackground background = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().addFirst(background);
+        DynamicBackground dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        root.getChildren().add(dynamicBackground.getCanvas());
     }
 
     private void setupTitle() {
@@ -211,25 +206,25 @@ public class MenuScreen {
     private void setupMenu() {
         menuContainer.getStyleClass().add("menu-buttons");
         menuContainer.setAlignment(Pos.CENTER_LEFT);
-
+        
         for (int i = 0; i < MENU_LABELS.length; i++) {
             ButtonGame btn = createMenuButton(i);
             menuButtons[i] = btn;
-
-            if (i == MENU_LABELS.length - 1) {
-                VBox.setMargin(btn, new Insets(32, 0, 0, 0));
+            menuContainer.getChildren().add(btn.getButton());
+            
+            if (i == 3) { 
+                VBox.setMargin(btn.getButton(), new Insets(30, 0, 0, 0));
             }
-            menuContainer.getChildren().add(btn);
         }
         updateButtonSelection();
     }
 
     private ButtonGame createMenuButton(int index) {
         ButtonGame btn = new ButtonGame(MENU_LABELS[index].toUpperCase(), MENU_TYPES[index]);
-        btn.getStyleClass().add("menu-button");
+        btn.getButton().getStyleClass().add("menu-button");
 
         btn.setOnAction(e -> handleMenuAction(index));
-        btn.setOnMouseEntered(e -> selectButton(index));
+        btn.getButton().setOnMouseEntered(e -> selectButton(index));
 
         return btn;
     }
@@ -252,16 +247,29 @@ public class MenuScreen {
     }
 
     private HBox createFooterItem(String label, String key) {
-        return gethBox(label, key);
+        HBox box = new HBox(12);
+        box.getStyleClass().add("footer-item");
+        box.setAlignment(Pos.CENTER);
+
+        Text labelText = new Text(label);
+        labelText.getStyleClass().add("footer-label");
+
+        StackPane keyContainer = new StackPane();
+        keyContainer.getStyleClass().add("footer-key-container");
+        Text keyText = new Text(key);
+        keyText.getStyleClass().add("footer-key");
+        keyContainer.getChildren().add(keyText);
+
+        box.getChildren().addAll(labelText, keyContainer);
+        return box;
     }
 
     private void setupLayout() {
         mainLayout.setMaxSize(1920, 1080);
-        mainLayout.setTop(footerContainer);
 
+        mainLayout.setTop(footerContainer);
         mainLayout.setLeft(titleContainer);
         mainLayout.setRight(menuContainer);
-
 
         BorderPane.setAlignment(titleContainer, Pos.CENTER);
         BorderPane.setAlignment(menuContainer, Pos.CENTER);
@@ -307,7 +315,7 @@ public class MenuScreen {
     }
 
     private void activateSelectedButton() {
-        menuButtons[selectedIndex].fire();
+        menuButtons[selectedIndex].getButton().fire();
     }
 
     private void updateButtonSelection() {
@@ -322,13 +330,13 @@ public class MenuScreen {
 
         if (isSelected) {
             btn.setText("> " + originalText);
-            if (!btn.getStyleClass().contains("selected")) {
-                btn.getStyleClass().add("selected");
+            if (!btn.getButton().getStyleClass().contains("selected")) {
+                btn.getButton().getStyleClass().add("selected");
             }
             playButtonScaleAnimation(btn);
         } else {
             btn.setText(originalText);
-            btn.getStyleClass().remove("selected");
+            btn.getButton().getStyleClass().remove("selected");
             resetButtonScale(btn);
         }
     }
@@ -338,7 +346,7 @@ public class MenuScreen {
             buttonScaleTransition.stop();
         }
 
-        buttonScaleTransition = new ScaleTransition(BUTTON_SCALE_DURATION, button);
+        buttonScaleTransition = new ScaleTransition(BUTTON_SCALE_DURATION, button.getButton());
         buttonScaleTransition.setToX(1.08);
         buttonScaleTransition.setToY(1.08);
         buttonScaleTransition.setAutoReverse(true);
@@ -347,8 +355,8 @@ public class MenuScreen {
     }
 
     private void resetButtonScale(ButtonGame button) {
-        button.setScaleX(1.0);
-        button.setScaleY(1.0);
+        button.getButton().setScaleX(1.0);
+        button.getButton().setScaleY(1.0);
     }
 
     private void playEntryAnimations() {
@@ -457,10 +465,11 @@ public class MenuScreen {
         for (ButtonGame btn : menuButtons) {
             if (btn != null) {
                 btn.setOnAction(null);
-                btn.setOnMouseEntered(null);
+                btn.getButton().setOnMouseEntered(null);
             }
         }
-        root.getChildren().removeIf(node -> node instanceof DynamicBackground);
+        
+        root.getChildren().removeIf(node -> node instanceof Canvas);
 
         menuContainer.getChildren().clear();
         titleContainer.getChildren().clear();

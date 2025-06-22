@@ -4,6 +4,10 @@
     src: url('../fonts/thatsoundsgreat.ttf');
 }
 
+/* === BACKGROUND === */
+.game-bg {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e, #0f3460);
+}
 
 /* === TYPOGRAPHY === */
 .game-title {

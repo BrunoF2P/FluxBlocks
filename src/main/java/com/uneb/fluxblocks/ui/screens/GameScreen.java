@@ -1,7 +1,5 @@
 package com.uneb.fluxblocks.ui.screens;
 
-import java.util.function.Consumer;
-
 import com.uneb.fluxblocks.architecture.events.GameplayEvents;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
@@ -14,23 +12,20 @@ import com.uneb.fluxblocks.ui.effects.DropTrailEffect;
 import com.uneb.fluxblocks.ui.effects.Effects;
 import com.uneb.fluxblocks.ui.effects.FloatingTextEffect;
 import com.uneb.fluxblocks.ui.theme.BlockShapeColors;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Parent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Text;
+
+import java.util.function.Consumer;
 
 /**
  * Classe responsável pela interface gráfica principal do jogo.
@@ -76,6 +71,14 @@ public class GameScreen {
 
     private boolean isDestroyed = false;
 
+    /**
+     * Construtor da tela do jogo.
+     *
+     * @param mediator O mediador que gerencia a comunicação entre componentes
+     * @param gameState O estado atual do jogo
+     * @param playerId O ID do jogador atual
+     * @param backgroundComponent Componente de fundo da tela
+     */
     public GameScreen(GameMediator mediator, GameState gameState, int playerId, BackgroundComponent backgroundComponent) {
         this.mediator = mediator;
         this.gameState = gameState;
@@ -216,7 +219,7 @@ public class GameScreen {
         timeDisplay = new TimeDisplay(150, 40);
         timeDisplay.setColors(YELLOW_COLOR, TRANSPARENT_BLACK);
 
-        timeBox.getChildren().addAll(timeLabel, timeDisplay);
+        timeBox.getChildren().addAll(timeLabel, timeDisplay.getCanvas());
         return timeBox;
     }
 
@@ -244,7 +247,6 @@ public class GameScreen {
 
     private void setupNextPiecePreview() {
         this.nextPieceComponent = new NextPiecePreview(mediator, nextPiecePreview, playerId);
-        this.nextPieceComponent.initialize();
     }
 
     public void initialize() {

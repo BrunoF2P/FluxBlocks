@@ -5,8 +5,6 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
-import static com.uneb.fluxblocks.ui.screens.GameModeScreen.gethBox;
-
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
@@ -31,6 +29,7 @@ public class OptionScreen {
     private final HBox footerContainer;
     private final ButtonGame[] optionButtons;
     private int selectedIndex = 0;
+    private DynamicBackground dynamicBackground;
 
     private static final String[] OPTION_LABELS = {"Configurações de Som", "Configurações de Vídeo", "Controles", "Voltar"};
     private static final ButtonGame.ButtonType[] OPTION_TYPES = {
@@ -64,8 +63,8 @@ public class OptionScreen {
     }
 
     private void setupBackground() {
-        DynamicBackground background = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().addFirst(background);
+        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        root.getChildren().add(dynamicBackground.getCanvas());
     }
 
     private void setupTitle() {
@@ -88,19 +87,19 @@ public class OptionScreen {
             optionButtons[i] = btn;
 
             if (i == OPTION_LABELS.length - 1) {
-                VBox.setMargin(btn, new Insets(32, 0, 0, 0));
+                VBox.setMargin(btn.getButton(), new Insets(32, 0, 0, 0));
             }
-            optionsContainer.getChildren().add(btn);
+            optionsContainer.getChildren().add(btn.getButton());
         }
         updateButtonSelection();
     }
 
     private ButtonGame createOptionButton(int index) {
         ButtonGame btn = new ButtonGame(OPTION_LABELS[index].toUpperCase(), OPTION_TYPES[index]);
-        btn.getStyleClass().add("menu-button");
+        btn.getButton().getStyleClass().add("menu-button");
 
         btn.setOnAction(e -> handleOptionAction(index));
-        btn.setOnMouseEntered(e -> selectButton(index));
+        btn.getButton().setOnMouseEntered(e -> selectButton(index));
 
         return btn;
     }
@@ -123,7 +122,21 @@ public class OptionScreen {
     }
 
     private HBox createFooterItem(String label, String key) {
-        return gethBox(label, key);
+        HBox box = new HBox(12);
+        box.getStyleClass().add("footer-item");
+        box.setAlignment(Pos.CENTER);
+
+        Text labelText = new Text(label);
+        labelText.getStyleClass().add("footer-label");
+
+        StackPane keyContainer = new StackPane();
+        keyContainer.getStyleClass().add("footer-key-container");
+        Text keyText = new Text(key);
+        keyText.getStyleClass().add("footer-key");
+        keyContainer.getChildren().add(keyText);
+
+        box.getChildren().addAll(labelText, keyContainer);
+        return box;
     }
 
     private void setupLayout() {
@@ -177,7 +190,7 @@ public class OptionScreen {
     }
 
     private void activateSelectedButton() {
-        optionButtons[selectedIndex].fire();
+        optionButtons[selectedIndex].getButton().fire();
     }
 
     private void updateButtonSelection() {
@@ -192,12 +205,12 @@ public class OptionScreen {
 
         if (isSelected) {
             btn.setText("> " + originalText);
-            if (!btn.getStyleClass().contains("selected")) {
-                btn.getStyleClass().add("selected");
+            if (!btn.getButton().getStyleClass().contains("selected")) {
+                btn.getButton().getStyleClass().add("selected");
             }
         } else {
             btn.setText(originalText);
-            btn.getStyleClass().remove("selected");
+            btn.getButton().getStyleClass().remove("selected");
         }
     }
 
@@ -284,10 +297,14 @@ public class OptionScreen {
         for (ButtonGame btn : optionButtons) {
             if (btn != null) {
                 btn.setOnAction(null);
-                btn.setOnMouseEntered(null);
+                btn.getButton().setOnMouseEntered(null);
             }
         }
-        root.getChildren().removeIf(node -> node instanceof DynamicBackground);
+
+        if (dynamicBackground != null) {
+            dynamicBackground.destroy();
+            dynamicBackground = null;
+        }
 
         optionsContainer.getChildren().clear();
         titleContainer.getChildren().clear();
