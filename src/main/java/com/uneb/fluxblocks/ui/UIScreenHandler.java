@@ -82,7 +82,7 @@ public class UIScreenHandler {
 
         this.gameController = controller;
 
-        PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false);
+        PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false, 1.0);
 
         StackPane gameContainer = new StackPane();
         gameContainer.getChildren().addAll(backgroundComponent.getBackground(), playerContainer.getContainer());
@@ -104,8 +104,8 @@ public class UIScreenHandler {
         screen1.initialize();
         screen2.initialize();
 
-        PlayerContainer player1Container = new PlayerContainer("Jogador 1", screen1, true);
-        PlayerContainer player2Container = new PlayerContainer("Jogador 2", screen2, true);
+        PlayerContainer player1Container = new PlayerContainer("Jogador 1", screen1, true, 0.7);
+        PlayerContainer player2Container = new PlayerContainer("Jogador 2", screen2, true, 0.7);
 
         HBox playersContainer = createPlayersContainer(player1Container, player2Container);
 
@@ -125,7 +125,7 @@ public class UIScreenHandler {
     }
 
     private HBox createPlayersContainer(PlayerContainer player1Container, PlayerContainer player2Container) {
-        HBox container = new HBox(20);
+        HBox container = new HBox(300);
         container.setAlignment(Pos.CENTER);
         container.setPadding(new Insets(20));
 

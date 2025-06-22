@@ -26,11 +26,13 @@ public class PlayerContainer {
         private final String playerName;
         private final GameScreen gameScreen;
         private final boolean showTitle;
+        private final double scale;
 
-        public PlayerContainerComponent(String playerName, GameScreen gameScreen, boolean showTitle) {
+        public PlayerContainerComponent(String playerName, GameScreen gameScreen, boolean showTitle, double scale) {
             this.playerName = playerName;
             this.gameScreen = gameScreen;
             this.showTitle = showTitle;
+            this.scale = scale;
             this.container = createContainer();
         }
 
@@ -82,8 +84,8 @@ public class PlayerContainer {
             scaledContent.setPrefSize(width, height);
             scaledContent.setMaxSize(width, height);
 
-            scaledContent.setScaleX(0.8);
-            scaledContent.setScaleY(0.8);
+            scaledContent.setScaleX(scale);
+            scaledContent.setScaleY(scale);
 
             scaledContent.getStyleClass().add("game-board");
 
@@ -105,16 +107,27 @@ public class PlayerContainer {
         public boolean isShowTitle() {
             return showTitle;
         }
+
+        public double getScale() {
+            return scale;
+        }
     }
 
 
-    public PlayerContainer(String playerName, GameScreen gameScreen, boolean showTitle) {
-        this.containerComponent = new PlayerContainerComponent(playerName, gameScreen, showTitle);
+    public PlayerContainer(String playerName, GameScreen gameScreen, boolean showTitle, double scale) {
+        this.containerComponent = new PlayerContainerComponent(playerName, gameScreen, showTitle, scale);
 
         this.containerEntity = FXGL.entityBuilder()
                 .at(0, 0)
                 .with(containerComponent)
                 .buildAndAttach();
+    }
+
+    /**
+     * Construtor com escala padrão de 0.8 para compatibilidade.
+     */
+    public PlayerContainer(String playerName, GameScreen gameScreen, boolean showTitle) {
+        this(playerName, gameScreen, showTitle, 0.8);
     }
 
     /**

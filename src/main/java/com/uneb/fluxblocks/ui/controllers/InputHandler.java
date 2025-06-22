@@ -36,7 +36,6 @@ public class InputHandler {
     private KeyCode lastHorizontalKeyPressed = null;
     private final int playerId;
 
-
     private KeyCode keyLeft;
     private KeyCode keyRight;
     private KeyCode keyDown;
@@ -46,17 +45,18 @@ public class InputHandler {
     private KeyCode keyRestart;
 
     private boolean actionsRegistered = false;
+
     /**
      * Cria um novo InputHandler com o mediador e estado do jogo especificados.
      *
-     * @param mediator O mediador do jogo para notificar sobre eventos de entrada
-     * @param gameState O estado atual do jogo para verificar o tratamento de entrada válido
+     * @param mediator O mediador central para comunicação entre componentes
+     * @param gameState O estado atual do jogo
+     * @param playerId O ID do jogador (1 ou 2)
      */
     public InputHandler(GameMediator mediator, GameState gameState, int playerId) {
         this.mediator = mediator;
         this.gameState = gameState;
         this.playerId = playerId;
-
 
         if (playerId == 1) {
             keyLeft    = KeyCode.A;
@@ -83,8 +83,6 @@ public class InputHandler {
      * Deve ser chamado uma vez durante a inicialização do jogo.
      */
     public void setupInputHandling() {
-        if (actionsRegistered)
-            return;
         setupMoveLeftAction();
         setupMoveRightAction();
         setupSoftDropAction();
