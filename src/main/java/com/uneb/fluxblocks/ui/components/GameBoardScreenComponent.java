@@ -9,6 +9,7 @@ import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 
@@ -23,6 +24,13 @@ public class GameBoardScreenComponent extends Component {
     private final StackPane root;
     private final Pane effectsLayer;
     private final int playerId;
+
+    private static final Color CONTAINER_BACKGROUND_START = Color.web("#1e2b38");
+    private static final Color CONTAINER_BACKGROUND_END = Color.web("#14202c");
+    private static final Color CONTAINER_BORDER_COLOR = Color.web("#2c3e50");
+    private static final double CONTAINER_PADDING = 5.0;
+    private static final double CONTAINER_BORDER_WIDTH = 10.0;
+    private static final double CONTAINER_CORNER_RADIUS = 15.0;
 
     public GameBoardScreenComponent(GameMediator mediator, int playerId) {
         this.mediator = mediator;
@@ -45,13 +53,36 @@ public class GameBoardScreenComponent extends Component {
         effectsLayer.setPrefSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
         effectsLayer.setMaxSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
 
-        root.getStyleClass().add("game-board");
+        applyBoardContainerStyles();
+        
         root.setAlignment(Pos.CENTER);
 
         double boardWidth = GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
         double boardHeight = GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE;
         root.setPrefSize(boardWidth, boardHeight);
         root.setMaxSize(boardWidth, boardHeight);
+    }
+
+    private void applyBoardContainerStyles() {
+        root.getStyleClass().clear();
+        
+        root.setBackground(javafx.scene.layout.Background.EMPTY);
+        root.setStyle(String.format(
+            "-fx-background-color: linear-gradient(to bottom, %s, %s);" +
+            "-fx-padding: %.1fpx;" +
+            "-fx-border-width: %.1fpx;" +
+            "-fx-border-style: solid;" +
+            "-fx-border-color: %s;" +
+            "-fx-border-radius: %.1fpx;" +
+            "-fx-background-radius: %.1fpx;",
+            CONTAINER_BACKGROUND_START.toString().replace("0x", "#"),
+            CONTAINER_BACKGROUND_END.toString().replace("0x", "#"),
+            CONTAINER_PADDING,
+            CONTAINER_BORDER_WIDTH,
+            CONTAINER_BORDER_COLOR.toString().replace("0x", "#"),
+            CONTAINER_CORNER_RADIUS,
+            CONTAINER_CORNER_RADIUS
+        ));
     }
 
     private void setupEntityUI() {
@@ -127,7 +158,7 @@ public class GameBoardScreenComponent extends Component {
         }
 
         if (root != null) {
-            root.getStylesheets().clear();
+            root.setStyle("");
         }
 
         mediator.removeReceiver(UiEvents.BOARD_UPDATE, (ev) -> {

@@ -25,6 +25,23 @@ public class BoardRenderComponent extends Component {
     private boolean firstDraw = true;
     private final int[][] previousGrid;
 
+    // Cores e estilos do tabuleiro
+    private static final Color BOARD_BACKGROUND_COLOR = Color.web("#15202b");
+    private static final Color BOARD_GRADIENT_START = Color.web("#1e2b38");
+    private static final Color BOARD_GRADIENT_END = Color.web("#14202c");
+    private static final Color BOARD_BORDER_COLOR = Color.web("#2c3e50");
+    private static final Color CELL_EMPTY_BACKGROUND = Color.web("#15202b");
+    private static final Color CELL_EMPTY_STROKE = Color.rgb(255, 255, 255, 0.05);
+    private static final Color CELL_FILLED_STROKE = Color.rgb(0, 0, 0, 0.2);
+    
+    // Dimensões e espaçamentos
+    private static final double BOARD_BORDER_WIDTH = 10.0;
+    private static final double BOARD_CORNER_RADIUS = 15.0;
+    private static final double CELL_SPACING = 1.0;
+    private static final double CELL_CORNER_RADIUS = 10.0;
+    private static final double CELL_EMPTY_CORNER_RADIUS = 8.0;
+    private static final double CELL_STROKE_WIDTH = 0.5;
+
     public BoardRenderComponent(int[][] grid, Canvas canvas, int cellSize) {
         this.grid = grid;
         this.canvas = canvas;
@@ -59,23 +76,26 @@ public class BoardRenderComponent extends Component {
     }
 
     private void drawBackground() {
-        // Fundo
-        gc.setFill(Color.web("#15202b"));
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        
+        // Fundo base
+        gc.setFill(BOARD_BACKGROUND_COLOR);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
+        // Gradiente de fundo
         Stop[] stops = new Stop[]{
-                new Stop(0, Color.web("#1e2b38")),
-                new Stop(1, Color.web("#14202c"))
+                new Stop(0, BOARD_GRADIENT_START),
+                new Stop(1, BOARD_GRADIENT_END)
         };
         LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
 
         gc.setFill(gradient);
-        gc.fillRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), 15, 15);
+        gc.fillRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), BOARD_CORNER_RADIUS, BOARD_CORNER_RADIUS);
 
-        // Borda
-        gc.setStroke(Color.web("#2c3e50"));
-        gc.setLineWidth(10);
-        gc.strokeRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), 15, 15);
+        // Borda do tabuleiro
+        gc.setStroke(BOARD_BORDER_COLOR);
+        gc.setLineWidth(BOARD_BORDER_WIDTH);
+        gc.strokeRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), BOARD_CORNER_RADIUS, BOARD_CORNER_RADIUS);
     }
 
     private void drawCell(int x, int y, int cellType) {
@@ -83,26 +103,34 @@ public class BoardRenderComponent extends Component {
         int pixelY = y * cellSize;
 
         // Desenho da célula
-        int spacing = 1;
-        int innerSize = cellSize - (spacing * 2);
+        double innerSize = cellSize - (CELL_SPACING * 2);
 
         // Fundo da célula
-        gc.setFill(Color.web("#15202b"));
+        gc.setFill(CELL_EMPTY_BACKGROUND);
         gc.fillRect(pixelX, pixelY, cellSize, cellSize);
 
         if (cellType != 0) {
+            // Célula preenchida com peça
             Color tetroColor = BlockShapeColors.getColor(cellType);
+            
+            // Aplica a cor sólida da peça
             gc.setFill(tetroColor);
-            gc.fillRoundRect(pixelX + spacing, pixelY + spacing, innerSize, innerSize, 10, 10);
-            gc.setStroke(Color.BLACK);
-            gc.setLineWidth(0.5);
-            gc.strokeRoundRect(pixelX + spacing, pixelY + spacing, innerSize, innerSize, 10, 10);
+            gc.fillRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING, innerSize, innerSize, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS);
+            
+            // Borda da célula preenchida
+            gc.setStroke(CELL_FILLED_STROKE);
+            gc.setLineWidth(CELL_STROKE_WIDTH);
+            gc.strokeRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING, innerSize, innerSize, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS);
+            
         } else {
-            gc.setFill(Color.web("#15202b"));
-            gc.fillRoundRect(pixelX + spacing, pixelY + spacing, innerSize, innerSize, 8, 8);
-            gc.setStroke(Color.rgb(255, 255, 255, 0.05));
-            gc.setLineWidth(0.5);
-            gc.strokeRoundRect(pixelX + spacing, pixelY + spacing, innerSize, innerSize, 8, 8);
+            // Célula vazia
+            gc.setFill(CELL_EMPTY_BACKGROUND);
+            gc.fillRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING, innerSize, innerSize, CELL_EMPTY_CORNER_RADIUS, CELL_EMPTY_CORNER_RADIUS);
+            
+            // Borda sutil da célula vazia
+            gc.setStroke(CELL_EMPTY_STROKE);
+            gc.setLineWidth(CELL_STROKE_WIDTH);
+            gc.strokeRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING, innerSize, innerSize, CELL_EMPTY_CORNER_RADIUS, CELL_EMPTY_CORNER_RADIUS);
         }
     }
 

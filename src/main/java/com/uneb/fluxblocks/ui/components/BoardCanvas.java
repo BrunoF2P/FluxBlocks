@@ -2,6 +2,7 @@ package com.uneb.fluxblocks.ui.components;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
+import javafx.scene.CacheHint;
 import javafx.scene.canvas.Canvas;
 
 
@@ -28,6 +29,9 @@ public class BoardCanvas {
         this.cellSize = cellSize;
 
         this.canvas = new Canvas(width * cellSize, height * cellSize);
+        
+        this.canvas.setCache(true);
+        this.canvas.setCacheHint(CacheHint.SPEED);
 
         int[][] initialGrid = new int[height][width];
 
