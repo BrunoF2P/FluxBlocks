@@ -23,11 +23,13 @@ public class GameBoardScreenComponent extends Component {
     private final StackPane root;
     private final Pane effectsLayer;
     private final int playerId;
-
+    
     public GameBoardScreenComponent(GameMediator mediator, int playerId) {
         this.mediator = mediator;
         this.playerId = playerId;
-        this.boardCanvas = new BoardCanvas(GameConfig.BOARD_WIDTH, GameConfig.BOARD_HEIGHT, GameConfig.CELL_SIZE);
+        
+        int totalHeight = GameConfig.BOARD_HEIGHT + GameConfig.BOARD_VISIBLE_ROW;
+        this.boardCanvas = new BoardCanvas(GameConfig.BOARD_WIDTH, totalHeight, GameConfig.CELL_SIZE);
         this.effectsLayer = new Pane();
         this.root = new StackPane(boardCanvas.getCanvas(), effectsLayer);
 
@@ -42,26 +44,29 @@ public class GameBoardScreenComponent extends Component {
 
     private void setupBasicUI() {
         effectsLayer.setMouseTransparent(true);
-        effectsLayer.setPrefSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
-        effectsLayer.setMaxSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
+        
+        double boardWidth = GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
+        double totalHeight = (GameConfig.BOARD_HEIGHT + GameConfig.BOARD_VISIBLE_ROW) * GameConfig.CELL_SIZE;
+        effectsLayer.setPrefSize(boardWidth, totalHeight);
+        effectsLayer.setMaxSize(boardWidth, totalHeight);
 
         root.getStyleClass().clear();
+        // Mantendo a borda mas removendo o fundo gradiente
         root.setStyle(
             "-fx-background-color: linear-gradient(to bottom, #1e2b38, #14202c);" +
             "-fx-padding: 5px;" +
-            "-fx-border-width: 0 10px 10px 10px;" + // topo, direita, baixo, esquerda
+            "-fx-border-width: 0 10px 10px 10px;" +
             "-fx-border-style: solid;" +
             "-fx-border-color: #2c3e50;" +
-            "-fx-border-radius: 0 0 15px 15px;" + // topo-esquerda, topo-direita, baixo-direita, baixo-esquerda
+            "-fx-border-radius: 0 0 15px 15px;" +
             "-fx-background-radius: 0 0 15px 15px;"
         );
         
-        root.setAlignment(Pos.CENTER);
-
-        double boardWidth = GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
-        double boardHeight = GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE;
-        root.setPrefSize(boardWidth, boardHeight);
-        root.setMaxSize(boardWidth, boardHeight);
+        root.setAlignment(Pos.BOTTOM_CENTER);
+        
+        root.setPrefSize(boardWidth, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
+        root.setMaxSize(boardWidth, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
+        
     }
 
     private void setupEntityUI() {

@@ -23,7 +23,7 @@ public class GameConfig {
     // Configurações do Tabuleiro
     public static int BOARD_WIDTH = 10;
     public static int BOARD_HEIGHT = 20;
-    public static int BOARD_VISIBLE_ROW = 2;
+    public static int BOARD_VISIBLE_ROW = 3;
 
     // Configurações de Gameplay
     public static int LINES_PER_LEVEL = 10;

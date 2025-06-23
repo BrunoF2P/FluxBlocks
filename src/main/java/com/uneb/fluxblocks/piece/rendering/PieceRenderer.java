@@ -2,6 +2,7 @@ package com.uneb.fluxblocks.piece.rendering;
 
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
+import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.piece.entities.Cell;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
@@ -58,7 +59,8 @@ public class PieceRenderer {
      * @return Uma matriz representando o estado atual do tabuleiro com a sombra
      */
     private int[][] createBoardGridWithShadow(BlockShape currentPiece) {
-        int[][] grid = new int[board.getHeight()][board.getWidth()];
+        int totalHeight = board.getHeight() + GameConfig.BOARD_VISIBLE_ROW;
+        int[][] grid = new int[totalHeight][board.getWidth()];
 
         copyBoardStateToGrid(grid);
 
@@ -76,11 +78,13 @@ public class PieceRenderer {
      * @param grid O grid para onde copiar o estado do tabuleiro
      */
     private void copyBoardStateToGrid(int[][] grid) {
-        for (int y = 0; y < board.getHeight(); y++) {
-            for (int x = 0; x < board.getWidth(); x++) {
-                if (board.isValidPosition(x, y)) {
-                    grid[y][x] = board.getCell(x, y);
-                }
+        int totalHeight = grid.length;
+        int width = grid[0].length;
+
+        for (int r = 0; r < totalHeight; r++) {
+            for (int c = 0; c < width; c++) {
+                int logicalY = r - GameConfig.BOARD_VISIBLE_ROW;
+                grid[r][c] = board.getCell(c, logicalY);
             }
         }
     }
@@ -93,8 +97,9 @@ public class PieceRenderer {
      */
     private void addShadowToGrid(BlockShape shadow, int[][] grid) {
         shadow.getCells().forEach(cell -> {
-            if (isWithinBounds(cell)) {
-                grid[cell.getY()][cell.getX()] = SHADOW_CELL_CODE;
+            int gridY = cell.getY() + GameConfig.BOARD_VISIBLE_ROW;
+            if (isWithinBounds(cell) && gridY >= 0 && gridY < grid.length) {
+                grid[gridY][cell.getX()] = SHADOW_CELL_CODE;
             }
         });
     }
@@ -107,8 +112,9 @@ public class PieceRenderer {
      */
     private void addPieceToGrid(BlockShape piece, int[][] grid) {
         piece.getCells().forEach(cell -> {
-            if (isWithinBounds(cell)) {
-                grid[cell.getY()][cell.getX()] = cell.getType();
+            int gridY = cell.getY() + GameConfig.BOARD_VISIBLE_ROW;
+            if (isWithinBounds(cell) && gridY >= 0 && gridY < grid.length) {
+                grid[gridY][cell.getX()] = cell.getType();
             }
         });
     }
@@ -120,7 +126,9 @@ public class PieceRenderer {
      * @return true se a célula está dentro dos limites
      */
     private boolean isWithinBounds(Cell cell) {
-        return cell.getY() >= 0 && cell.getY() < board.getHeight()
-                && cell.getX() >= 0 && cell.getX() < board.getWidth();
+        return cell.getY() >= -GameConfig.BOARD_VISIBLE_ROW
+            && cell.getY() < board.getHeight()
+            && cell.getX() >= 0 
+            && cell.getX() < board.getWidth();
     }
 }

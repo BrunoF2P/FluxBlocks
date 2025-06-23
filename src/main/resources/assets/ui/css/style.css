@@ -48,48 +48,10 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 1, 0.1, 1, 1);
 }
 
-/* === GAME BOARD === */
-.game-board,
-.game-board-background {
-    -fx-padding: 5px;
-    -fx-background-color: linear-gradient(
-            to bottom,
-            #1e2b38,
-            #14202c
-    );
-    -fx-border-width: 10px;
-    -fx-border-style: solid;
-    -fx-border-color: #2c3e50;
-    -fx-border-radius: 9px;
-    -fx-background-radius: 15px;
-}
-
-.game-board-cell {
-    -fx-fill: #15202b;
-    -fx-stroke: rgba(255, 255, 255, 0.05);
-    -fx-stroke-width: 2px;
-    -fx-arc-width: 7px;
-    -fx-arc-height: 7px;
-    -fx-transition: all 0.2s ease;
-}
-
-.game-board-cell.filled {
-    -fx-stroke: rgba(0, 0, 0, 0.2);
-    -fx-stroke-width: 2px;
-    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 1, 1);
-}
-
-.board-cell.cell-empty {
-    -fx-fill: #15202b;
-}
 
 .next-piece-grid {
     -fx-alignment: center;
     -fx-padding: 5px;
-}
-
-.cell-empty {
-    -fx-fill: transparent;
 }
 
 .cell-filled {
