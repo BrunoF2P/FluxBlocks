@@ -29,14 +29,11 @@ public class BoardRenderComponent extends Component {
     private static final Color BOARD_BACKGROUND_COLOR = Color.web("#15202b");
     private static final Color BOARD_GRADIENT_START = Color.web("#1e2b38");
     private static final Color BOARD_GRADIENT_END = Color.web("#14202c");
-    private static final Color BOARD_BORDER_COLOR = Color.web("#2c3e50");
     private static final Color CELL_EMPTY_BACKGROUND = Color.web("#15202b");
     private static final Color CELL_EMPTY_STROKE = Color.rgb(255, 255, 255, 0.05);
     private static final Color CELL_FILLED_STROKE = Color.rgb(0, 0, 0, 0.2);
     
     // Dimensões e espaçamentos
-    private static final double BOARD_BORDER_WIDTH = 10.0;
-    private static final double BOARD_CORNER_RADIUS = 15.0;
     private static final double CELL_SPACING = 1.0;
     private static final double CELL_CORNER_RADIUS = 10.0;
     private static final double CELL_EMPTY_CORNER_RADIUS = 8.0;
@@ -90,12 +87,7 @@ public class BoardRenderComponent extends Component {
         LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
 
         gc.setFill(gradient);
-        gc.fillRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), BOARD_CORNER_RADIUS, BOARD_CORNER_RADIUS);
-
-        // Borda do tabuleiro
-        gc.setStroke(BOARD_BORDER_COLOR);
-        gc.setLineWidth(BOARD_BORDER_WIDTH);
-        gc.strokeRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), BOARD_CORNER_RADIUS, BOARD_CORNER_RADIUS);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
     private void drawCell(int x, int y, int cellType) {

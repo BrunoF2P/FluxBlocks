@@ -82,7 +82,7 @@ public class UIScreenHandler {
 
         this.gameController = controller;
 
-        PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false, 1.0);
+        PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false, 0.9);
 
         StackPane gameContainer = new StackPane();
         gameContainer.getChildren().addAll(backgroundComponent.getBackground(), playerContainer.getContainer());
