@@ -11,6 +11,8 @@ import com.uneb.fluxblocks.game.logic.GameState;
 
 import javafx.scene.input.KeyCode;
 
+import java.util.UUID;
+
 /**
  * Gerencia toda a entrada do usuário para o jogo FluxBlocks.
  * <p>
@@ -24,7 +26,7 @@ public class InputHandler {
     private final GameMediator mediator;
 
     /** O estado atual do jogo */
-    private final GameState gameState;
+    private GameState gameState;
 
     /** Flag indicando se a tecla de movimento esquerdo está atualmente pressionada */
     private boolean leftKeyPressed = false;
@@ -36,15 +38,17 @@ public class InputHandler {
     private KeyCode lastHorizontalKeyPressed = null;
     private final int playerId;
 
-    private KeyCode keyLeft;
-    private KeyCode keyRight;
-    private KeyCode keyDown;
-    private KeyCode keyRotate;
-    private KeyCode keyDrop;
-    private KeyCode keyPause;
-    private KeyCode keyRestart;
+    private final KeyCode keyLeft;
+    private final KeyCode keyRight;
+    private final KeyCode keyDown;
+    private final KeyCode keyRotate;
+    private final KeyCode keyDrop;
+    private final KeyCode keyPause;
+    private final KeyCode keyRestart;
 
     private boolean actionsRegistered = false;
+
+    private final String uniqueId = UUID.randomUUID().toString();
 
     /**
      * Cria um novo InputHandler com o mediador e estado do jogo especificados.
@@ -83,6 +87,7 @@ public class InputHandler {
      * Deve ser chamado uma vez durante a inicialização do jogo.
      */
     public void setupInputHandling() {
+        if (actionsRegistered) return;
         setupMoveLeftAction();
         setupMoveRightAction();
         setupSoftDropAction();
@@ -108,7 +113,7 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupMoveLeftAction() {
-        FXGL.getInput().addAction(new UserAction("Move Left P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Move Left P"+ playerId + " " + uniqueId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
@@ -154,7 +159,7 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupMoveRightAction() {
-        FXGL.getInput().addAction(new UserAction("Move Right P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Move Right P"+ playerId + " " + uniqueId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
@@ -200,7 +205,7 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupSoftDropAction() {
-        FXGL.getInput().addAction(new UserAction("Soft Drop P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Soft Drop P"+ playerId + " " + uniqueId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
@@ -237,7 +242,7 @@ public class InputHandler {
      * Configura a ação de rotação para o tetrominó atual.
      */
     private void setupRotateAction() {
-        FXGL.getInput().addAction(new UserAction("Rotate P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Rotate P"+ playerId + " " + uniqueId) {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
@@ -256,7 +261,7 @@ public class InputHandler {
      * Configura a ação de queda rápida (queda instantânea).
      */
     private void setupHardDropAction() {
-        FXGL.getInput().addAction(new UserAction("Hard Drop P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Hard Drop P"+ playerId + " " + uniqueId) {
             @Override
             protected void onActionBegin() {
                 if (isGameNotPlayable()) return;
@@ -270,7 +275,7 @@ public class InputHandler {
      * Configura a ação de pausa do jogo.
      */
     private void setupPauseAction() {
-        FXGL.getInput().addAction(new UserAction("Pause P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Pause P"+ playerId + " " + uniqueId) {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.PAUSE, null);
@@ -282,11 +287,38 @@ public class InputHandler {
      * Configura a ação de reinício do jogo.
      */
     private void setupRestartAction() {
-        FXGL.getInput().addAction(new UserAction("Restart P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Restart P"+ playerId + " " + uniqueId) {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.RESTART, null);
             }
         }, keyRestart);
+    }
+
+    /**
+     * Reseta todas as flags e estados internos do InputHandler.
+     * Deve ser chamado ao iniciar ou terminar uma partida para evitar resíduos de entradas anteriores.
+     */
+    public void reset() {
+        leftKeyPressed = false;
+        rightKeyPressed = false;
+        lastHorizontalKeyPressed = null;
+    }
+
+    /**
+     * Atualiza o GameState associado a este InputHandler.
+     */
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    /**
+     * Limpa todos os recursos utilizados pelo InputHandler.
+     * Atualmente, apenas reseta o estado interno, pois FXGL não permite remover ações diretamente.
+     * Compatível com GameController.cleanup().
+     */
+    public void cleanup() {
+        reset();
+        actionsRegistered = false;
     }
 }

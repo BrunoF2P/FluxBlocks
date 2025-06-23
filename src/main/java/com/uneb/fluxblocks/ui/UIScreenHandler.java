@@ -7,6 +7,7 @@ import com.uneb.fluxblocks.game.core.GameController;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.ui.components.BackgroundComponent;
 import com.uneb.fluxblocks.ui.components.PlayerContainer;
+import com.uneb.fluxblocks.ui.controllers.InputHandler;
 import com.uneb.fluxblocks.ui.screens.GameModeScreen;
 import com.uneb.fluxblocks.ui.screens.GameScreen;
 import com.uneb.fluxblocks.ui.screens.MenuScreen;
@@ -15,6 +16,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Classe responsável por gerenciar as telas de usuário do jogo.
@@ -26,7 +32,7 @@ public class UIScreenHandler {
     private final GameScene gameScene;
     private final BackgroundComponent backgroundComponent;
 
-    private GameController gameController;
+    private final Map<Integer, InputHandler> inputHandlers = new HashMap<>();
 
     public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
         this.gameScene = gameScene;
@@ -36,6 +42,8 @@ public class UIScreenHandler {
         registerEvents();
         showMenuScreen();
     }
+
+    private final List<GameController> gameControllers = new ArrayList<>();
 
     private void registerEvents() {
         mediator.receiver(UiEvents.PLAY_GAME, event -> showGameModeScreen());
@@ -74,13 +82,24 @@ public class UIScreenHandler {
     }
 
     private void startSinglePlayerGame() {
+        cleanupGameControllers();
+        
         GameState gameState = new GameState();
         GameScreen gameScreen = new GameScreen(mediator, gameState, 1, backgroundComponent);
-        GameController controller = new GameController(mediator, gameScreen.getGameBoardScreen(), 1, gameState);
+        InputHandler handler = inputHandlers.get(1);
+        if (handler == null) {
+            handler = new InputHandler(mediator, gameState, 1);
+            handler.setupInputHandling();
+            inputHandlers.put(1, handler);
+        } else {
+            handler.setGameState(gameState);
+            handler.reset();
+        }
+        GameController controller = new GameController(mediator, gameScreen.getGameBoardScreen(), 1, gameState, handler);
 
         gameScreen.initialize();
 
-        this.gameController = controller;
+        gameControllers.add(controller);
 
         PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false, 0.9);
 
@@ -91,18 +110,42 @@ public class UIScreenHandler {
         gameScene.addUINode(gameContainer);
     }
 
+
     private void startLocalMultiplayerGame() {
+        cleanupGameControllers();
+        
         GameState gameState1 = new GameState();
         GameState gameState2 = new GameState();
 
         GameScreen screen1 = new GameScreen(mediator, gameState1, 1, backgroundComponent);
         GameScreen screen2 = new GameScreen(mediator, gameState2, 2, backgroundComponent);
 
-        GameController controller1 = new GameController(mediator, screen1.getGameBoardScreen(), 1, gameState1);
-        GameController controller2 = new GameController(mediator, screen2.getGameBoardScreen(), 2, gameState2);
+        InputHandler handler1 = inputHandlers.get(1);
+        if (handler1 == null) {
+            handler1 = new InputHandler(mediator, gameState1, 1);
+            handler1.setupInputHandling();
+            inputHandlers.put(1, handler1);
+        } else {
+            handler1.setGameState(gameState1);
+            handler1.reset();
+        }
+        InputHandler handler2 = inputHandlers.get(2);
+        if (handler2 == null) {
+            handler2 = new InputHandler(mediator, gameState2, 2);
+            handler2.setupInputHandling();
+            inputHandlers.put(2, handler2);
+        } else {
+            handler2.setGameState(gameState2);
+            handler2.reset();
+        }
+        GameController controller1 = new GameController(mediator, screen1.getGameBoardScreen(), 1, gameState1, handler1);
+        GameController controller2 = new GameController(mediator, screen2.getGameBoardScreen(), 2, gameState2, handler2);
 
         screen1.initialize();
         screen2.initialize();
+
+        gameControllers.add(controller1);
+        gameControllers.add(controller2);
 
         PlayerContainer player1Container = new PlayerContainer("Jogador 1", screen1, true, 0.7);
         PlayerContainer player2Container = new PlayerContainer("Jogador 2", screen2, true, 0.7);
@@ -117,11 +160,20 @@ public class UIScreenHandler {
     }
 
     private void handleGameOver() {
-        if (gameController != null) {
-            gameController = null;
-        }
-
+        cleanupGameControllers();
         showMenuScreen();
+    }
+
+        /**
+     * Limpa todos os game controllers ativos e seus recursos.
+     */
+    private void cleanupGameControllers() {
+        for (GameController controller : gameControllers) {
+            if (controller != null) {
+                controller.cleanup();
+            }
+        }
+        gameControllers.clear();
     }
 
     private HBox createPlayersContainer(PlayerContainer player1Container, PlayerContainer player2Container) {
@@ -133,12 +185,4 @@ public class UIScreenHandler {
         return container;
     }
 
-    /**
-     * Retorna o componente de fundo.
-     *
-     * @return BackgroundComponent
-     */
-    public BackgroundComponent getBackgroundComponent() {
-        return backgroundComponent;
-    }
 }

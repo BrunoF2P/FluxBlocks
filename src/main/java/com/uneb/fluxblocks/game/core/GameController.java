@@ -45,8 +45,6 @@ public class GameController {
     /** Estado atual do jogo */
     private final GameState gameState;
 
-    private final GameBoardScreen boardScreen;
-
     private final int playerId;
 
     /**
@@ -57,14 +55,13 @@ public class GameController {
      * @param playerId Id do jogador
      * @param gameState Estado do jogo compartilhado
      */
-    public GameController(GameMediator mediator, GameBoardScreen boardScreen, int playerId, GameState gameState) {
+    public GameController(GameMediator mediator, GameBoardScreen boardScreen, int playerId, GameState gameState, InputHandler inputHandler) {
         this.mediator = mediator;
-        this.boardScreen = boardScreen;
         this.playerId = playerId;
         this.gameState = gameState;
         this.gameBoard = new GameBoard(mediator, playerId);
         this.pieceManager = new PieceSystem(mediator, gameBoard, gameState, boardScreen, playerId);
-        this.inputHandler = new InputHandler(mediator, gameState, playerId);
+        this.inputHandler = inputHandler;
         this.scoreTracker = new ScoreTracker(mediator, gameState, playerId);
         this.gameTimer = new GameTimer(mediator, gameState, playerId);
 
@@ -94,7 +91,6 @@ public class GameController {
 
         gameTimer.startTimer();
         scoreTracker.reset();
-        inputHandler.setupInputHandling();
 
         startCountdown();
     }
@@ -159,4 +155,38 @@ public class GameController {
     public GameState getGameState() {
         return gameState;
     }
+
+    /**
+     * Limpa todos os recursos utilizados pelo controller.
+     * Deve ser chamado ao terminar o jogo para evitar vazamentos de memória
+     * e conflitos ao iniciar novas partidas.
+     */
+    public void cleanup() {
+
+            // Para o timer do jogo
+            if (gameTimer != null) {
+                gameTimer.stopTimer();
+            }
+            
+            // Limpa as ações de entrada registradas
+            if (inputHandler != null) {
+                inputHandler.cleanup();
+            }
+            
+            // Para qualquer timer em execução do FXGL relacionado a este controller
+            // (como o countdown timer)
+            FXGL.getGameTimer().clear();
+            
+            // Reseta o estado do jogo
+            if (gameState != null) {
+                gameState.reset();
+            }
+            
+            // Limpa o tabuleiro
+            if (gameBoard != null) {
+                gameBoard.clearGrid();
+            }
+
+
+        }
 }

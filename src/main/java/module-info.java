@@ -16,6 +16,7 @@ open module com.uneb.fluxblocks {
     exports com.uneb.fluxblocks.ui;
     exports com.uneb.fluxblocks.ui.components;
     exports com.uneb.fluxblocks.ui.screens;
+    exports com.uneb.fluxblocks.ui.controllers;
     exports com.uneb.fluxblocks.piece.factory;
     exports com.uneb.fluxblocks.game.logic;
     exports com.uneb.fluxblocks.architecture.mediators;
