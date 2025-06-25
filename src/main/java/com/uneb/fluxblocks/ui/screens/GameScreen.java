@@ -71,6 +71,8 @@ public class GameScreen {
 
     private boolean isDestroyed = false;
 
+    private StackPane waitingOverlay = null;
+
     /**
      * Construtor da tela do jogo.
      *
@@ -467,5 +469,31 @@ public class GameScreen {
 
     public Parent getNode() {
         return root;
+    }
+
+    public void showWaitingOverlay(String message) {
+        if (waitingOverlay != null) {
+            root.getChildren().remove(waitingOverlay);
+            waitingOverlay = null;
+        }
+        
+        if (message != null && !message.isEmpty()) {
+            waitingOverlay = new StackPane();
+            waitingOverlay.getStyleClass().add("waiting-overlay");
+            waitingOverlay.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+            
+            VBox content = new VBox(20);
+            content.setAlignment(Pos.CENTER);
+            
+            Text msg = new Text(message);
+            msg.getStyleClass().add("waiting-text");
+            
+            content.getChildren().add(msg);
+            waitingOverlay.getChildren().add(content);
+            StackPane.setAlignment(content, Pos.CENTER);
+            
+            root.getChildren().add(waitingOverlay);
+            waitingOverlay.toFront();
+        }
     }
 }
