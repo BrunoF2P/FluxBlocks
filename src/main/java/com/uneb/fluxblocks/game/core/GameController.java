@@ -1,15 +1,16 @@
 package com.uneb.fluxblocks.game.core;
 
+import com.almasb.fxgl.dsl.FXGL;
 import com.uneb.fluxblocks.architecture.events.GameplayEvents;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.game.scoring.ScoreTracker;
+import com.uneb.fluxblocks.game.statistics.GameStatistics;
 import com.uneb.fluxblocks.piece.PieceSystem;
 import com.uneb.fluxblocks.ui.controllers.InputHandler;
 import com.uneb.fluxblocks.ui.screens.GameBoardScreen;
-import com.almasb.fxgl.dsl.FXGL;
 
 /**
  * Gerenciador principal do jogo FluxBlocks.
@@ -45,6 +46,9 @@ public class GameController {
     /** Estado atual do jogo */
     private final GameState gameState;
 
+    /** Estatísticas do jogo */
+    private final GameStatistics gameStatistics;
+
     private final int playerId;
 
     /**
@@ -64,6 +68,7 @@ public class GameController {
         this.inputHandler = inputHandler;
         this.scoreTracker = new ScoreTracker(mediator, gameState, playerId);
         this.gameTimer = new GameTimer(mediator, gameState, playerId);
+        this.gameStatistics = new GameStatistics(mediator, gameState, playerId);
 
         registerEvents();
         start();
@@ -74,8 +79,14 @@ public class GameController {
      * Configura os handlers para game over e pausa.
      */
     private void registerEvents() {
-        mediator.receiver(GameplayEvents.GAME_OVER, unused -> handleGameOver());
+        mediator.receiver(GameplayEvents.GAME_OVER, event -> {
+            if (event.playerId() == this.playerId) {
+                handleGameOver();
+            }
+        });
         mediator.receiver(GameplayEvents.PAUSE, unused -> togglePause());
+        mediator.receiver(GameplayEvents.RESTART, unused -> restart());
+        
         mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, pieceManager.getNextPiece()));
     }
 
@@ -87,6 +98,7 @@ public class GameController {
     public void start() {
         gameBoard.clearGrid();
         gameState.reset();
+        gameStatistics.reset();
         gameState.setPaused(true);
 
         gameTimer.startTimer();
@@ -140,12 +152,12 @@ public class GameController {
     /**
      * Processa o fim do jogo.
      * Atualiza o estado do jogo, para o timer e emite o evento de game over
-     * com a pontuação final.
+     * com a pontuação final e estatísticas.
      */
     private void handleGameOver() {
         gameState.setGameOver(true);
         gameTimer.stopTimer();
-        mediator.emit(UiEvents.GAME_OVER, scoreTracker.getScore());
+        mediator.emit(UiEvents.GAME_OVER, new UiEvents.GameOverEvent(playerId, gameStatistics));
     }
 
     /**
@@ -154,6 +166,14 @@ public class GameController {
      */
     public GameState getGameState() {
         return gameState;
+    }
+
+    /**
+     * Retorna as estatísticas do jogo.
+     * @return As estatísticas do jogo
+     */
+    public GameStatistics getGameStatistics() {
+        return gameStatistics;
     }
 
     /**

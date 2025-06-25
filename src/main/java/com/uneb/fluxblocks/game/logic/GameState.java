@@ -83,10 +83,10 @@ public class GameState {
     public long getGameTimeMs() { return gameTimeMs; }
 
     public String getGameTime() {
-        long milliseconds = gameTimeMs % 10;
         long totalSeconds = gameTimeMs / 1000;
         long seconds = totalSeconds % 60;
-        long minutes = Math.min(99, totalSeconds / 60);
+        long minutes = totalSeconds / 60;
+        long milliseconds = (gameTimeMs % 1000) / 10;
 
         return String.format("%02d:%02d:%02d", minutes, seconds, milliseconds);
     }

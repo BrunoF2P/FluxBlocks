@@ -50,6 +50,8 @@ public class InputHandler {
 
     private final String uniqueId = UUID.randomUUID().toString();
 
+    private boolean inputEnabled = true;
+
     /**
      * Cria um novo InputHandler com o mediador e estado do jogo especificados.
      *
@@ -87,7 +89,9 @@ public class InputHandler {
      * Deve ser chamado uma vez durante a inicialização do jogo.
      */
     public void setupInputHandling() {
-        if (actionsRegistered) return;
+        if (actionsRegistered) {
+            return;
+        }
         setupMoveLeftAction();
         setupMoveRightAction();
         setupSoftDropAction();
@@ -105,7 +109,7 @@ public class InputHandler {
      * @return true se o jogo estiver pausado ou terminado, false caso contrário
      */
     private boolean isGameNotPlayable() {
-        return gameState.isPaused() || gameState.isGameOver();
+        return gameState.isPaused() || gameState.isGameOver() || !inputEnabled;
     }
 
     /**
@@ -122,6 +126,7 @@ public class InputHandler {
                 leftKeyPressed = true;
                 lastHorizontalKeyPressed = keyLeft;
                 mediator.emit(GameplayEvents.MOVE_LEFT, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "LEFT"));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -168,6 +173,7 @@ public class InputHandler {
                 rightKeyPressed = true;
                 lastHorizontalKeyPressed = keyRight;
                 mediator.emit(GameplayEvents.MOVE_RIGHT, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "RIGHT"));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -214,6 +220,7 @@ public class InputHandler {
                 if (isGameNotPlayable()) return;
 
                 mediator.emit(GameplayEvents.MOVE_DOWN, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "DOWN"));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -247,6 +254,7 @@ public class InputHandler {
             protected void onAction() {
                 if (isGameNotPlayable()) return;
                 mediator.emit(GameplayEvents.ROTATE, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "UP"));
             }
 
             @Override
@@ -267,6 +275,7 @@ public class InputHandler {
                 if (isGameNotPlayable()) return;
 
                 mediator.emit(GameplayEvents.DROP, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "SPACE"));
             }
         }, keyDrop);
     }
@@ -279,6 +288,7 @@ public class InputHandler {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.PAUSE, null);
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "ESCAPE"));
             }
         }, keyPause);
     }
@@ -291,6 +301,7 @@ public class InputHandler {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.RESTART, null);
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "BACK_SPACE"));
             }
         }, keyRestart);
     }
@@ -303,6 +314,7 @@ public class InputHandler {
         leftKeyPressed = false;
         rightKeyPressed = false;
         lastHorizontalKeyPressed = null;
+        inputEnabled = true;
     }
 
     /**
@@ -314,11 +326,18 @@ public class InputHandler {
 
     /**
      * Limpa todos os recursos utilizados pelo InputHandler.
-     * Atualmente, apenas reseta o estado interno, pois FXGL não permite remover ações diretamente.
-     * Compatível com GameController.cleanup().
+     * Mantém as ações registradas para reutilização.
      */
     public void cleanup() {
         reset();
-        actionsRegistered = false;
+    }
+
+    /**
+     * Habilita ou desabilita o input para este jogador.
+     *
+     * @param enabled true para habilitar, false para desabilitar
+     */
+    public void setInputEnabled(boolean enabled) {
+        this.inputEnabled = enabled;
     }
 }

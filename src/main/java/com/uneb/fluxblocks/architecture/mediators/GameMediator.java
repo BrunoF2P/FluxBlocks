@@ -147,4 +147,12 @@ public class GameMediator {
         }
 
     }
+
+    /**
+     * Limpa todos os listeners registrados no mediator.
+     * Útil para evitar interferência entre partidas diferentes.
+     */
+    public void clearAllListeners() {
+        listeners.clear();
+    }
 }

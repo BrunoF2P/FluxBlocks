@@ -5,6 +5,7 @@ public final class GameplayEvents {
     public record ScoreEvent(int playerId, int points) {}
     public record LineClearEvent(int playerId, int lineCleared) {}
     public record UpdateSpeedEvent(int playerId, double newSpeed) {}
+    public record GameOverEvent(int playerId) {}
     private GameplayEvents() {
     }
 
@@ -20,7 +21,7 @@ public final class GameplayEvents {
     };
     public static final EventType<MoveEvent> DROP = new EventType<>() {
     };
-    public static final EventType<Void> GAME_OVER = new EventType<>() {
+    public static final EventType<GameOverEvent> GAME_OVER = new EventType<>() {
     };
     public static final EventType<Void> PAUSE = new EventType<>() {
     };

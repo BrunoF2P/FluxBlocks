@@ -166,7 +166,7 @@ public class PieceSystem {
 
         if (!collisionDetector.canSpawn(currentPiece, spawnX, spawnY)) {
             isGameOver = true;
-            mediator.emit(GameplayEvents.GAME_OVER, null);
+            mediator.emit(GameplayEvents.GAME_OVER, new GameplayEvents.GameOverEvent(playerId));
             return;
         }
 
@@ -232,7 +232,7 @@ public class PieceSystem {
         if (movementHandler.isSoftDropping()) {
             int distance = movementHandler.getSoftDropDistance();
             if (distance > 0) {
-                int softDropScore = ScoreCalculator.calculateSoftDropScore(distance);
+                int softDropScore = ScoreCalculator.calculateSoftDropScore(gameState.getCurrentLevel());
                 gameState.addScore(softDropScore);
                 mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
             }

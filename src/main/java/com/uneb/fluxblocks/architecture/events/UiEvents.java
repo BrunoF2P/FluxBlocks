@@ -1,5 +1,6 @@
 package com.uneb.fluxblocks.architecture.events;
 
+import com.uneb.fluxblocks.game.statistics.GameStatistics;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 
 public abstract class UiEvents {
@@ -11,6 +12,8 @@ public abstract class UiEvents {
     public record PieceTrailEffectEvent(int playerId, int[] position) {}
     public record CountdownEvent(int playerId, int seconds) {}
     public record ScreenShakeEvent(int playerId, double intensity) {}
+    public record GameOverEvent(int playerId, GameStatistics statistics) {}
+    public record GameOverMultiplayerEvent(GameStatistics statsP1, GameStatistics statsP2, int victoriesP1, int victoriesP2) {}
     private UiEvents() {
     }
 
@@ -38,7 +41,7 @@ public abstract class UiEvents {
     };
     public static final EventType<Boolean> GAME_PAUSED = new EventType<>() {
     };
-    public static final EventType<Integer> GAME_OVER = new EventType<>() {
+    public static final EventType<GameOverEvent> GAME_OVER = new EventType<>() {
     };
     public static final EventType<BoardEvent> PIECE_LANDED_SOFT = new EventType<>() {
     };
@@ -64,4 +67,5 @@ public abstract class UiEvents {
     };
     public static final EventType<Void> START_LOCAL_MULTIPLAYER = new EventType<>() {
     };
+    public static final EventType<GameOverMultiplayerEvent> GAME_OVER_MULTIPLAYER = new EventType<>() {};
 }
