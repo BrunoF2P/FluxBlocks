@@ -41,6 +41,7 @@ public class UIScreenHandler {
         mediator.receiver(UiEvents.RANKING, event -> showRankingScreen());
         mediator.receiver(UiEvents.BACK_TO_MENU, event -> showMenuScreen());
         mediator.receiver(UiEvents.OPEN_VIDEO_CONFIG, event -> showVideoConfigScreen());
+        mediator.receiver(UiEvents.OPEN_CONTROL_CONFIG, event -> showControlConfigScreen());
         mediator.receiver(UiEvents.GAME_OVER, event -> handleGameOver(event));
         mediator.receiver(UiEvents.GAME_OVER_MULTIPLAYER, event -> handleGameOverMultiplayer(event));
     }
@@ -60,6 +61,10 @@ public class UIScreenHandler {
 
     public void showVideoConfigScreen() {
         screenManager.showVideoConfigScreen();
+    }
+
+    public void showControlConfigScreen() {
+        screenManager.showControlConfigScreen();
     }
 
     public void showRankingScreen() {

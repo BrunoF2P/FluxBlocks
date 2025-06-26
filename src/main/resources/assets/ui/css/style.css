@@ -807,11 +807,8 @@
 }
 
 .video-config-slider {
-    -fx-show-tick-labels: true;
-    -fx-show-tick-marks: true;
-    -fx-major-tick-unit: 0.1;
-    -fx-minor-tick-count: 0;
-    -fx-snap-to-ticks: true;
+    -fx-show-tick-labels: false;
+    -fx-show-tick-marks: false;
     -fx-pref-width: 200px;
 }
 
@@ -821,12 +818,23 @@
     -fx-pref-height: 10px;
 }
 
+.video-config-slider .track:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
 .video-config-slider .thumb {
     -fx-background-color: linear-gradient(to bottom, #4ECDC4, #45B7D1);
     -fx-background-radius: 8px;
     -fx-pref-width: 16px;
     -fx-pref-height: 16px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 0, 1);
+}
+
+.video-config-slider .thumb:hover {
+    -fx-background-color: linear-gradient(to bottom, #5EDDD4, #55C7E1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 4, 0, 0, 2);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
 }
 
 .video-config-slider .axis {
@@ -901,4 +909,76 @@
     -fx-border-color: rgba(78, 205, 196, 0.8);
     -fx-border-width: 3px;
     -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.5), 10, 0, 0, 0);
+}
+
+/* === CONFIGURAÇÃO DE CONTROLES === */
+.video-config-key-button {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #E2E8F0;
+    -fx-padding: 8px 12px;
+    -fx-cursor: hand;
+}
+
+.video-config-key-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+}
+
+.video-config-key-button:pressed {
+    -fx-background-color: rgba(78, 205, 196, 0.3);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+}
+
+.video-config-key-button.editing {
+    -fx-background-color: rgba(78, 205, 196, 0.4);
+    -fx-border-color: rgba(78, 205, 196, 1.0);
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.6), 8, 0, 0, 0);
+    -fx-text-fill: #FFFFFF;
+}
+
+.video-config-key-button:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.2);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+/* === SLIDERS COM HOVER === */
+.video-config-slider {
+    -fx-show-tick-labels: false;
+    -fx-show-tick-marks: false;
+    -fx-pref-width: 200px;
+}
+
+.video-config-slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 5px;
+    -fx-pref-height: 10px;
+}
+
+.video-config-slider .track:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
+.video-config-slider .thumb {
+    -fx-background-color: linear-gradient(to bottom, #4ECDC4, #45B7D1);
+    -fx-background-radius: 8px;
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 0, 1);
+}
+
+.video-config-slider .thumb:hover {
+    -fx-background-color: linear-gradient(to bottom, #5EDDD4, #55C7E1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 4, 0, 0, 2);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
 }

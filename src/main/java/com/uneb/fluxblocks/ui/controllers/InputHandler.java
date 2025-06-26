@@ -65,22 +65,22 @@ public class InputHandler {
         this.playerId = playerId;
 
         if (playerId == 1) {
-            keyLeft    = KeyCode.A;
-            keyRight   = KeyCode.D;
-            keyDown    = KeyCode.S;
-            keyRotate  = KeyCode.W;
-            keyDrop    = KeyCode.SPACE;
-            keyPause   = KeyCode.ESCAPE;
-            keyRestart = KeyCode.R;
+            keyLeft    = KeyCode.valueOf(GameConfig.P1_KEY_LEFT);
+            keyRight   = KeyCode.valueOf(GameConfig.P1_KEY_RIGHT);
+            keyDown    = KeyCode.valueOf(GameConfig.P1_KEY_DOWN);
+            keyRotate  = KeyCode.valueOf(GameConfig.P1_KEY_ROTATE);
+            keyDrop    = KeyCode.valueOf(GameConfig.P1_KEY_DROP);
+            keyPause   = KeyCode.valueOf(GameConfig.P1_KEY_PAUSE);
+            keyRestart = KeyCode.valueOf(GameConfig.P1_KEY_RESTART);
 
         } else {
-            keyLeft    = KeyCode.LEFT;
-            keyRight   = KeyCode.RIGHT;
-            keyDown    = KeyCode.DOWN;
-            keyRotate  = KeyCode.UP;
-            keyDrop    = KeyCode.ENTER;
-            keyPause   = KeyCode.P;
-            keyRestart = KeyCode.BACK_SPACE;
+            keyLeft    = KeyCode.valueOf(GameConfig.P2_KEY_LEFT);
+            keyRight   = KeyCode.valueOf(GameConfig.P2_KEY_RIGHT);
+            keyDown    = KeyCode.valueOf(GameConfig.P2_KEY_DOWN);
+            keyRotate  = KeyCode.valueOf(GameConfig.P2_KEY_ROTATE);
+            keyDrop    = KeyCode.valueOf(GameConfig.P2_KEY_DROP);
+            keyPause   = KeyCode.valueOf(GameConfig.P2_KEY_PAUSE);
+            keyRestart = KeyCode.valueOf(GameConfig.P2_KEY_RESTART);
         }
     }
 

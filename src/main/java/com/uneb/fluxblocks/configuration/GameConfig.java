@@ -39,6 +39,24 @@ public class GameConfig {
     public static double SOFT_DROP_INITIAL_DELAY = 50.0;
     public static double SOFT_DROP_DELAY = 30.0;
 
+    // Configurações de Controles - Jogador 1
+    public static String P1_KEY_LEFT = "A";
+    public static String P1_KEY_RIGHT = "D";
+    public static String P1_KEY_DOWN = "S";
+    public static String P1_KEY_ROTATE = "W";
+    public static String P1_KEY_DROP = "SPACE";
+    public static String P1_KEY_PAUSE = "ESCAPE";
+    public static String P1_KEY_RESTART = "R";
+
+    // Configurações de Controles - Jogador 2
+    public static String P2_KEY_LEFT = "LEFT";
+    public static String P2_KEY_RIGHT = "RIGHT";
+    public static String P2_KEY_DOWN = "DOWN";
+    public static String P2_KEY_ROTATE = "UP";
+    public static String P2_KEY_DROP = "ENTER";
+    public static String P2_KEY_PAUSE = "P";
+    public static String P2_KEY_RESTART = "BACK_SPACE";
+
     // Configurações de UI
     public static double UI_SCALE = 1.0;
     public static int NEXT_PIECE_PREVIEW_SIZE = 120;
@@ -94,6 +112,24 @@ public class GameConfig {
         ROTATE_INITIAL_DELAY = Double.parseDouble(properties.getProperty("input.rotate_initial_delay", String.valueOf(ROTATE_INITIAL_DELAY)));
         ROTATE_REPEAT_DELAY = Double.parseDouble(properties.getProperty("input.rotate_repeat_delay", String.valueOf(ROTATE_REPEAT_DELAY)));
 
+        // Configurações de Controles - Jogador 1
+        P1_KEY_LEFT = properties.getProperty("controls.p1.left", P1_KEY_LEFT);
+        P1_KEY_RIGHT = properties.getProperty("controls.p1.right", P1_KEY_RIGHT);
+        P1_KEY_DOWN = properties.getProperty("controls.p1.down", P1_KEY_DOWN);
+        P1_KEY_ROTATE = properties.getProperty("controls.p1.rotate", P1_KEY_ROTATE);
+        P1_KEY_DROP = properties.getProperty("controls.p1.drop", P1_KEY_DROP);
+        P1_KEY_PAUSE = properties.getProperty("controls.p1.pause", P1_KEY_PAUSE);
+        P1_KEY_RESTART = properties.getProperty("controls.p1.restart", P1_KEY_RESTART);
+
+        // Configurações de Controles - Jogador 2
+        P2_KEY_LEFT = properties.getProperty("controls.p2.left", P2_KEY_LEFT);
+        P2_KEY_RIGHT = properties.getProperty("controls.p2.right", P2_KEY_RIGHT);
+        P2_KEY_DOWN = properties.getProperty("controls.p2.down", P2_KEY_DOWN);
+        P2_KEY_ROTATE = properties.getProperty("controls.p2.rotate", P2_KEY_ROTATE);
+        P2_KEY_DROP = properties.getProperty("controls.p2.drop", P2_KEY_DROP);
+        P2_KEY_PAUSE = properties.getProperty("controls.p2.pause", P2_KEY_PAUSE);
+        P2_KEY_RESTART = properties.getProperty("controls.p2.restart", P2_KEY_RESTART);
+
         // Configurações de UI
         UI_SCALE = Double.parseDouble(properties.getProperty("ui.scale", String.valueOf(UI_SCALE)));
         NEXT_PIECE_PREVIEW_SIZE = Integer.parseInt(properties.getProperty("ui.next_piece_preview_size", String.valueOf(NEXT_PIECE_PREVIEW_SIZE)));
@@ -120,6 +156,24 @@ public class GameConfig {
         properties.setProperty("input.move_repeat_delay", String.valueOf(MOVE_REPEAT_DELAY));
         properties.setProperty("input.rotate_initial_delay", String.valueOf(ROTATE_INITIAL_DELAY));
         properties.setProperty("input.rotate_repeat_delay", String.valueOf(ROTATE_REPEAT_DELAY));
+
+        // Configurações de Controles - Jogador 1
+        properties.setProperty("controls.p1.left", P1_KEY_LEFT);
+        properties.setProperty("controls.p1.right", P1_KEY_RIGHT);
+        properties.setProperty("controls.p1.down", P1_KEY_DOWN);
+        properties.setProperty("controls.p1.rotate", P1_KEY_ROTATE);
+        properties.setProperty("controls.p1.drop", P1_KEY_DROP);
+        properties.setProperty("controls.p1.pause", P1_KEY_PAUSE);
+        properties.setProperty("controls.p1.restart", P1_KEY_RESTART);
+
+        // Configurações de Controles - Jogador 2
+        properties.setProperty("controls.p2.left", P2_KEY_LEFT);
+        properties.setProperty("controls.p2.right", P2_KEY_RIGHT);
+        properties.setProperty("controls.p2.down", P2_KEY_DOWN);
+        properties.setProperty("controls.p2.rotate", P2_KEY_ROTATE);
+        properties.setProperty("controls.p2.drop", P2_KEY_DROP);
+        properties.setProperty("controls.p2.pause", P2_KEY_PAUSE);
+        properties.setProperty("controls.p2.restart", P2_KEY_RESTART);
 
         // Configurações de UI
         properties.setProperty("ui.scale", String.valueOf(UI_SCALE));
@@ -173,6 +227,27 @@ public class GameConfig {
         // Sincronizar configurações de tela
         SCREEN_WIDTH = width;
         SCREEN_HEIGHT = height;
+    }
+
+    // Métodos para configuração de controles
+    public static void setPlayer1Controls(String left, String right, String down, String rotate, String drop, String pause, String restart) {
+        P1_KEY_LEFT = left;
+        P1_KEY_RIGHT = right;
+        P1_KEY_DOWN = down;
+        P1_KEY_ROTATE = rotate;
+        P1_KEY_DROP = drop;
+        P1_KEY_PAUSE = pause;
+        P1_KEY_RESTART = restart;
+    }
+
+    public static void setPlayer2Controls(String left, String right, String down, String rotate, String drop, String pause, String restart) {
+        P2_KEY_LEFT = left;
+        P2_KEY_RIGHT = right;
+        P2_KEY_DOWN = down;
+        P2_KEY_ROTATE = rotate;
+        P2_KEY_DROP = drop;
+        P2_KEY_PAUSE = pause;
+        P2_KEY_RESTART = restart;
     }
 
     /**

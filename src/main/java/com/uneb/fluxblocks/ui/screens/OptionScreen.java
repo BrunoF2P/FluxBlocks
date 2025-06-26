@@ -281,11 +281,10 @@ public class OptionScreen {
                 // SOM
                 break;
             case 1:
-                // VIDEO
                 mediator.emit(UiEvents.OPEN_VIDEO_CONFIG, null);
                 break;
             case 2:
-                // CONTROLE
+                mediator.emit(UiEvents.OPEN_CONTROL_CONFIG, null);
                 break;
             case 3:
                 mediator.emit(UiEvents.BACK_TO_MENU, null);

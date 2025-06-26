@@ -8,6 +8,7 @@ import com.uneb.fluxblocks.ui.screens.GameOverMultiplayerScreen;
 import com.uneb.fluxblocks.ui.screens.MenuScreen;
 import com.uneb.fluxblocks.ui.screens.OptionScreen;
 import com.uneb.fluxblocks.ui.screens.VideoConfigScreen;
+import com.uneb.fluxblocks.ui.screens.ControlConfigScreen;
 
 /**
  * Gerencia a exibição de diferentes telas de UI.
@@ -59,6 +60,15 @@ public class ScreenManager {
         clearScreen();
         VideoConfigScreen videoConfigScreen = new VideoConfigScreen(mediator);
         gameScene.addUINode(videoConfigScreen.getNode());
+    }
+
+    /**
+     * Exibe a tela de configurações de controles.
+     */
+    public void showControlConfigScreen() {
+        clearScreen();
+        ControlConfigScreen controlConfigScreen = new ControlConfigScreen(mediator);
+        gameScene.addUINode(controlConfigScreen.getRoot());
     }
 
     /**
