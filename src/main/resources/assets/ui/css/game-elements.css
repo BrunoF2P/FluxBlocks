@@ -1,0 +1,120 @@
+/* === GAME ELEMENTS === */
+/* Estilos para peças, grid e elementos do jogo */
+
+.next-piece-grid {
+    -fx-alignment: center;
+    -fx-padding: 5px;
+}
+
+.cell-filled {
+    -fx-stroke: rgba(0, 0, 0, 0.5);
+    -fx-stroke-width: 1;
+}
+
+/* === BLOCK SHAPES === */
+.blockshape-1 {
+    -fx-fill: #00f0f0;
+}
+
+.blockshape-2 {
+    -fx-fill: #1a75ff;
+}
+
+.blockshape-3 {
+    -fx-fill: #ff8c00;
+}
+
+.blockshape-4 {
+    -fx-fill: #ffd700;
+}
+
+.blockshape-5 {
+    -fx-fill: #32cd32;
+}
+
+.blockshape-6 {
+    -fx-fill: #bf3eff;
+}
+
+.blockshape-7 {
+    -fx-fill: #ffcbdb;
+}
+
+.blockshape-8 {
+    -fx-fill: #ff3030;
+}
+
+.blockshape-9 {
+    -fx-fill: rgba(255, 255, 255, 0.15);
+    -fx-stroke: rgba(255, 255, 255, 0.3);
+}
+
+/* === SIDE PANEL === */
+.side-panel {
+    -fx-padding: 20px;
+    -fx-background-color: rgba(44, 62, 80, 0.7);
+    -fx-border-width: 2px;
+    -fx-border-style: solid;
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 12, 0.3, 0, 6);
+    -fx-alignment: top-center;
+}
+
+.info-box {
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px;
+    -fx-alignment: center;
+}
+
+.next-piece-preview {
+    -fx-pref-width: 120px;
+    -fx-pref-height: 120px;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 5px;
+    -fx-alignment: center;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-width: 1px;
+}
+
+/* === PROGRESSO DE NIVEL === */
+.level-progress-container {
+    -fx-alignment: center;
+}
+
+.level-progress {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 2px;
+    -fx-border-radius: 60px;
+    -fx-background-radius: 60px;
+}
+
+#progress-arc {
+    -fx-stroke: linear-gradient(to bottom, #4CAF50, #8BC34A);
+    -fx-stroke-width: 8px;
+    -fx-stroke-line-cap: round;
+    -fx-fill: transparent;
+}
+
+.progress-track-circle {
+    -fx-fill: transparent;
+    -fx-stroke: rgba(255, 255, 255, 0.1);
+    -fx-stroke-width: 8px;
+}
+
+.countdown-text {
+    -fx-font-size: 120px;
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-font-weight: bold;
+    -fx-fill: #fcd34d;
+    -fx-stroke-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 15, 0, 0, 3);
+} 

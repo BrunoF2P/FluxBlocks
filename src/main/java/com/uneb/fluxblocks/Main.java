@@ -30,7 +30,17 @@ public class Main extends GameApplication {
         settings.setScaleAffectedOnResize(true);
         settings.setGameMenuEnabled(false);
 
-        settings.setCSSList(List.of("style.css"));
+        // Carregando arquivos CSS modulares para melhor organização
+        settings.setCSSList(List.of(
+            "base.css",
+            "game-elements.css",
+            "menu.css",
+            "game-mode.css",
+            "game-over.css",
+            "multiplayer.css",
+            "config.css",
+            "focus.css"
+        ));
         settings.setFontGame("thatsoundsgreat.ttf");
         settings.setAppIcon("ui/icons/mipmap-mdpi/ic_game.png");
 

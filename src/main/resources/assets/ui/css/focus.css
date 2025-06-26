@@ -1,0 +1,60 @@
+/* === FOCUS STYLES === */
+/* Estilos para navegação por teclado e estados de foco */
+
+/* === NAVEGAÇÃO POR TECLADO === */
+.video-config-checkbox.focused {
+    -fx-background-color: rgba(78, 205, 196, 0.2);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px 8px;
+}
+
+.video-config-combobox.focused {
+    -fx-background-color: rgba(78, 205, 196, 0.2);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.game-button.focused {
+    -fx-background-color: rgba(78, 205, 196, 0.3);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.5), 10, 0, 0, 0);
+}
+
+/* === FOCO VISUAL === */
+.video-config-checkbox:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.2);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px 8px;
+}
+
+.video-config-combobox:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.2);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.menu-button:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.3);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.5), 10, 0, 0, 0);
+}
+
+.video-config-key-button:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.2);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+} 

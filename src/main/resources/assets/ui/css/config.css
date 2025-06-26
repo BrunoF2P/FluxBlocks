@@ -1,0 +1,208 @@
+/* === CONFIGURAÇÕES === */
+/* Estilos para telas de configuração (vídeo, controles, etc.) */
+
+/* === CONFIGURAÇÕES DE VÍDEO === */
+.video-config-section {
+    -fx-background-color: rgba(44, 62, 80, 0.7);
+    -fx-border-color: rgba(255, 255, 255, 0.15);
+    -fx-border-width: 2px;
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 8, 0, 0, 4);
+    -fx-min-width: 400px;
+    -fx-max-width: 500px;
+}
+
+.video-config-section-title {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: linear-gradient(to right, #4ECDC4, #45B7D1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 2, 0, 0, 1);
+    -fx-padding: 0 0 10px 0;
+}
+
+.video-config-label {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 16px;
+    -fx-fill: #E2E8F0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 1, 0, 0, 1);
+}
+
+/* === CHECKBOXES === */
+.video-config-checkbox {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #E2E8F0;
+    -fx-padding: 8px 0;
+}
+
+.video-config-checkbox .box {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+}
+
+.video-config-checkbox .box:selected {
+    -fx-background-color: linear-gradient(to bottom, #4ECDC4, #45B7D1);
+    -fx-border-color: #4ECDC4;
+}
+
+.video-config-checkbox .box:selected .mark {
+    -fx-background-color: white;
+    -fx-shape: "M 2 6 L 6 10 L 14 2";
+    -fx-stroke: white;
+    -fx-stroke-width: 2;
+    -fx-fill: transparent;
+}
+
+.video-config-checkbox .box:not(:selected) .mark {
+    -fx-background-color: transparent;
+    -fx-shape: "";
+}
+
+/* === COMBOBOXES === */
+.video-config-combobox {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #E2E8F0;
+    -fx-padding: 8px 12px;
+    -fx-min-width: 120px;
+}
+
+.video-config-combobox .list-cell {
+    -fx-text-fill: #E2E8F0;
+    -fx-background-color: transparent;
+}
+
+.video-config-combobox .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.video-config-combobox .arrow {
+    -fx-background-color: #E2E8F0;
+}
+
+/* Estilo da lista dropdown */
+.video-config-combobox .list-view {
+    -fx-background-color: rgba(44, 62, 80, 0.95);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.video-config-combobox .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E2E8F0;
+    -fx-padding: 8px 12px;
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 14px;
+}
+
+.video-config-combobox .list-view .list-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.video-config-combobox .list-view .list-cell:selected {
+    -fx-background-color: rgba(78, 205, 196, 0.3);
+    -fx-text-fill: #FFFFFF;
+}
+
+.video-config-combobox .list-view .list-cell:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.5);
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.video-config-combobox .list-view .list-cell:selected:focused {
+    -fx-background-color: rgba(78, 205, 196, 0.7);
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: rgba(78, 205, 196, 1.0);
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/* === SLIDERS === */
+.video-config-slider {
+    -fx-show-tick-labels: false;
+    -fx-show-tick-marks: false;
+    -fx-pref-width: 200px;
+}
+
+.video-config-slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 5px;
+    -fx-pref-height: 10px;
+}
+
+.video-config-slider .track:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
+.video-config-slider .thumb {
+    -fx-background-color: linear-gradient(to bottom, #4ECDC4, #45B7D1);
+    -fx-background-radius: 8px;
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 0, 1);
+}
+
+.video-config-slider .thumb:hover {
+    -fx-background-color: linear-gradient(to bottom, #5EDDD4, #55C7E1);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 4, 0, 0, 2);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+.video-config-slider .axis {
+    -fx-tick-label-fill: #E2E8F0;
+    -fx-tick-label-font-family: 'That Sounds Great', sans-serif;
+    -fx-tick-label-font-size: 12px;
+}
+
+/* === CONFIGURAÇÃO DE CONTROLES === */
+.video-config-key-button {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #E2E8F0;
+    -fx-padding: 8px 12px;
+    -fx-cursor: hand;
+}
+
+.video-config-key-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+}
+
+.video-config-key-button:pressed {
+    -fx-background-color: rgba(78, 205, 196, 0.3);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+}
+
+.video-config-key-button.editing {
+    -fx-background-color: rgba(78, 205, 196, 0.4);
+    -fx-border-color: rgba(78, 205, 196, 1.0);
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.6), 8, 0, 0, 0);
+    -fx-text-fill: #FFFFFF;
+} 
