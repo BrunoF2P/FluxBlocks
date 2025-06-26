@@ -66,6 +66,7 @@ public class GameModeScreen {
         initializeComponents();
         setupKeyNavigation();
         setupCardActions();
+        setupCache();
         playEntryAnimations();
     }
 
@@ -318,6 +319,25 @@ public class GameModeScreen {
 
     public Parent getNode() {
         return root;
+    }
+
+    /**
+     * Configura cache nos elementos principais da tela para melhorar performance
+     */
+    private void setupCache() {
+        if (!GameConfig.ENABLE_UI_CACHE) return;
+
+        if (titleText != null) {
+            titleText.setCache(true);
+            titleText.setCacheHint(GameConfig.getCacheHint());
+        }
+
+        for (GameModeCard card : modeCards) {
+            if (card != null) {
+                card.setCache(true);
+                card.setCacheHint(GameConfig.getCacheHint());
+            }
+        }
     }
 
     private static class GameModeData {

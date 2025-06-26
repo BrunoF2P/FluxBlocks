@@ -7,6 +7,7 @@ import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
+import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.game.core.GameInitializer;
 
 public class Main extends GameApplication {
@@ -14,14 +15,16 @@ public class Main extends GameApplication {
 
     @Override
     protected void initSettings(GameSettings settings) {
+        GameConfig.loadConfig();
+        
         settings.setTitle("FluxBlocks");
         settings.setVersion("1.0");
 
-        settings.setWidth(1368);
-        settings.setHeight(768);
+        settings.setWidth((int)GameConfig.SCREEN_WIDTH);
+        settings.setHeight((int)GameConfig.SCREEN_HEIGHT);
 
         settings.setFullScreenAllowed(true);
-        settings.setFullScreenFromStart(false);
+        settings.setFullScreenFromStart(GameConfig.FULLSCREEN);
         settings.setManualResizeEnabled(false);
         settings.setPreserveResizeRatio(true);
         settings.setScaleAffectedOnResize(true);
@@ -35,7 +38,6 @@ public class Main extends GameApplication {
 
         settings.setEntityPreloadEnabled(true);
         settings.setApplicationMode(ApplicationMode.DEVELOPER);
-
     }
 
     @Override

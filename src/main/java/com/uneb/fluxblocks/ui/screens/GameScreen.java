@@ -258,22 +258,22 @@ public class GameScreen {
 
     private void cacheUIReferences() {
         scoreTextNode = (Text) root.lookup("#score-text");
-        if (scoreTextNode != null) {
+        if (scoreTextNode != null && GameConfig.ENABLE_UI_CACHE) {
             scoreTextNode.setCache(true);
-            scoreTextNode.setCacheHint(CacheHint.SPEED);
+            scoreTextNode.setCacheHint(GameConfig.getCacheHint());
         }
 
         levelTextNode = (Text) root.lookup("#level-text");
-        if (levelTextNode != null) {
+        if (levelTextNode != null && GameConfig.ENABLE_UI_CACHE) {
             levelTextNode.setCache(true);
-            levelTextNode.setCacheHint(CacheHint.SPEED);
+            levelTextNode.setCacheHint(GameConfig.getCacheHint());
         }
 
         progressArcNode = (Arc) root.lookup("#progress-arc");
         linesLabelNode = (Text) root.lookup("#lines-label");
-        if (linesLabelNode != null) {
+        if (linesLabelNode != null && GameConfig.ENABLE_UI_CACHE) {
             linesLabelNode.setCache(true);
-            linesLabelNode.setCacheHint(CacheHint.SPEED);
+            linesLabelNode.setCacheHint(GameConfig.getCacheHint());
         }
     }
 

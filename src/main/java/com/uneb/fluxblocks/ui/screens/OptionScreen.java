@@ -51,6 +51,7 @@ public class OptionScreen {
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         initializeComponents();
         setupKeyNavigation();
+        setupCache();
         playEntryAnimations();
     }
 
@@ -281,6 +282,7 @@ public class OptionScreen {
                 break;
             case 1:
                 // VIDEO
+                mediator.emit(UiEvents.OPEN_VIDEO_CONFIG, null);
                 break;
             case 2:
                 // CONTROLE
@@ -314,5 +316,20 @@ public class OptionScreen {
 
     public Parent getNode() {
         return root;
+    }
+
+    /**
+     * Configura cache nos elementos principais da tela para melhorar performance
+     */
+    private void setupCache() {
+        if (!GameConfig.ENABLE_UI_CACHE) return;
+
+        // Cache nos botões de opções (elementos estáticos)
+        for (ButtonGame button : optionButtons) {
+            if (button != null && button.getButton() != null) {
+                button.getButton().setCache(true);
+                button.getButton().setCacheHint(GameConfig.getCacheHint());
+            }
+        }
     }
 } 

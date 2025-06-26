@@ -70,6 +70,7 @@ public class GameOverMultiplayerScreen {
 
         initializeComponents();
         setupKeyNavigation();
+        setupCache();
         playEntryAnimations();
     }
 
@@ -366,5 +367,22 @@ public class GameOverMultiplayerScreen {
 
     public Parent getNode() {
         return root;
+    }
+
+    /**
+     * Configura cache nos elementos principais da tela para melhorar performance
+     */
+    private void setupCache() {
+        if (!GameConfig.ENABLE_UI_CACHE) return;
+
+        if (restartButton != null && restartButton.getButton() != null) {
+            restartButton.getButton().setCache(true);
+            restartButton.getButton().setCacheHint(GameConfig.getCacheHint());
+        }
+
+        if (menuButton != null && menuButton.getButton() != null) {
+            menuButton.getButton().setCache(true);
+            menuButton.getButton().setCacheHint(GameConfig.getCacheHint());
+        }
     }
 } 

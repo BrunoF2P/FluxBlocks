@@ -1,5 +1,7 @@
 package com.uneb.fluxblocks.ui.effects;
 
+import com.uneb.fluxblocks.configuration.GameConfig;
+
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.scene.CacheHint;
@@ -48,8 +50,10 @@ public class LineClearEffects {
         flash.setY(actualY);
         flash.setFill(Color.web("#FFFFFF", 0.3));
         flash.setBlendMode(BlendMode.ADD);
-        flash.setCache(true);
-        flash.setCacheHint(CacheHint.SPEED);
+        if (GameConfig.ENABLE_EFFECTS_CACHE) {
+            flash.setCache(true);
+            flash.setCacheHint(GameConfig.getCacheHint());
+        }
         boardPane.getChildren().add(flash);
 
         StackPane boardRoot = (StackPane) boardPane.getParent();
@@ -62,8 +66,10 @@ public class LineClearEffects {
         glow.setY(actualY);
         glow.setFill(Color.web("#ADD8E6", 0.2));
         glow.setBlendMode(BlendMode.ADD);
-        glow.setCache(true);
-        glow.setCacheHint(CacheHint.SPEED);
+        if (GameConfig.ENABLE_EFFECTS_CACHE) {
+            glow.setCache(true);
+            glow.setCacheHint(GameConfig.getCacheHint());
+        }
         boardPane.getChildren().add(glow);
 
         // Animações

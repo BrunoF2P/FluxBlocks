@@ -6,6 +6,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.uneb.fluxblocks.configuration.GameConfig;
+
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -29,15 +32,19 @@ public class EffectObjectPool {
     static {
         for (int i = 0; i < INITIAL_PARTICLE_POOL_SIZE; i++) {
             Circle particle = new Circle();
-            particle.setCache(true);
-            particle.setCacheHint(javafx.scene.CacheHint.SPEED);
+            if (GameConfig.ENABLE_EFFECTS_CACHE) {
+                particle.setCache(true);
+                particle.setCacheHint(GameConfig.getCacheHint());
+            }
             particlePool.offer(particle);
         }
 
         for (int i = 0; i < INITIAL_TRAIL_POOL_SIZE; i++) {
             Rectangle trail = new Rectangle();
-            trail.setCache(true);
-            trail.setCacheHint(javafx.scene.CacheHint.SPEED);
+            if (GameConfig.ENABLE_EFFECTS_CACHE) {
+                trail.setCache(true);
+                trail.setCacheHint(GameConfig.getCacheHint());
+            }
             trailPool.offer(trail);
         }
     }
@@ -46,8 +53,10 @@ public class EffectObjectPool {
         Circle particle = particlePool.poll();
         if (particle == null && activeParticles < MAX_PARTICLE_POOL_SIZE) {
             particle = new Circle();
-            particle.setCache(true);
-            particle.setCacheHint(javafx.scene.CacheHint.SPEED);
+            if (GameConfig.ENABLE_EFFECTS_CACHE) {
+                particle.setCache(true);
+                particle.setCacheHint(GameConfig.getCacheHint());
+            }
         }
         if (particle != null) {
             activeParticles++;
@@ -59,8 +68,10 @@ public class EffectObjectPool {
         Rectangle trail = trailPool.poll();
         if (trail == null && activeTrails < MAX_TRAIL_POOL_SIZE) {
             trail = new Rectangle();
-            trail.setCache(true);
-            trail.setCacheHint(javafx.scene.CacheHint.SPEED);
+            if (GameConfig.ENABLE_EFFECTS_CACHE) {
+                trail.setCache(true);
+                trail.setCacheHint(GameConfig.getCacheHint());
+            }
         }
         if (trail != null) {
             activeTrails++;

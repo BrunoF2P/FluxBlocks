@@ -2,8 +2,8 @@ package com.uneb.fluxblocks.ui.components;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
-import javafx.scene.CacheHint;
 import javafx.scene.canvas.Canvas;
+import com.uneb.fluxblocks.configuration.GameConfig;
 
 
 public class BoardCanvas {
@@ -30,8 +30,10 @@ public class BoardCanvas {
 
         this.canvas = new Canvas(width * cellSize, height * cellSize);
         
-        this.canvas.setCache(true);
-        this.canvas.setCacheHint(CacheHint.SPEED);
+        if (GameConfig.ENABLE_CANVAS_CACHE) {
+            this.canvas.setCache(true);
+            this.canvas.setCacheHint(GameConfig.getCacheHint());
+        }
 
         int[][] initialGrid = new int[height][width];
 

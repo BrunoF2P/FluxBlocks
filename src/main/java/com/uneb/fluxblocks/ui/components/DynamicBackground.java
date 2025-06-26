@@ -3,6 +3,7 @@ package com.uneb.fluxblocks.ui.components;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
+import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.entities.Cell;
 import com.uneb.fluxblocks.piece.factory.BlockShapeFactory;
@@ -44,6 +45,12 @@ public class DynamicBackground {
             this.canvas = new Canvas(width, height);
             this.gc = canvas.getGraphicsContext2D();
             gc.setImageSmoothing(true);
+            
+            if (GameConfig.ENABLE_CANVAS_CACHE) {
+                this.canvas.setCache(true);
+                this.canvas.setCacheHint(GameConfig.getCacheHint());
+            }
+            
             calculateBlockSize(width, height);
         }
 

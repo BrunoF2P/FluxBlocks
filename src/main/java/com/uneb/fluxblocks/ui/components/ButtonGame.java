@@ -3,6 +3,8 @@ package com.uneb.fluxblocks.ui.components;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
+import com.uneb.fluxblocks.configuration.GameConfig;
+
 import javafx.scene.control.Button;
 
 /**
@@ -57,6 +59,11 @@ public class ButtonGame {
 
         private void setupButton() {
             button.getStyleClass().addAll("game-button", type.getStyleClass());
+            
+            if (GameConfig.ENABLE_UI_CACHE) {
+                button.setCache(true);
+                button.setCacheHint(GameConfig.getCacheHint());
+            }
         }
 
         public Button getButton() {

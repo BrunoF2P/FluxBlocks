@@ -62,6 +62,7 @@ public class MenuScreen {
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         initializeComponents();
         setupKeyNavigation();
+        setupCache();
         playEntryAnimations();
     }
 
@@ -482,5 +483,24 @@ public class MenuScreen {
 
     public Parent getNode() {
         return root;
+    }
+
+    /**
+     * Configura cache nos elementos principais da tela para melhorar performance
+     */
+    private void setupCache() {
+        if (!GameConfig.ENABLE_UI_CACHE) return;
+
+        if (fluxText != null) {
+            fluxText.setCache(true);
+            fluxText.setCacheHint(GameConfig.getCacheHint());
+        }
+
+        for (ButtonGame button : menuButtons) {
+            if (button != null && button.getButton() != null) {
+                button.getButton().setCache(true);
+                button.getButton().setCacheHint(GameConfig.getCacheHint());
+            }
+        }
     }
 }
