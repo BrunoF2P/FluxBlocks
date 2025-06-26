@@ -6,7 +6,7 @@ import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.game.statistics.GameStatistics;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
-import javafx.animation.*;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -22,13 +22,15 @@ import javafx.util.Duration;
  * Tela de game over que exibe estatísticas detalhadas do jogo.
  * Inclui pontuação, tempo, peças colocadas, teclas pressionadas, finesse, etc.
  */
-public class GameOverScreen {
+public class GameOverScreen extends BaseScreen {
     private final GameMediator mediator;
     private final StackPane root;
-    private final BorderPane mainLayout;
+    private final VBox mainLayout;
     private final VBox titleContainer;
     private final VBox statsContainer;
     private final HBox buttonsContainer;
+    private final FooterComponent footerContainer;
+    private final ButtonGame[] menuButtons;
     private final GameStatistics statistics;
     private DynamicBackground dynamicBackground;
     private Rectangle overlayBackground;
@@ -38,20 +40,23 @@ public class GameOverScreen {
 
     private static final Duration ENTRY_DURATION = Duration.millis(600);
     private static final Duration STAGGER_DELAY = Duration.millis(100);
+    private static final String[] MENU_LABELS = {"JOGAR NOVAMENTE", "VOLTAR AO MENU"};
 
     public GameOverScreen(GameMediator mediator, GameStatistics statistics) {
         this.mediator = mediator;
         this.statistics = statistics;
         this.root = new StackPane();
-        this.mainLayout = new BorderPane();
+        this.mainLayout = new VBox();
         this.titleContainer = new VBox();
         this.statsContainer = new VBox();
         this.buttonsContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"VOLTAR", "ESC"},
+            {"SELECIONAR", "ENTER"}
+        });
+        this.menuButtons = new ButtonGame[MENU_LABELS.length];
 
-        // Usa o tamanho da tela configurado
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.setMaxSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        
         initializeComponents();
         setupKeyNavigation();
         setupCache();
@@ -67,7 +72,7 @@ public class GameOverScreen {
     }
 
     private void setupBackground() {
-        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        dynamicBackground = createStandardBackground();
         
         BoxBlur blur = new BoxBlur(5, 5, 2);
         dynamicBackground.getCanvas().setEffect(blur);
@@ -191,34 +196,23 @@ public class GameOverScreen {
         updateButtonSelection();
     }
 
+
     private void setupLayout() {
-        mainLayout.setTop(titleContainer);
-        mainLayout.setCenter(statsContainer);
-        mainLayout.setBottom(buttonsContainer);
+        mainLayout.setAlignment(Pos.CENTER);
+        mainLayout.setSpacing(20);
+        mainLayout.setPadding(new Insets(20));
 
-        double marginTop = GameConfig.SCREEN_HEIGHT * 0.02;
-        double marginSides = GameConfig.SCREEN_WIDTH * 0.02;
-        double marginBottom = GameConfig.SCREEN_HEIGHT * 0.02;
-
-        BorderPane.setMargin(titleContainer, new Insets(marginTop, 0, 0, 0));
-        BorderPane.setMargin(statsContainer, new Insets(5, marginSides, 5, marginSides));
-        BorderPane.setMargin(buttonsContainer, new Insets(0, 0, marginBottom, 0));
+        mainLayout.getChildren().addAll(footerContainer, titleContainer, statsContainer, buttonsContainer);
 
         root.getChildren().add(mainLayout);
     }
 
     private void setupKeyNavigation() {
+        setupStandardKeyNavigation(root);
+        
         root.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             switch (code) {
-                case ENTER:
-                case SPACE:
-                    if (selectedButtonIndex == 0) {
-                        restartButton.getButton().fire();
-                    } else if (selectedButtonIndex == 1) {
-                        menuButton.getButton().fire();
-                    }
-                    break;
                 case ESCAPE:
                     mediator.emit(UiEvents.BACK_TO_MENU, null);
                     break;
@@ -230,70 +224,22 @@ public class GameOverScreen {
                     selectedButtonIndex = (selectedButtonIndex + 1) % 2;
                     updateButtonSelection();
                     break;
+                case ENTER:
+                    if (selectedButtonIndex == 0) {
+                        restartButton.getButton().fire();
+                    } else {
+                        menuButton.getButton().fire();
+                    }
+                    break;
                 default:
                     break;
             }
         });
-        root.setFocusTraversable(true);
-        root.requestFocus();
     }
 
     private void playEntryAnimations() {
-        overlayBackground.setOpacity(0);
-        FadeTransition overlayFade = new FadeTransition(Duration.millis(400), overlayBackground);
-        overlayFade.setFromValue(0);
-        overlayFade.setToValue(1);
-        overlayFade.play();
-
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateY(-20);
-
-        ParallelTransition titleAnimation = new ParallelTransition(
-            createFadeTransition(titleContainer, ENTRY_DURATION),
-            createSlideTransition(titleContainer, ENTRY_DURATION, -20)
-        );
-
-        statsContainer.setOpacity(0);
-        statsContainer.setTranslateY(15);
-
-        ParallelTransition statsAnimation = new ParallelTransition(
-            createFadeTransition(statsContainer, ENTRY_DURATION),
-            createSlideTransition(statsContainer, ENTRY_DURATION, 15)
-        );
-
-        buttonsContainer.setOpacity(0);
-        buttonsContainer.setTranslateY(10);
-
-        ParallelTransition buttonsAnimation = new ParallelTransition(
-            createFadeTransition(buttonsContainer, ENTRY_DURATION),
-            createSlideTransition(buttonsContainer, ENTRY_DURATION, 10)
-        );
-
-        SequentialTransition sequence = new SequentialTransition(
-            titleAnimation,
-            new PauseTransition(STAGGER_DELAY),
-            statsAnimation,
-            new PauseTransition(STAGGER_DELAY),
-            buttonsAnimation
-        );
-
-        sequence.play();
-    }
-
-    private FadeTransition createFadeTransition(javafx.scene.Node node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        fade.setInterpolator(Interpolator.EASE_OUT);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(javafx.scene.Node node, Duration duration, double fromY) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        slide.setFromY(fromY);
-        slide.setToY(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
+        // Usar as transições padronizadas da classe base
+        playStandardEntryAnimations(titleContainer, statsContainer, buttonsContainer);
     }
 
     private void updateButtonSelection() {
@@ -307,21 +253,18 @@ public class GameOverScreen {
         }
     }
 
+    @Override
     public void destroy() {
-        root.setOnKeyPressed(null);
-        root.setFocusTraversable(false);
-        
         if (dynamicBackground != null) {
-            dynamicBackground.destroy();
             dynamicBackground = null;
         }
-        
-        titleContainer.getChildren().clear();
-        statsContainer.getChildren().clear();
-        buttonsContainer.getChildren().clear();
-        root.getChildren().clear();
+
+        if (root != null) {
+            root.getChildren().clear();
+        }
     }
 
+    @Override
     public Parent getNode() {
         return root;
     }
@@ -330,16 +273,6 @@ public class GameOverScreen {
      * Configura cache nos elementos principais da tela para melhorar performance
      */
     private void setupCache() {
-        if (!GameConfig.ENABLE_UI_CACHE) return;
-
-        if (restartButton != null && restartButton.getButton() != null) {
-            restartButton.getButton().setCache(true);
-            restartButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
-
-        if (menuButton != null && menuButton.getButton() != null) {
-            menuButton.getButton().setCache(true);
-            menuButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
+        setupStandardCache(root);
     }
 } 

@@ -5,6 +5,7 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsDevice;
 import java.awt.DisplayMode;
@@ -28,14 +29,14 @@ import java.util.List;
  * Tela de configurações de performance do jogo.
  * Permite ao usuário configurar cache e outras opções de performance.
  */
-public class VideoConfigScreen {
+public class VideoConfigScreen extends BaseScreen {
     private final GameMediator mediator;
     private final StackPane root;
     private final BorderPane mainLayout;
     private final VBox titleContainer;
     private final VBox settingsContainer;
-    private final VBox buttonsContainer;
-    private final HBox footerContainer;
+    private final HBox buttonsContainer;
+    private final FooterComponent footerContainer;
     private DynamicBackground dynamicBackground;
 
     // Controles de configuração
@@ -59,13 +60,18 @@ public class VideoConfigScreen {
     private int selectedIndex = 0;
 
     public VideoConfigScreen(GameMediator mediator) {
+        super();
         this.mediator = mediator;
         this.root = new StackPane();
         this.mainLayout = new BorderPane();
         this.titleContainer = new VBox();
         this.settingsContainer = new VBox();
-        this.buttonsContainer = new VBox();
-        this.footerContainer = new HBox();
+        this.buttonsContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"VOLTAR", "ESC"},
+            {"NAVEGAR", "←→"},
+            {"SELECIONAR", "ENTER"}
+        });
 
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         initializeComponents();
@@ -84,10 +90,8 @@ public class VideoConfigScreen {
     }
 
     private void setupBackground() {
-        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().add(dynamicBackground.getCanvas());
+        dynamicBackground = setupStandardBackground(root);
     }
-
 
     private void setupSettings() {
         settingsContainer.setAlignment(Pos.CENTER_LEFT);
@@ -249,32 +253,6 @@ public class VideoConfigScreen {
     }
 
     private void setupFooter() {
-        footerContainer.getStyleClass().add("menu-footer");
-        footerContainer.setAlignment(Pos.CENTER_RIGHT);
-
-        footerContainer.getChildren().addAll(
-                createFooterItem("NAVEGAR", "↑↓ & TAB"),
-                createFooterItem("SELECIONAR", "ENTER"),
-                createFooterItem("VOLTAR", "ESC")
-        );
-    }
-
-    private HBox createFooterItem(String label, String key) {
-        HBox box = new HBox(12);
-        box.getStyleClass().add("footer-item");
-        box.setAlignment(Pos.CENTER);
-
-        Text labelText = new Text(label);
-        labelText.getStyleClass().add("footer-label");
-
-        StackPane keyContainer = new StackPane();
-        keyContainer.getStyleClass().add("footer-key-container");
-        Text keyText = new Text(key);
-        keyText.getStyleClass().add("footer-key");
-        keyContainer.getChildren().add(keyText);
-
-        box.getChildren().addAll(labelText, keyContainer);
-        return box;
     }
 
     private void setupLayout() {
@@ -297,35 +275,35 @@ public class VideoConfigScreen {
     }
 
     private void setupKeyNavigation() {
+        setupStandardKeyNavigation(root);
+        
         root.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             switch (code) {
                 case ESCAPE:
                     mediator.emit(UiEvents.BACK_TO_MENU, null);
                     break;
+                case LEFT:
+                    navigateLeft();
+                    break;
+                case RIGHT:
+                    navigateRight();
+                    break;
                 case ENTER:
                     activateSelectedButton();
-                    break;
-                case UP:
-                    navigateUp();
-                    break;
-                case DOWN:
-                    navigateDown();
                     break;
                 default:
                     break;
             }
         });
-        root.setFocusTraversable(true);
-        root.requestFocus();
     }
     
-    private void navigateUp() {
+    private void navigateLeft() {
         selectedIndex = (selectedIndex - 1 + menuButtons.length) % menuButtons.length;
         updateButtonSelection();
     }
     
-    private void navigateDown() {
+    private void navigateRight() {
         selectedIndex = (selectedIndex + 1) % menuButtons.length;
         updateButtonSelection();
     }
@@ -529,77 +507,24 @@ public class VideoConfigScreen {
     }
 
     private void playEntryAnimations() {
-        ParallelTransition titleAnimation = createTitleEntryAnimation();
-        ParallelTransition settingsAnimation = createSettingsEntryAnimation();
-        ParallelTransition footerAnimation = createFooterEntryAnimation();
-
-        titleAnimation.play();
-        settingsAnimation.play();
-        footerAnimation.play();
+        playStandardEntryAnimations(titleContainer, settingsContainer, footerContainer);
+        
+        ParallelTransition buttonsAnimation = createCustomEntryAnimation(buttonsContainer, SLIDE_DISTANCE_X, SLIDE_DURATION);
+        buttonsAnimation.play();
     }
 
-    private ParallelTransition createTitleEntryAnimation() {
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateY(-50);
-
-        return new ParallelTransition(
-                createFadeTransition(titleContainer, Duration.millis(800)),
-                createSlideTransition(titleContainer, Duration.millis(800), -50)
-        );
-    }
-
-    private ParallelTransition createSettingsEntryAnimation() {
-        settingsContainer.setOpacity(0);
-        settingsContainer.setTranslateX(80);
-
-        return new ParallelTransition(
-                createFadeTransition(settingsContainer, Duration.millis(800)),
-                createSlideTransition(settingsContainer, Duration.millis(800), 80)
-        );
-    }
-
-    private ParallelTransition createFooterEntryAnimation() {
-        footerContainer.setOpacity(0);
-        footerContainer.setTranslateY(30);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(1000), footerContainer);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(1000), footerContainer);
-        slide.setFromY(30);
-        slide.setToY(0);
-
-        return new ParallelTransition(fade, slide);
-    }
-
-    private FadeTransition createFadeTransition(Parent node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(Parent node, Duration duration, double fromValue) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        slide.setFromY(fromValue);
-        slide.setToY(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
-    }
-
+    @Override
     public void destroy() {
         if (dynamicBackground != null) {
-            dynamicBackground.destroy();
             dynamicBackground = null;
         }
 
-        settingsContainer.getChildren().clear();
-        titleContainer.getChildren().clear();
-        footerContainer.getChildren().clear();
-        root.getChildren().clear();
+        if (root != null) {
+            root.getChildren().clear();
+        }
     }
 
+    @Override
     public Parent getNode() {
         return root;
     }
@@ -608,22 +533,6 @@ public class VideoConfigScreen {
      * Configura cache nos elementos principais da tela para melhorar performance
      */
     private void setupCache() {
-        if (!GameConfig.ENABLE_UI_CACHE) return;
-
-        // Cache nos botões
-        if (applyButton != null && applyButton.getButton() != null) {
-            applyButton.getButton().setCache(true);
-            applyButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
-
-        if (resetButton != null && resetButton.getButton() != null) {
-            resetButton.getButton().setCache(true);
-            resetButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
-
-        if (backButton != null && backButton.getButton() != null) {
-            backButton.getButton().setCache(true);
-            backButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
+        setupStandardCache(root);
     }
 } 

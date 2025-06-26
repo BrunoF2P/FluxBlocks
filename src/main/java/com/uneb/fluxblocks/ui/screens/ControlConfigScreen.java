@@ -5,6 +5,7 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,14 +22,14 @@ import java.util.List;
  * Tela de configurações de controles do jogo.
  * Permite ao usuário configurar as teclas para cada ação do jogo.
  */
-public class ControlConfigScreen {
+public class ControlConfigScreen extends BaseScreen {
     private final GameMediator mediator;
     private final StackPane root;
     private final BorderPane mainLayout;
     private final VBox titleContainer;
     private final VBox settingsContainer;
     private final HBox buttonsContainer;
-    private final HBox footerContainer;
+    private final FooterComponent footerContainer;
     private DynamicBackground dynamicBackground;
 
     // Controles de configuração - Jogador 1
@@ -74,13 +75,18 @@ public class ControlConfigScreen {
     private boolean isEditing = false;
 
     public ControlConfigScreen(GameMediator mediator) {
+        super();
         this.mediator = mediator;
         this.root = new StackPane();
         this.mainLayout = new BorderPane();
         this.titleContainer = new VBox();
         this.settingsContainer = new VBox();
         this.buttonsContainer = new HBox();
-        this.footerContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"VOLTAR", "ESC"},
+            {"NAVEGAR", "←→"},
+            {"SELECIONAR", "ENTER"}
+        });
 
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         initializeComponents();
@@ -99,8 +105,7 @@ public class ControlConfigScreen {
     }
 
     private void setupBackground() {
-        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().add(dynamicBackground.getCanvas());
+        dynamicBackground = setupStandardBackground(root);
     }
 
     private void setupSettings() {
@@ -321,32 +326,7 @@ public class ControlConfigScreen {
     }
 
     private void setupFooter() {
-        footerContainer.getStyleClass().add("menu-footer");
-        footerContainer.setAlignment(Pos.CENTER_RIGHT);
-
-        footerContainer.getChildren().addAll(
-                createFooterItem("NAVEGAR", "←→"),
-                createFooterItem("SELECIONAR", "ENTER"),
-                createFooterItem("VOLTAR", "ESC")
-        );
-    }
-
-    private HBox createFooterItem(String label, String key) {
-        HBox box = new HBox(12);
-        box.getStyleClass().add("footer-item");
-        box.setAlignment(Pos.CENTER);
-
-        Text labelText = new Text(label);
-        labelText.getStyleClass().add("footer-label");
-
-        StackPane keyContainer = new StackPane();
-        keyContainer.getStyleClass().add("footer-key-container");
-        Text keyText = new Text(key);
-        keyText.getStyleClass().add("footer-key");
-        keyContainer.getChildren().add(keyText);
-
-        box.getChildren().addAll(labelText, keyContainer);
-        return box;
+        // Footer já foi criado no construtor usando FooterComponent
     }
 
     private void setupLayout() {
@@ -363,16 +343,13 @@ public class ControlConfigScreen {
     }
 
     private void setupKeyNavigation() {
+        setupStandardKeyNavigation(root);
+        
         root.setOnKeyPressed(event -> {
-            if (isEditing) return;
-            
             KeyCode code = event.getCode();
             switch (code) {
                 case ESCAPE:
                     mediator.emit(UiEvents.BACK_TO_MENU, null);
-                    break;
-                case ENTER:
-                    activateSelectedButton();
                     break;
                 case LEFT:
                     navigateLeft();
@@ -380,12 +357,13 @@ public class ControlConfigScreen {
                 case RIGHT:
                     navigateRight();
                     break;
+                case ENTER:
+                    activateSelectedButton();
+                    break;
                 default:
                     break;
             }
         });
-        root.setFocusTraversable(true);
-        root.requestFocus();
     }
     
     private void navigateLeft() {
@@ -403,10 +381,7 @@ public class ControlConfigScreen {
     }
 
     private void setupCache() {
-        if (GameConfig.ENABLE_UI_CACHE) {
-            root.setCache(true);
-            root.setCacheHint(GameConfig.getCacheHint());
-        }
+        setupStandardCache(root);
     }
 
     private void loadCurrentSettings() {
@@ -549,79 +524,26 @@ public class ControlConfigScreen {
     }
 
     private void playEntryAnimations() {
-        ParallelTransition titleAnimation = createTitleEntryAnimation();
-        ParallelTransition settingsAnimation = createSettingsEntryAnimation();
-        ParallelTransition buttonsAnimation = createButtonsEntryAnimation();
-        ParallelTransition footerAnimation = createFooterEntryAnimation();
-
-        SequentialTransition sequence = new SequentialTransition(
-            titleAnimation,
-            settingsAnimation,
-            buttonsAnimation,
-            footerAnimation
-        );
-
-        sequence.play();
+        playStandardEntryAnimations(titleContainer, settingsContainer, footerContainer);
+        
+        ParallelTransition buttonsAnimation = createCustomEntryAnimation(buttonsContainer, SLIDE_DISTANCE_X, SLIDE_DURATION);
+        buttonsAnimation.play();
     }
 
-    private ParallelTransition createTitleEntryAnimation() {
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateX(-80);
+    @Override
+    public void destroy() {
+        if (dynamicBackground != null) {
+            dynamicBackground = null;
+        }
 
-        return new ParallelTransition(
-            createFadeTransition(titleContainer, Duration.millis(600)),
-            createSlideTransition(titleContainer, Duration.millis(600), -80)
-        );
+        if (root != null) {
+            root.getChildren().clear();
+        }
     }
 
-    private ParallelTransition createSettingsEntryAnimation() {
-        settingsContainer.setOpacity(0);
-        settingsContainer.setTranslateX(80);
-
-        return new ParallelTransition(
-            createFadeTransition(settingsContainer, Duration.millis(800)),
-            createSlideTransition(settingsContainer, Duration.millis(800), 80)
-        );
-    }
-
-    private ParallelTransition createButtonsEntryAnimation() {
-        buttonsContainer.setOpacity(0);
-        buttonsContainer.setTranslateX(80);
-
-        return new ParallelTransition(
-            createFadeTransition(buttonsContainer, Duration.millis(800)),
-            createSlideTransition(buttonsContainer, Duration.millis(800), 80)
-        );
-    }
-
-    private ParallelTransition createFooterEntryAnimation() {
-        footerContainer.setOpacity(0);
-        footerContainer.setTranslateY(30);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(1000), footerContainer);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(1000), footerContainer);
-        slide.setFromY(30);
-        slide.setToY(0);
-
-        return new ParallelTransition(fade, slide);
-    }
-
-    private FadeTransition createFadeTransition(Parent node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(Parent node, Duration duration, double fromValue) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        slide.setFromX(fromValue);
-        slide.setToX(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
+    @Override
+    public Parent getNode() {
+        return root;
     }
 
     private VBox createDelaysSection() {
@@ -683,9 +605,5 @@ public class ControlConfigScreen {
 
         row.getChildren().addAll(labelText, slider, valueLabel);
         return row;
-    }
-
-    public Parent getRoot() {
-        return root;
     }
 } 

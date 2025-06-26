@@ -5,15 +5,13 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -23,12 +21,12 @@ import javafx.util.Duration;
  * Tela principal do menu do jogo.
  * Gerencia recursos automaticamente através do sistema FXGL.
  */
-public class MenuScreen {
+public class MenuScreen extends BaseScreen {
     private final StackPane root;
     private final BorderPane mainLayout;
     private final VBox titleContainer;
     private final VBox menuContainer;
-    private final HBox footerContainer;
+    private final FooterComponent footerContainer;
     private final ButtonGame[] menuButtons;
     private int selectedIndex = 0;
     private final GameMediator mediator;
@@ -56,7 +54,10 @@ public class MenuScreen {
         this.mainLayout = new BorderPane();
         this.titleContainer = new VBox();
         this.menuContainer = new VBox();
-        this.footerContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"SAIR", "ESC"},
+            {"SELECIONAR", "ENTER"}
+        });
         this.menuButtons = new ButtonGame[MENU_LABELS.length];
 
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
@@ -70,7 +71,6 @@ public class MenuScreen {
         setupBackground();
         setupTitle();
         setupMenu();
-        setupFooter();
         setupLayout();
     }
 
@@ -107,8 +107,14 @@ public class MenuScreen {
         blocksText.setOpacity(0);
         blocksText.setTranslateY(-100);
 
-        FadeTransition fadeTransition = createFadeTransition(blocksText, Duration.millis(600));
-        TranslateTransition slideTransition = createSlideTransition(blocksText, Duration.millis(800));
+        FadeTransition fadeTransition = new FadeTransition(Duration.millis(600), blocksText);
+        fadeTransition.setFromValue(0);
+        fadeTransition.setToValue(1.0);
+        
+        TranslateTransition slideTransition = new TranslateTransition(Duration.millis(800), blocksText);
+        slideTransition.setFromY(-100);
+        slideTransition.setToY(0);
+        slideTransition.setInterpolator(Interpolator.EASE_OUT);
         
         if (fadeTransition != null && slideTransition != null) {
             ParallelTransition blocksEntry = new ParallelTransition(fadeTransition, slideTransition);
@@ -127,25 +133,6 @@ public class MenuScreen {
         glow.setAutoReverse(true);
         glow.setInterpolator(Interpolator.EASE_BOTH);
         return glow;
-    }
-
-    private FadeTransition createFadeTransition(Text text, Duration duration) {
-        if (text == null) return null;
-        
-        FadeTransition fade = new FadeTransition(duration, text);
-        fade.setFromValue(0);
-        fade.setToValue(1.0);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(Text text, Duration duration) {
-        if (text == null) return null;
-        
-        TranslateTransition slide = new TranslateTransition(duration, text);
-        slide.setFromY(-100);
-        slide.setToY(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
     }
 
     private void playBlocksBounceAndShake() {
@@ -237,34 +224,6 @@ public class MenuScreen {
         }
     }
 
-    private void setupFooter() {
-        footerContainer.getStyleClass().add("menu-footer");
-        footerContainer.setAlignment(Pos.CENTER_RIGHT);
-
-        footerContainer.getChildren().addAll(
-                createFooterItem("SAIR", "ESC"),
-                createFooterItem("SELECIONAR", "ENTER")
-        );
-    }
-
-    private HBox createFooterItem(String label, String key) {
-        HBox box = new HBox(12);
-        box.getStyleClass().add("footer-item");
-        box.setAlignment(Pos.CENTER);
-
-        Text labelText = new Text(label);
-        labelText.getStyleClass().add("footer-label");
-
-        StackPane keyContainer = new StackPane();
-        keyContainer.getStyleClass().add("footer-key-container");
-        Text keyText = new Text(key);
-        keyText.getStyleClass().add("footer-key");
-        keyContainer.getChildren().add(keyText);
-
-        box.getChildren().addAll(labelText, keyContainer);
-        return box;
-    }
-
     private void setupLayout() {
         mainLayout.setMaxSize(1920, 1080);
 
@@ -285,9 +244,6 @@ public class MenuScreen {
         root.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             switch (code) {
-                case ESCAPE:
-                    System.exit(0);
-                    break;
                 case UP:
                     navigateUp();
                     break;
@@ -296,6 +252,9 @@ public class MenuScreen {
                     break;
                 case ENTER:
                     activateSelectedButton();
+                    break;
+                case ESCAPE:
+                    System.exit(0);
                     break;
                 default:
                     break;
@@ -343,86 +302,30 @@ public class MenuScreen {
     }
 
     private void playButtonScaleAnimation(ButtonGame button) {
-        if (buttonScaleTransition != null && buttonScaleTransition.getStatus() == Animation.Status.RUNNING) {
+        if (buttonScaleTransition != null) {
             buttonScaleTransition.stop();
         }
 
         buttonScaleTransition = new ScaleTransition(BUTTON_SCALE_DURATION, button.getButton());
-        buttonScaleTransition.setToX(1.08);
-        buttonScaleTransition.setToY(1.08);
+        buttonScaleTransition.setFromX(1.0);
+        buttonScaleTransition.setFromY(1.0);
+        buttonScaleTransition.setToX(1.05);
+        buttonScaleTransition.setToY(1.05);
         buttonScaleTransition.setAutoReverse(true);
         buttonScaleTransition.setCycleCount(2);
         buttonScaleTransition.play();
     }
 
     private void resetButtonScale(ButtonGame button) {
+        if (buttonScaleTransition != null) {
+            buttonScaleTransition.stop();
+        }
         button.getButton().setScaleX(1.0);
         button.getButton().setScaleY(1.0);
     }
 
     private void playEntryAnimations() {
-        ParallelTransition titleAnimation = createTitleEntryAnimation();
-        ParallelTransition menuAnimation = createMenuEntryAnimation();
-        ParallelTransition footerAnimation = createFooterEntryAnimation();
-
-        titleAnimation.play();
-        menuAnimation.play();
-        footerAnimation.play();
-    }
-
-    private ParallelTransition createTitleEntryAnimation() {
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateX(-80);
-
-        return new ParallelTransition(
-                createFadeTransition(titleContainer, Duration.millis(900)),
-                createSlideTransition(titleContainer, Duration.millis(900), -80)
-        );
-    }
-
-    private ParallelTransition createMenuEntryAnimation() {
-        menuContainer.setOpacity(0);
-        menuContainer.setTranslateX(80);
-
-        return new ParallelTransition(
-                createFadeTransition(menuContainer, Duration.millis(900)),
-                createSlideTransition(menuContainer, Duration.millis(900), 80)
-        );
-    }
-
-    private ParallelTransition createFooterEntryAnimation() {
-        footerContainer.setOpacity(0);
-        footerContainer.setTranslateY(40);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(1000), footerContainer);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(1000), footerContainer);
-        slide.setFromY(40);
-        slide.setToY(0);
-
-        return new ParallelTransition(fade, slide);
-    }
-
-    private FadeTransition createFadeTransition(Parent node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(Parent node, Duration duration, double fromValue) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        if (fromValue != 0) {
-            slide.setFromX(fromValue);
-            slide.setToX(0);
-        } else {
-            slide.setFromY(fromValue);
-            slide.setToY(0);
-        }
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
+        playStandardEntryAnimations(titleContainer, menuContainer, footerContainer);
     }
 
     private void handleMenuAction(int idx) {
@@ -436,7 +339,7 @@ public class MenuScreen {
     private void executeMenuAction(int idx) {
         switch (idx) {
             case 0:
-                mediator.emit(UiEvents.PLAY_GAME, null);
+                mediator.emit(UiEvents.SHOW_GAME_MODE_SCREEN, null);
                 break;
             case 1:
                 mediator.emit(UiEvents.RANKING, null);
@@ -452,6 +355,7 @@ public class MenuScreen {
         }
     }
 
+    @Override
     public void destroy() {
         if (blocksShakeTimeline != null) {
             blocksShakeTimeline.stop();
@@ -463,44 +367,26 @@ public class MenuScreen {
             buttonScaleTransition = null;
         }
 
-        for (ButtonGame btn : menuButtons) {
-            if (btn != null) {
-                btn.setOnAction(null);
-                btn.getButton().setOnMouseEntered(null);
-            }
+        if (fluxText != null) {
+            fluxText = null;
         }
-        
-        root.getChildren().removeIf(node -> node instanceof Canvas);
 
-        menuContainer.getChildren().clear();
-        titleContainer.getChildren().clear();
-        footerContainer.getChildren().clear();
-        root.getChildren().clear();
+        if (blocksText != null) {
+            blocksText = null;
+        }
 
-        fluxText = null;
-        blocksText = null;
+        if (root != null) {
+            root.getChildren().clear();
+        }
     }
 
+    @Override
     public Parent getNode() {
         return root;
     }
 
-    /**
-     * Configura cache nos elementos principais da tela para melhorar performance
-     */
     private void setupCache() {
-        if (!GameConfig.ENABLE_UI_CACHE) return;
-
-        if (fluxText != null) {
-            fluxText.setCache(true);
-            fluxText.setCacheHint(GameConfig.getCacheHint());
-        }
-
-        for (ButtonGame button : menuButtons) {
-            if (button != null && button.getButton() != null) {
-                button.getButton().setCache(true);
-                button.getButton().setCacheHint(GameConfig.getCacheHint());
-            }
-        }
+        root.setCache(true);
+        root.setCacheHint(javafx.scene.CacheHint.SPEED);
     }
 }

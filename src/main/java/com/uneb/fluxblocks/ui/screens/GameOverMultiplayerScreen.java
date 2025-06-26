@@ -6,18 +6,12 @@ import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.game.statistics.GameStatistics;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
-import javafx.animation.SequentialTransition;
-import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -27,19 +21,20 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import javafx.animation.Interpolator;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 
 /**
  * Tela de Game Over para modo multiplayer.
  * Segue o mesmo padrão da tela single player para consistência.
  */
-public class GameOverMultiplayerScreen {
+public class GameOverMultiplayerScreen extends BaseScreen {
     private final GameMediator mediator;
     private final StackPane root;
-    private final BorderPane mainLayout;
+    private final VBox mainLayout;
     private final VBox titleContainer;
     private final VBox statsContainer;
     private final HBox buttonsContainer;
+    private final FooterComponent footerContainer;
     private final GameStatistics statsP1;
     private final GameStatistics statsP2;
     private final int victoriesP1;
@@ -60,10 +55,14 @@ public class GameOverMultiplayerScreen {
         this.victoriesP1 = victoriesP1;
         this.victoriesP2 = victoriesP2;
         this.root = new StackPane();
-        this.mainLayout = new BorderPane();
-        this.titleContainer = new VBox(10);
-        this.statsContainer = new VBox(20);
-        this.buttonsContainer = new HBox(15);
+        this.mainLayout = new VBox();
+        this.titleContainer = new VBox();
+        this.statsContainer = new VBox();
+        this.buttonsContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"VOLTAR", "ESC"},
+            {"SELECIONAR", "ENTER"}
+        });
 
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         root.setMaxSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
@@ -83,12 +82,19 @@ public class GameOverMultiplayerScreen {
     }
 
     private void setupBackground() {
-        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        dynamicBackground = createStandardBackground();
+        
         BoxBlur blur = new BoxBlur(5, 5, 2);
         dynamicBackground.getCanvas().setEffect(blur);
+        
         overlayBackground = new Rectangle(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         overlayBackground.setFill(Color.rgb(0, 0, 0, 0.7));
-        root.getChildren().addAll(dynamicBackground.getCanvas(), overlayBackground);
+        
+        Rectangle fallbackBackground = new Rectangle(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        fallbackBackground.setFill(Color.rgb(15, 22, 30));
+        
+        root.getChildren().addAll(fallbackBackground, dynamicBackground.getCanvas(), overlayBackground);
+        
         root.getStyleClass().add("game-over-screen");
     }
 
@@ -231,37 +237,21 @@ public class GameOverMultiplayerScreen {
     }
 
     private void setupLayout() {
-        mainLayout.setTop(titleContainer);
-        mainLayout.setCenter(statsContainer);
-        mainLayout.setBottom(buttonsContainer);
+        mainLayout.setAlignment(Pos.CENTER);
+        mainLayout.setSpacing(20);
+        mainLayout.setPadding(new Insets(20));
 
-        double marginTop = GameConfig.SCREEN_HEIGHT * 0.02;
-        double marginSides = GameConfig.SCREEN_WIDTH * 0.02;
-        double marginBottom = GameConfig.SCREEN_HEIGHT * 0.02;
-
-        BorderPane.setMargin(titleContainer, new Insets(marginTop, 0, 0, 0));
-        BorderPane.setMargin(statsContainer, new Insets(5, marginSides, 5, marginSides));
-        BorderPane.setMargin(buttonsContainer, new Insets(0, 0, marginBottom, 0));
+        mainLayout.getChildren().addAll(footerContainer, titleContainer, statsContainer, buttonsContainer);
 
         root.getChildren().add(mainLayout);
     }
 
     private void setupKeyNavigation() {
+        setupStandardKeyNavigation(root);
+        
         root.setOnKeyPressed(event -> {
-            if (restartButton.getButton().isDisabled()) {
-                return;
-            }
-            
             KeyCode code = event.getCode();
             switch (code) {
-                case ENTER:
-                case SPACE:
-                    if (selectedButtonIndex == 0) {
-                        restartButton.getButton().fire();
-                    } else if (selectedButtonIndex == 1) {
-                        menuButton.getButton().fire();
-                    }
-                    break;
                 case ESCAPE:
                     mediator.emit(UiEvents.BACK_TO_MENU, null);
                     break;
@@ -273,70 +263,21 @@ public class GameOverMultiplayerScreen {
                     selectedButtonIndex = (selectedButtonIndex + 1) % 2;
                     updateButtonSelection();
                     break;
+                case ENTER:
+                    if (selectedButtonIndex == 0) {
+                        restartButton.getButton().fire();
+                    } else {
+                        menuButton.getButton().fire();
+                    }
+                    break;
                 default:
                     break;
             }
         });
-        root.setFocusTraversable(true);
-        root.requestFocus();
     }
 
     private void playEntryAnimations() {
-        overlayBackground.setOpacity(0);
-        FadeTransition overlayFade = new FadeTransition(Duration.millis(400), overlayBackground);
-        overlayFade.setFromValue(0);
-        overlayFade.setToValue(1);
-        overlayFade.play();
-
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateY(-20);
-
-        ParallelTransition titleAnimation = new ParallelTransition(
-            createFadeTransition(titleContainer, ENTRY_DURATION),
-            createSlideTransition(titleContainer, ENTRY_DURATION, -20)
-        );
-
-        statsContainer.setOpacity(0);
-        statsContainer.setTranslateY(15);
-
-        ParallelTransition statsAnimation = new ParallelTransition(
-            createFadeTransition(statsContainer, ENTRY_DURATION),
-            createSlideTransition(statsContainer, ENTRY_DURATION, 15)
-        );
-
-        buttonsContainer.setOpacity(0);
-        buttonsContainer.setTranslateY(10);
-
-        ParallelTransition buttonsAnimation = new ParallelTransition(
-            createFadeTransition(buttonsContainer, ENTRY_DURATION),
-            createSlideTransition(buttonsContainer, ENTRY_DURATION, 10)
-        );
-
-        SequentialTransition sequence = new SequentialTransition(
-            titleAnimation,
-            new PauseTransition(STAGGER_DELAY),
-            statsAnimation,
-            new PauseTransition(STAGGER_DELAY),
-            buttonsAnimation
-        );
-
-        sequence.play();
-    }
-
-    private FadeTransition createFadeTransition(javafx.scene.Node node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        fade.setInterpolator(Interpolator.EASE_OUT);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(javafx.scene.Node node, Duration duration, double fromY) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        slide.setFromY(fromY);
-        slide.setToY(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
+        playStandardEntryAnimations(titleContainer, statsContainer, buttonsContainer);
     }
 
     private void updateButtonSelection() {
@@ -350,21 +291,18 @@ public class GameOverMultiplayerScreen {
         }
     }
 
+    @Override
     public void destroy() {
-        root.setOnKeyPressed(null);
-        root.setFocusTraversable(false);
-        
         if (dynamicBackground != null) {
-            dynamicBackground.destroy();
             dynamicBackground = null;
         }
-        
-        titleContainer.getChildren().clear();
-        statsContainer.getChildren().clear();
-        buttonsContainer.getChildren().clear();
-        root.getChildren().clear();
+
+        if (root != null) {
+            root.getChildren().clear();
+        }
     }
 
+    @Override
     public Parent getNode() {
         return root;
     }
@@ -373,16 +311,6 @@ public class GameOverMultiplayerScreen {
      * Configura cache nos elementos principais da tela para melhorar performance
      */
     private void setupCache() {
-        if (!GameConfig.ENABLE_UI_CACHE) return;
-
-        if (restartButton != null && restartButton.getButton() != null) {
-            restartButton.getButton().setCache(true);
-            restartButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
-
-        if (menuButton != null && menuButton.getButton() != null) {
-            menuButton.getButton().setCache(true);
-            menuButton.getButton().setCacheHint(GameConfig.getCacheHint());
-        }
+        setupStandardCache(root);
     }
 } 

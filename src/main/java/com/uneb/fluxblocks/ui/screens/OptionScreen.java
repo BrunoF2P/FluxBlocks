@@ -5,28 +5,22 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.ButtonGame;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.ParallelTransition;
-import javafx.animation.TranslateTransition;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.util.Duration;
 
-public class OptionScreen {
+public class OptionScreen extends BaseScreen {
     private final GameMediator mediator;
     private final StackPane root;
     private final BorderPane mainLayout;
     private final VBox titleContainer;
     private final VBox optionsContainer;
-    private final HBox footerContainer;
+    private final FooterComponent footerContainer;
     private final ButtonGame[] optionButtons;
     private int selectedIndex = 0;
     private DynamicBackground dynamicBackground;
@@ -45,7 +39,10 @@ public class OptionScreen {
         this.mainLayout = new BorderPane();
         this.titleContainer = new VBox();
         this.optionsContainer = new VBox();
-        this.footerContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"VOLTAR", "ESC"},
+            {"SELECIONAR", "ENTER"}
+        });
         this.optionButtons = new ButtonGame[OPTION_LABELS.length];
 
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
@@ -64,18 +61,11 @@ public class OptionScreen {
     }
 
     private void setupBackground() {
-        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().add(dynamicBackground.getCanvas());
+        dynamicBackground = setupStandardBackground(root);
     }
 
     private void setupTitle() {
-        VBox titleBox = new VBox(10);
-        titleBox.setAlignment(Pos.CENTER);
-
-        Text titleText = new Text("OPÇÕES");
-        titleText.getStyleClass().add("title-flux");
-       
-        titleBox.getChildren().add(titleText);
+        VBox titleBox = createStandardTitle("OPÇÕES");
         titleContainer.getChildren().add(titleBox);
         titleContainer.setAlignment(Pos.CENTER);
     }
@@ -113,31 +103,6 @@ public class OptionScreen {
     }
 
     private void setupFooter() {
-        footerContainer.getStyleClass().add("menu-footer");
-        footerContainer.setAlignment(Pos.CENTER_RIGHT);
-
-        footerContainer.getChildren().addAll(
-                createFooterItem("VOLTAR", "ESC"),
-                createFooterItem("SELECIONAR", "ENTER")
-        );
-    }
-
-    private HBox createFooterItem(String label, String key) {
-        HBox box = new HBox(12);
-        box.getStyleClass().add("footer-item");
-        box.setAlignment(Pos.CENTER);
-
-        Text labelText = new Text(label);
-        labelText.getStyleClass().add("footer-label");
-
-        StackPane keyContainer = new StackPane();
-        keyContainer.getStyleClass().add("footer-key-container");
-        Text keyText = new Text(key);
-        keyText.getStyleClass().add("footer-key");
-        keyContainer.getChildren().add(keyText);
-
-        box.getChildren().addAll(labelText, keyContainer);
-        return box;
     }
 
     private void setupLayout() {
@@ -157,6 +122,8 @@ public class OptionScreen {
     }
 
     private void setupKeyNavigation() {
+        setupStandardKeyNavigation(root);
+        
         root.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             switch (code) {
@@ -176,8 +143,6 @@ public class OptionScreen {
                     break;
             }
         });
-        root.setFocusTraversable(true);
-        root.requestFocus();
     }
 
     private void navigateUp() {
@@ -216,69 +181,13 @@ public class OptionScreen {
     }
 
     private void playEntryAnimations() {
-        ParallelTransition titleAnimation = createTitleEntryAnimation();
-        ParallelTransition optionsAnimation = createOptionsEntryAnimation();
-        ParallelTransition footerAnimation = createFooterEntryAnimation();
-
-        titleAnimation.play();
-        optionsAnimation.play();
-        footerAnimation.play();
-    }
-
-    private ParallelTransition createTitleEntryAnimation() {
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateY(-50);
-
-        return new ParallelTransition(
-                createFadeTransition(titleContainer, Duration.millis(800)),
-                createSlideTransition(titleContainer, Duration.millis(800), -50)
-        );
-    }
-
-    private ParallelTransition createOptionsEntryAnimation() {
-        optionsContainer.setOpacity(0);
-        optionsContainer.setTranslateX(80);
-
-        return new ParallelTransition(
-                createFadeTransition(optionsContainer, Duration.millis(800)),
-                createSlideTransition(optionsContainer, Duration.millis(800), 80)
-        );
-    }
-
-    private ParallelTransition createFooterEntryAnimation() {
-        footerContainer.setOpacity(0);
-        footerContainer.setTranslateY(30);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(1000), footerContainer);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(1000), footerContainer);
-        slide.setFromY(30);
-        slide.setToY(0);
-
-        return new ParallelTransition(fade, slide);
-    }
-
-    private FadeTransition createFadeTransition(Parent node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(Parent node, Duration duration, double fromValue) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        slide.setFromY(fromValue);
-        slide.setToY(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
+        playStandardEntryAnimations(titleContainer, optionsContainer, footerContainer);
     }
 
     private void handleOptionAction(int idx) {
         switch (idx) {
             case 0:
-                // SOM
+                // Configurações de Som
                 break;
             case 1:
                 mediator.emit(UiEvents.OPEN_VIDEO_CONFIG, null);
@@ -294,41 +203,23 @@ public class OptionScreen {
         }
     }
 
+    @Override
     public void destroy() {
-        for (ButtonGame btn : optionButtons) {
-            if (btn != null) {
-                btn.setOnAction(null);
-                btn.getButton().setOnMouseEntered(null);
-            }
-        }
-
         if (dynamicBackground != null) {
-            dynamicBackground.destroy();
             dynamicBackground = null;
         }
 
-        optionsContainer.getChildren().clear();
-        titleContainer.getChildren().clear();
-        footerContainer.getChildren().clear();
-        root.getChildren().clear();
+        if (root != null) {
+            root.getChildren().clear();
+        }
     }
 
+    @Override
     public Parent getNode() {
         return root;
     }
 
-    /**
-     * Configura cache nos elementos principais da tela para melhorar performance
-     */
     private void setupCache() {
-        if (!GameConfig.ENABLE_UI_CACHE) return;
-
-        // Cache nos botões de opções (elementos estáticos)
-        for (ButtonGame button : optionButtons) {
-            if (button != null && button.getButton() != null) {
-                button.getButton().setCache(true);
-                button.getButton().setCacheHint(GameConfig.getCacheHint());
-            }
-        }
+        setupStandardCache(root);
     }
 } 

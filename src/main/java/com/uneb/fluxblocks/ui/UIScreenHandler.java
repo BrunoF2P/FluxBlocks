@@ -35,6 +35,7 @@ public class UIScreenHandler {
 
     private void registerEvents() {
         mediator.receiver(UiEvents.PLAY_GAME, event -> showGameModeScreen());
+        mediator.receiver(UiEvents.SHOW_GAME_MODE_SCREEN, event -> showGameModeScreen());
         mediator.receiver(UiEvents.START_SINGLE_PLAYER, event -> startSinglePlayerGame());
         mediator.receiver(UiEvents.START_LOCAL_MULTIPLAYER, event -> startLocalMultiplayerGame());
         mediator.receiver(UiEvents.OPTIONS, event -> showOptionsScreen());

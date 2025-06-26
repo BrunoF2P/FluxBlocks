@@ -4,6 +4,7 @@ import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.components.DynamicBackground;
+import com.uneb.fluxblocks.ui.components.FooterComponent;
 import javafx.animation.*;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -30,13 +31,13 @@ import java.util.List;
  * Tela de seleção de modos de jogo.
  * Permite ao usuário escolher entre diferentes modos de jogo, como solo, multiplayer local e online.
  */
-public class GameModeScreen {
+public class GameModeScreen extends BaseScreen {
     private final GameMediator mediator;
     private final StackPane root;
     private final VBox mainLayout;
     private final VBox titleContainer;
     private final HBox cardsContainer;
-    private final HBox footerContainer;
+    private final FooterComponent footerContainer;
     private final List<GameModeCard> modeCards = new ArrayList<>();
     private final List<EventHandler<MouseEvent>> cardActions = new ArrayList<>();
     
@@ -60,7 +61,10 @@ public class GameModeScreen {
         this.mainLayout = new VBox();
         this.titleContainer = new VBox();
         this.cardsContainer = new HBox();
-        this.footerContainer = new HBox();
+        this.footerContainer = new FooterComponent(new String[][] {
+            {"VOLTAR", "ESC"},
+            {"SELECIONAR", "ENTER"}
+        }, Pos.CENTER);
 
         root.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         initializeComponents();
@@ -79,8 +83,7 @@ public class GameModeScreen {
     }
 
     private void setupBackground() {
-        dynamicBackground = new DynamicBackground(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
-        root.getChildren().add(dynamicBackground.getCanvas());
+        dynamicBackground = setupStandardBackground(root);
         root.getStyleClass().add("game-mode-screen");
     }
 
@@ -125,35 +128,7 @@ public class GameModeScreen {
     }
 
     private void setupFooter() {
-        footerContainer.getStyleClass().add("menu-footer");
-        footerContainer.setAlignment(Pos.CENTER);
-        footerContainer.setPadding(new Insets(10, 0, 10, 0));
-        
         VBox.setVgrow(footerContainer, Priority.NEVER);
-
-        footerContainer.getChildren().addAll(
-                createFooterItem("VOLTAR", "ESC"),
-                createFooterItem("SELECIONAR", "ENTER")
-
-        );
-    }
-
-    private HBox createFooterItem(String label, String key) {
-        HBox box = new HBox(12);
-        box.getStyleClass().add("footer-item");
-        box.setAlignment(Pos.CENTER);
-
-        Text labelText = new Text(label);
-        labelText.getStyleClass().add("footer-label");
-
-        StackPane keyContainer = new StackPane();
-        keyContainer.getStyleClass().add("footer-key-container");
-        Text keyText = new Text(key);
-        keyText.getStyleClass().add("footer-key");
-        keyContainer.getChildren().add(keyText);
-
-        box.getChildren().addAll(labelText, keyContainer);
-        return box;
     }
 
     private void setupLayout() {
@@ -187,8 +162,9 @@ public class GameModeScreen {
         }
     }
 
-
     private void setupKeyNavigation() {
+        setupStandardKeyNavigation(root);
+        
         root.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             switch (code) {
@@ -199,7 +175,6 @@ public class GameModeScreen {
                     navigateRight();
                     break;
                 case ENTER:
-                case SPACE:
                     activateSelectedCard();
                     break;
                 case ESCAPE:
@@ -209,8 +184,6 @@ public class GameModeScreen {
                     break;
             }
         });
-        root.setFocusTraversable(true);
-        root.requestFocus();
     }
 
     private void navigateLeft() {
@@ -230,114 +203,39 @@ public class GameModeScreen {
     }
 
     private void playEntryAnimations() {
-        ParallelTransition titleAnimation = createTitleEntryAnimation();
-        ParallelTransition cardsAnimation = createCardsEntryAnimation();
-        ParallelTransition footerAnimation = createFooterEntryAnimation();
-
-        titleAnimation.play();
-        cardsAnimation.play();
-        footerAnimation.play();
+        playStandardEntryAnimations(titleContainer, cardsContainer, footerContainer);
     }
 
-    private ParallelTransition createTitleEntryAnimation() {
-        titleContainer.setOpacity(0);
-        titleContainer.setTranslateY(-50);
-
-        return new ParallelTransition(
-                createFadeTransition(titleContainer, Duration.millis(800)),
-                createSlideTransition(titleContainer, Duration.millis(800), -50)
-        );
-    }
-
-    private ParallelTransition createCardsEntryAnimation() {
-        cardsContainer.setOpacity(0);
-        cardsContainer.setTranslateY(50);
-
-        return new ParallelTransition(
-                createFadeTransition(cardsContainer, Duration.millis(800)),
-                createSlideTransition(cardsContainer, Duration.millis(800), 50)
-        );
-    }
-
-    private ParallelTransition createFooterEntryAnimation() {
-        footerContainer.setOpacity(0);
-        footerContainer.setTranslateY(30);
-
-        FadeTransition fade = new FadeTransition(Duration.millis(1000), footerContainer);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(1000), footerContainer);
-        slide.setFromY(30);
-        slide.setToY(0);
-
-        return new ParallelTransition(fade, slide);
-    }
-
-    private FadeTransition createFadeTransition(Parent node, Duration duration) {
-        FadeTransition fade = new FadeTransition(duration, node);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        return fade;
-    }
-
-    private TranslateTransition createSlideTransition(Parent node, Duration duration, double fromValue) {
-        TranslateTransition slide = new TranslateTransition(duration, node);
-        slide.setFromY(fromValue);
-        slide.setToY(0);
-        slide.setInterpolator(Interpolator.EASE_OUT);
-        return slide;
-    }
-
+    @Override
     public void destroy() {
         if (cardScaleTransition != null) {
             cardScaleTransition.stop();
             cardScaleTransition = null;
         }
 
-        modeCards.forEach(card -> {
-            card.setOnMouseClicked(null);
-            card.setOnMouseEntered(null);
-            card.setOnMouseExited(null);
-        });
+        if (dynamicBackground != null) {
+            dynamicBackground = null;
+        }
+
+        if (titleText != null) {
+            titleText = null;
+        }
+
+        if (root != null) {
+            root.getChildren().clear();
+        }
 
         modeCards.clear();
         cardActions.clear();
-        
-        if (dynamicBackground != null) {
-            dynamicBackground.destroy();
-            dynamicBackground = null;
-        }
-        
-        cardsContainer.getChildren().clear();
-        titleContainer.getChildren().clear();
-        footerContainer.getChildren().clear();
-        root.getChildren().clear();
-
-        titleText = null;
     }
 
+    @Override
     public Parent getNode() {
         return root;
     }
 
-    /**
-     * Configura cache nos elementos principais da tela para melhorar performance
-     */
     private void setupCache() {
-        if (!GameConfig.ENABLE_UI_CACHE) return;
-
-        if (titleText != null) {
-            titleText.setCache(true);
-            titleText.setCacheHint(GameConfig.getCacheHint());
-        }
-
-        for (GameModeCard card : modeCards) {
-            if (card != null) {
-                card.setCache(true);
-                card.setCacheHint(GameConfig.getCacheHint());
-            }
-        }
+        setupStandardCache(root);
     }
 
     private static class GameModeData {
@@ -366,50 +264,55 @@ public class GameModeScreen {
 
         public GameModeCard(GameModeData data, int index) {
             this.data = data;
+            this.selectedBorder = new Rectangle(280, 360);
+            this.iconBackground = new Rectangle(80, 80);
+            this.textContent = createTextContent();
 
+            setupCard();
+            setupAnimation();
+        }
 
+        private void setupCard() {
             setPrefSize(280, 360);
             setMaxSize(280, 360);
             setMinSize(280, 360);
+            getStyleClass().add("game-mode-card");
 
             Rectangle background = new Rectangle(280, 360);
             background.setArcWidth(20);
             background.setArcHeight(20);
             background.setFill(createCardGradient());
 
-            selectedBorder = new Rectangle(280, 360);
-            selectedBorder.setArcWidth(20);
-            selectedBorder.setArcHeight(20);
+            // Borda de seleção
             selectedBorder.setFill(Color.TRANSPARENT);
             selectedBorder.setStroke(Color.web(data.accentColor));
             selectedBorder.setStrokeWidth(3);
+            selectedBorder.setArcWidth(20);
+            selectedBorder.setArcHeight(20);
             selectedBorder.setVisible(false);
+
+            // Background do ícone
+            iconBackground.setFill(createIconGradient());
+            iconBackground.setArcWidth(15);
+            iconBackground.setArcHeight(15);
+            iconBackground.setEffect(new DropShadow(10, Color.web(data.accentColor, 0.4)));
+            iconBackground.getStyleClass().add("game-mode-card-icon");
 
             VBox mainContent = new VBox(20);
             mainContent.setAlignment(Pos.CENTER);
             mainContent.setPadding(new Insets(30, 20, 30, 20));
 
-            iconBackground = new Rectangle(80, 80);
-            iconBackground.setArcWidth(15);
-            iconBackground.setArcHeight(15);
-            iconBackground.setFill(createIconGradient());
-            iconBackground.setEffect(new DropShadow(10, Color.web(data.accentColor, 0.4)));
-            iconBackground.getStyleClass().add("game-mode-card-icon");
+            StackPane iconContainer = new StackPane();
+            iconContainer.getChildren().addAll(iconBackground);
+            iconContainer.setAlignment(Pos.CENTER);
 
             Text iconText = new Text(data.icon);
             iconText.getStyleClass().add("game-mode-card-icon-text");
-
-            StackPane iconContainer = new StackPane();
-            iconContainer.getChildren().addAll(iconBackground, iconText);
-            iconContainer.setAlignment(Pos.CENTER);
-
-            textContent = createTextContent();
+            iconContainer.getChildren().add(iconText);
 
             mainContent.getChildren().addAll(iconContainer, textContent);
 
             getChildren().addAll(background, selectedBorder, mainContent);
-
-            setupAnimation();
         }
 
         private LinearGradient createCardGradient() {

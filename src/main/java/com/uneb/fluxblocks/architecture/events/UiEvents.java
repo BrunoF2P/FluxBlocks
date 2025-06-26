@@ -67,6 +67,8 @@ public abstract class UiEvents {
     };
     public static final EventType<Void> START_LOCAL_MULTIPLAYER = new EventType<>() {
     };
+    public static final EventType<Void> SHOW_GAME_MODE_SCREEN = new EventType<>() {
+    };
     public static final EventType<Void> OPEN_VIDEO_CONFIG = new EventType<>() {
     };
     public static final EventType<Void> OPEN_CONTROL_CONFIG = new EventType<>() {

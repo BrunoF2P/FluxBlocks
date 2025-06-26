@@ -68,7 +68,7 @@ public class ScreenManager {
     public void showControlConfigScreen() {
         clearScreen();
         ControlConfigScreen controlConfigScreen = new ControlConfigScreen(mediator);
-        gameScene.addUINode(controlConfigScreen.getRoot());
+        gameScene.addUINode(controlConfigScreen.getNode());
     }
 
     /**

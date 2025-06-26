@@ -14,7 +14,6 @@ import com.uneb.fluxblocks.ui.effects.FloatingTextEffect;
 import com.uneb.fluxblocks.ui.theme.BlockShapeColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Parent;
