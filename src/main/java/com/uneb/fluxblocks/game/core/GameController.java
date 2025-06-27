@@ -102,7 +102,6 @@ public class GameController {
         gameStatistics.reset();
         gameState.setPaused(true);
 
-        gameTimer.startTimer();
         scoreTracker.reset();
 
         startCountdown();
@@ -119,12 +118,11 @@ public class GameController {
                 countdown[0]--;
             } else {
                 gameState.setPaused(false);
+                pieceManager.handlePauseState(false);
                 FXGL.getInput().setProcessInput(true);
-                try {
-                    gameTimer.startTimer();
-                } catch (IllegalStateException e) {
-                    gameState.setPaused(false);
-                }
+                
+                gameTimer.startTimer();
+                
                 mediator.emit(UiEvents.GAME_STARTED, null);
                 mediator.emit(UiEvents.COUNTDOWN, new UiEvents.CountdownEvent(playerId, 0));
             }
@@ -148,6 +146,8 @@ public class GameController {
      */
     public void restart() {
         gameTimer.stopTimer();
+        gameState.setGameTimeMs(0);
+        pieceManager.handlePauseState(false);
         start();
     }
 

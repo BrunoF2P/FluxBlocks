@@ -113,10 +113,8 @@ public class GameTimer extends AnimationTimer {
 
     /**
      * Inicia o timer do jogo.
-     * @throws IllegalStateException se o timer já estiver iniciado
      */
     public void startTimer() {
-        validateStart();
         start();
     }
 
@@ -126,7 +124,9 @@ public class GameTimer extends AnimationTimer {
     public void stopTimer() {
         stop();
         gameStartTime = 0;
-
+        lastUpdate = 0;
+        lastGameLoop = 0;
+        lastClockUpdate = 0;
     }
 
     /**
@@ -136,7 +136,6 @@ public class GameTimer extends AnimationTimer {
      * @param isPaused true para pausar, false para resumir
      */
     public void handlePauseState(boolean isPaused) {
-
     }
 
     /**
@@ -167,15 +166,5 @@ public class GameTimer extends AnimationTimer {
         lastClockUpdate = 0;
 
         mediator.emit(GameplayEvents.RESTART_GAME, null);
-    }
-
-    /**
-     * Valida se o timer pode ser iniciado.
-     * @throws IllegalStateException se o timer já estiver iniciado
-     */
-    private void validateStart() {
-        if (gameStartTime != 0) {
-            throw new IllegalStateException("Timer já iniciado");
-        }
     }
 }
