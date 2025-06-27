@@ -3,199 +3,107 @@ package com.uneb.fluxblocks.ui;
 import com.almasb.fxgl.app.scene.GameScene;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
-import com.uneb.fluxblocks.game.core.GameController;
-import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.ui.components.BackgroundComponent;
-import com.uneb.fluxblocks.ui.components.PlayerContainer;
-import com.uneb.fluxblocks.ui.effects.Effects;
-import com.uneb.fluxblocks.ui.screens.GameModeScreen;
-import com.uneb.fluxblocks.ui.screens.GameScreen;
-import com.uneb.fluxblocks.ui.screens.MenuScreen;
-import com.uneb.fluxblocks.ui.screens.OptionScreen;
+import com.uneb.fluxblocks.ui.managers.GameManager;
+import com.uneb.fluxblocks.ui.managers.GameOverManager;
+import com.uneb.fluxblocks.ui.managers.InputManager;
+import com.uneb.fluxblocks.ui.managers.ScreenManager;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-
-
+/**
+ * Classe responsável por coordenar os diferentes managers do jogo.
+ */
 public class UIScreenHandler {
-    private final GameScene gameScene;
     private final GameMediator mediator;
-    private final StackPane currentScreen = new StackPane();
-    private BackgroundComponent backgroundComponent;
-    private GameState gameState;
-    private int playerId;
-
-    // Screens
-    private MenuScreen menuScreen;
-    private OptionScreen optionScreen;
-    private GameModeScreen gameModeScreen;
-    private GameScreen screen1;
-    private GameScreen screen2;
-
-    // Controllers
-    private GameController controller1;
-    private GameController controller2;
+    private final ScreenManager screenManager;
+    private final InputManager inputManager;
+    private final GameManager gameManager;
+    private final GameOverManager gameOverManager;
+    private final BackgroundComponent backgroundComponent;
 
     public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
-        this.gameScene = gameScene;
         this.mediator = mediator;
-        this.gameState = new GameState();
-        this.playerId = 1;
+        this.backgroundComponent = new BackgroundComponent();
+        
+        this.screenManager = new ScreenManager(gameScene, mediator);
+        this.inputManager = new InputManager(mediator);
+        this.gameManager = new GameManager(mediator, inputManager, screenManager, backgroundComponent);
+        this.gameOverManager = new GameOverManager(mediator, screenManager, inputManager, gameManager);
 
-        configurarStackPanePrincipal();
         registerEvents();
-        startUi();
-    }
-
-    private void configurarStackPanePrincipal() {
-        currentScreen.setAlignment(Pos.CENTER);
-        currentScreen.setStyle("-fx-background-color: rgba(0, 0, 0, 0.2);");
-    }
-
-    private void initializeBackground() {
-        if (backgroundComponent == null) {
-            backgroundComponent = new BackgroundComponent();
-        }
-        currentScreen.getChildren().clear();
-        currentScreen.getChildren().add(backgroundComponent.getBackground());
-    }
-
-    private void registerEvents() {
-        mediator.receiver(UiEvents.START, unused -> showMenuScreen());
-        mediator.receiver(UiEvents.PLAY_GAME, unused -> showGameModeScreen());
-        mediator.receiver(UiEvents.OPTIONS, unused -> showOptionScreen());
-        mediator.receiver(UiEvents.BACK_TO_MENU, unused -> showMenuScreen());
-
-        mediator.receiver(UiEvents.START_SINGLE_PLAYER, unused -> startSinglePlayerGame());
-        mediator.receiver(UiEvents.START_LOCAL_MULTIPLAYER, unused -> startLocalMultiplayerGame());
-    }
-
-    private void startUi() {
         showMenuScreen();
     }
 
-    private void showMenuScreen() {
-        clearCurrentScreen();
-        menuScreen = new MenuScreen(mediator);
-        currentScreen.getChildren().add(menuScreen.getNode());
-        gameScene.clearUINodes();
-        gameScene.addUINode(currentScreen);
+    private void registerEvents() {
+        mediator.receiver(UiEvents.PLAY_GAME, event -> showGameModeScreen());
+        mediator.receiver(UiEvents.SHOW_GAME_MODE_SCREEN, event -> showGameModeScreen());
+        mediator.receiver(UiEvents.START_SINGLE_PLAYER, event -> startSinglePlayerGame());
+        mediator.receiver(UiEvents.START_LOCAL_MULTIPLAYER, event -> startLocalMultiplayerGame());
+        mediator.receiver(UiEvents.OPTIONS, event -> showOptionsScreen());
+        mediator.receiver(UiEvents.RANKING, event -> showRankingScreen());
+        mediator.receiver(UiEvents.BACK_TO_MENU, event -> showMenuScreen());
+        mediator.receiver(UiEvents.OPEN_VIDEO_CONFIG, event -> showVideoConfigScreen());
+        mediator.receiver(UiEvents.OPEN_CONTROL_CONFIG, event -> showControlConfigScreen());
+        mediator.receiver(UiEvents.GAME_OVER, event -> handleGameOver(event));
+        mediator.receiver(UiEvents.GAME_OVER_MULTIPLAYER, event -> handleGameOverMultiplayer(event));
     }
 
-    private void showGameModeScreen() {
-        clearCurrentScreen();
-        gameModeScreen = new GameModeScreen(mediator);
-        currentScreen.getChildren().add(gameModeScreen.getNode());
-        gameScene.clearUINodes();
-        gameScene.addUINode(currentScreen);
+    public void showMenuScreen() {
+        gameOverManager.resetVictories();
+        screenManager.showMenuScreen();
+    }
+
+    public void showGameModeScreen() {
+        screenManager.showGameModeScreen();
+    }
+
+    public void showOptionsScreen() {
+        screenManager.showOptionsScreen();
+    }
+
+    public void showVideoConfigScreen() {
+        screenManager.showVideoConfigScreen();
+    }
+
+    public void showControlConfigScreen() {
+        screenManager.showControlConfigScreen();
+    }
+
+    public void showRankingScreen() {
+        screenManager.showRankingScreen();
     }
 
     private void startSinglePlayerGame() {
-        clearCurrentScreen();
-        gameScene.clearUINodes();
-
-        initializeBackground();
-
-        GameState gameState = new GameState();
-        screen1 = new GameScreen(mediator, gameState, 1, backgroundComponent);
-        controller1 = new GameController(mediator, screen1.getGameBoardScreen(), 1, gameState);
-        screen1.initialize();
-        controller1.restart();
-
-        PlayerContainer playerContainer = new PlayerContainer("Jogador", screen1, false);
-        StackPane centerContainer = new StackPane(playerContainer.getNode());
-        centerContainer.setAlignment(Pos.CENTER);
-        currentScreen.getChildren().add(centerContainer);
-
-        gameScene.addUINode(currentScreen);
-        mediator.emit(UiEvents.GAME_STARTED, null);
+        cleanup();
+        gameOverManager.reset();
+        gameManager.startSinglePlayerGame();
     }
 
     private void startLocalMultiplayerGame() {
-        clearCurrentScreen();
-        gameScene.clearUINodes();
-
-        initializeBackground();
-
-        GameState gameState1 = new GameState();
-        GameState gameState2 = new GameState();
-
-        screen1 = new GameScreen(mediator, gameState1, 1, backgroundComponent);
-        screen2 = new GameScreen(mediator, gameState2, 2, backgroundComponent);
-
-        controller1 = new GameController(mediator, screen1.getGameBoardScreen(), 1, gameState1);
-        controller2 = new GameController(mediator, screen2.getGameBoardScreen(), 2, gameState2);
-
-        screen1.initialize();
-        screen2.initialize();
-
-        controller1.restart();
-        controller2.restart();
-
-        HBox playersContainer = createPlayersContainer();
-        currentScreen.getChildren().add(playersContainer);
-
-        gameScene.addUINode(currentScreen);
-        mediator.emit(UiEvents.GAME_STARTED, null);
+        cleanup();
+        gameOverManager.reset();
+        gameManager.startLocalMultiplayerGame();
     }
 
-    private HBox createPlayersContainer() {
-        HBox playersContainer = new HBox(300);
-        playersContainer.setAlignment(Pos.CENTER);
-        playersContainer.setPadding(new Insets(20));
-
-        PlayerContainer player1Container = new PlayerContainer("Jogador 1", screen1, true);
-        PlayerContainer player2Container = new PlayerContainer("Jogador 2", screen2, true);
-
-        playersContainer.getChildren().addAll(player1Container.getNode(), player2Container.getNode());
-        return playersContainer;
+    private void handleGameOver(UiEvents.GameOverEvent event) {
+        gameOverManager.handleGameOver(event, gameManager.getTotalPlayers());
     }
 
-    private void showOptionScreen() {
-        clearCurrentScreen();
-        optionScreen = new OptionScreen(mediator);
-        currentScreen.getChildren().add(optionScreen.getNode());
-        gameScene.clearUINodes();
-        gameScene.addUINode(currentScreen);
+    private void handleGameOverMultiplayer(UiEvents.GameOverMultiplayerEvent event) {
+        gameOverManager.handleGameOverMultiplayer(event);
     }
 
+    /**
+     * Limpa todos os recursos e reinicializa o sistema.
+     */
+    private void cleanup() {
+        gameManager.cleanup();
+        gameOverManager.cleanup();
+        
+        // Limpa todos os listeners do mediator para evitar interferência entre partidas
+        mediator.clearAllListeners();
 
-    private void clearCurrentScreen() {
-        if (screen1 != null) {
-            screen1.destroy();
-            screen1 = null;
-        }
-
-        if (screen2 != null) {
-            screen2.destroy();
-            screen2 = null;
-        }
-
-        if (menuScreen != null) {
-            menuScreen.destroy();
-            menuScreen = null;
-        }
-
-        if (optionScreen != null) {
-            optionScreen.destroy();
-            optionScreen = null;
-        }
-
-        if (gameModeScreen != null) {
-            gameModeScreen.destroy();
-            gameModeScreen = null;
-        }
-
-        currentScreen.getChildren().clear();
-    }
-
-    public void destroy() {
-        clearCurrentScreen();
-        if (backgroundComponent != null) {
-            Effects.clearAllEffects(backgroundComponent.getBackground());
-            backgroundComponent = null;
-        }
+        registerEvents();
+        
+        gameManager.registerPauseEvents();
     }
 }

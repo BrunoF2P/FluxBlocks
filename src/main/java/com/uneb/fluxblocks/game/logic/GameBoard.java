@@ -10,11 +10,8 @@ import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.ui.effects.Effects;
 import com.uneb.fluxblocks.ui.effects.FloatingTextEffect;
 
-import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.util.Duration;
 
 public class GameBoard {
     private final GameMediator mediator;
@@ -103,18 +100,9 @@ public class GameBoard {
                 }
 
                 // Screen shake
-                StackPane boardRoot = (StackPane) effectsLayer.getParent();
-                if (boardRoot != null) {
-                    double intensity = Effects.SHAKE_INTENSITY_BASE +
-                            (finalLinesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
-                    Duration shakeDuration = Duration.millis(100);
-                    TranslateTransition shake = new TranslateTransition(shakeDuration, boardRoot);
-                    shake.setByY(intensity);
-                    shake.setCycleCount(2);
-                    shake.setAutoReverse(true);
-                    shake.setOnFinished(e -> boardRoot.setTranslateY(0));
-                    shake.play();
-                }
+                double intensity = Effects.SHAKE_INTENSITY_BASE +
+                        (finalLinesRemoved - 1) * Effects.SHAKE_INTENSITY_MULTIPLIER;
+                mediator.emit(UiEvents.SCREEN_SHAKE, new UiEvents.ScreenShakeEvent(playerId, intensity));
             });
 
             removeCompleteLines(isLineComplete);

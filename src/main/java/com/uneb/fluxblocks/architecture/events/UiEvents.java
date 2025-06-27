@@ -1,5 +1,6 @@
 package com.uneb.fluxblocks.architecture.events;
 
+import com.uneb.fluxblocks.game.statistics.GameStatistics;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 
 public abstract class UiEvents {
@@ -10,6 +11,9 @@ public abstract class UiEvents {
     public record BoardUpdateEvent(int playerId, int[][] grid) {}
     public record PieceTrailEffectEvent(int playerId, int[] position) {}
     public record CountdownEvent(int playerId, int seconds) {}
+    public record ScreenShakeEvent(int playerId, double intensity) {}
+    public record GameOverEvent(int playerId, GameStatistics statistics) {}
+    public record GameOverMultiplayerEvent(GameStatistics statsP1, GameStatistics statsP2, int victoriesP1, int victoriesP2) {}
     private UiEvents() {
     }
 
@@ -23,6 +27,8 @@ public abstract class UiEvents {
     };
     public static final EventType<BoardUpdateEvent> BOARD_UPDATE = new EventType<>() {
     };
+    public static final EventType<ScreenShakeEvent> SCREEN_SHAKE = new EventType<>() {
+    };
     public static final EventType<NextPieceEvent> NEXT_PIECE_UPDATE = new EventType<>() {
     };
     public static final EventType<ScoreUiEvent> SCORE_UPDATE = new EventType<>() {
@@ -35,7 +41,7 @@ public abstract class UiEvents {
     };
     public static final EventType<Boolean> GAME_PAUSED = new EventType<>() {
     };
-    public static final EventType<Integer> GAME_OVER = new EventType<>() {
+    public static final EventType<GameOverEvent> GAME_OVER = new EventType<>() {
     };
     public static final EventType<BoardEvent> PIECE_LANDED_SOFT = new EventType<>() {
     };
@@ -60,5 +66,16 @@ public abstract class UiEvents {
     public static final EventType<Void> START_SINGLE_PLAYER = new EventType<>() {
     };
     public static final EventType<Void> START_LOCAL_MULTIPLAYER = new EventType<>() {
+    };
+    public static final EventType<Void> SHOW_GAME_MODE_SCREEN = new EventType<>() {
+    };
+    public static final EventType<Void> OPEN_VIDEO_CONFIG = new EventType<>() {
+    };
+    public static final EventType<Void> OPEN_CONTROL_CONFIG = new EventType<>() {
+    };
+    public static final EventType<GameOverMultiplayerEvent> GAME_OVER_MULTIPLAYER = new EventType<>() {};
+    public static final EventType<Void> RESTART_GAME = new EventType<>() {
+    };
+    public static final EventType<Void> RESUME_GAME = new EventType<>() {
     };
 }

@@ -1,109 +1,51 @@
 package com.uneb.fluxblocks.ui.screens;
 
-import com.uneb.fluxblocks.architecture.events.UiEvents;
+import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.entity.Entity;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
-import com.uneb.fluxblocks.configuration.GameConfig;
-import com.uneb.fluxblocks.ui.components.BoardCanvas;
-import com.uneb.fluxblocks.ui.effects.LineClearEffects;
-
-import javafx.geometry.Pos;
+import com.uneb.fluxblocks.ui.components.GameBoardScreenComponent;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 
 /**
- * Classe responsável por gerir a tela do tabuleiro do jogo FluxBlocks.
- * Esta classe lida com a exibição visual do tabuleiro onde as peças caem e acumulam-se.
- * @author Bruno Bispo
+ * Tela do tabuleiro do jogo, responsável por gerenciar a exibição e interações do tabuleiro.
+ * Contém o componente principal que renderiza o tabuleiro e os efeitos visuais.
  */
 public class GameBoardScreen {
+    
+    private final Entity screenEntity;
+    private final GameBoardScreenComponent screenComponent;
     private final GameMediator mediator;
-    private final BoardCanvas boardCanvas;
-    private final StackPane root;
-    private final Pane effectsLayer;  // Camada para efeitos visuais
     private final int playerId;
-    /**
-     * Construtor da tela do tabuleiro do jogo.
-     *
-     * @param mediator O mediador usado para comunicação entre componentes do jogo
-     */
+
+
+
     public GameBoardScreen(GameMediator mediator, int playerId) {
         this.mediator = mediator;
         this.playerId = playerId;
-        this.boardCanvas = new BoardCanvas(GameConfig.BOARD_WIDTH, GameConfig.BOARD_HEIGHT, GameConfig.CELL_SIZE);
-        this.effectsLayer = new Pane();
-        this.root = new StackPane(boardCanvas, effectsLayer);
-
-        effectsLayer.setMouseTransparent(true);
-        effectsLayer.setPrefSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
-        effectsLayer.setMaxSize(GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE, GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE);
-
-        root.getStyleClass().add("game-board");
-        root.setAlignment(Pos.CENTER);
-
-        double boardWidth = GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
-        double boardHeight = GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE;
-        root.setPrefSize(boardWidth, boardHeight);
-        root.setMaxSize(boardWidth, boardHeight);
-
-        registerEvents();
+        
+        this.screenComponent = new GameBoardScreenComponent(mediator, playerId);
+        
+        this.screenEntity = FXGL.entityBuilder()
+            .at(0, 0)
+            .with(screenComponent)
+            .buildAndAttach();
     }
 
     /**
-     * Registra os eventos necessários para atualização do tabuleiro.
-     */
-    private void registerEvents() {
-        mediator.receiver(UiEvents.BOARD_UPDATE, (ev) -> {
-            if (ev.playerId() == playerId) {
-                updateBoard(ev.grid());
-            }
-        });
-    }
-    /**
-     * Atualiza o estado visual do tabuleiro com base na grade fornecida.
+     * Aplica efeito de limpeza de linha.
      *
-     * @param grid A matriz que representa o estado atual do tabuleiro
+     * @param row Linha onde aplicar o efeito
      */
-    private void updateBoard(int[][] grid) {
-        if (grid == null || grid.length == 0 || grid[0].length == 0) {
-            return;
-        }
-        boardCanvas.updateBoard(grid);
-    }
-
     public void applyLineClearEffect(int row) {
-        double y = row * GameConfig.CELL_SIZE;
-        LineClearEffects.applyLineClearEffect(effectsLayer, y, GameConfig.CELL_SIZE);
+        screenComponent.applyLineClearEffect(row);
     }
 
     /**
      * Limpa todo o conteúdo do tabuleiro.
      */
     public void clearBoard() {
-        boardCanvas.clearBoard();
-    }
-
-    /**
-     * Limpa os recursos e listeners para evitar vazamentos de memória.
-     * Este método deve ser chamado quando a tela não for mais necessária.
-     */
-    public void destroy() {
-        mediator.removeReceiver(UiEvents.BOARD_UPDATE, (ev) -> {
-                    if (ev.playerId() == playerId) {
-                        updateBoard(ev.grid());
-                    };
-                });
-        if (boardCanvas != null) {
-            boardCanvas.clearBoard();
-        }
-
-        if (effectsLayer != null) {
-            effectsLayer.getChildren().clear();
-        }
-
-        if (root != null) {
-            root.getStylesheets().clear();
-        }
+        screenComponent.clearBoard();
     }
 
     /**
@@ -112,7 +54,7 @@ public class GameBoardScreen {
      * @return O componente Parent que contém toda a interface do tabuleiro
      */
     public Parent getNode() {
-        return root;
+        return screenComponent.getEffectsLayer().getParent();
     }
 
     /**
@@ -121,7 +63,7 @@ public class GameBoardScreen {
      * @return O painel usado para efeitos visuais
      */
     public Pane getEffectsLayer() {
-        return effectsLayer;
+        return screenComponent.getEffectsLayer();
     }
 
     /**
@@ -129,7 +71,7 @@ public class GameBoardScreen {
      * @return Largura do tabuleiro
      */
     public int getWidth() {
-        return GameConfig.BOARD_WIDTH * GameConfig.CELL_SIZE;
+        return screenComponent.getWidth();
     }
 
     /**
@@ -137,6 +79,14 @@ public class GameBoardScreen {
      * @return Altura do tabuleiro
      */
     public int getHeight() {
-        return GameConfig.BOARD_HEIGHT * GameConfig.CELL_SIZE;
+        return screenComponent.getHeight();
+    }
+    
+    /**
+     * Retorna a entidade FXGL da tela.
+     * @return Entidade FXGL
+     */
+    public Entity getEntity() {
+        return screenEntity;
     }
 }

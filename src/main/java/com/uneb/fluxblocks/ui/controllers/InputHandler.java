@@ -11,6 +11,8 @@ import com.uneb.fluxblocks.game.logic.GameState;
 
 import javafx.scene.input.KeyCode;
 
+import java.util.UUID;
+
 /**
  * Gerencia toda a entrada do usuário para o jogo FluxBlocks.
  * <p>
@@ -24,7 +26,7 @@ public class InputHandler {
     private final GameMediator mediator;
 
     /** O estado atual do jogo */
-    private final GameState gameState;
+    private GameState gameState;
 
     /** Flag indicando se a tecla de movimento esquerdo está atualmente pressionada */
     private boolean leftKeyPressed = false;
@@ -36,45 +38,49 @@ public class InputHandler {
     private KeyCode lastHorizontalKeyPressed = null;
     private final int playerId;
 
-
-    private KeyCode keyLeft;
-    private KeyCode keyRight;
-    private KeyCode keyDown;
-    private KeyCode keyRotate;
-    private KeyCode keyDrop;
-    private KeyCode keyPause;
-    private KeyCode keyRestart;
+    private final KeyCode keyLeft;
+    private final KeyCode keyRight;
+    private final KeyCode keyDown;
+    private final KeyCode keyRotate;
+    private final KeyCode keyDrop;
+    private final KeyCode keyPause;
+    private final KeyCode keyRestart;
 
     private boolean actionsRegistered = false;
+
+    private final String uniqueId = UUID.randomUUID().toString();
+
+    private boolean inputEnabled = true;
+
     /**
      * Cria um novo InputHandler com o mediador e estado do jogo especificados.
      *
-     * @param mediator O mediador do jogo para notificar sobre eventos de entrada
-     * @param gameState O estado atual do jogo para verificar o tratamento de entrada válido
+     * @param mediator O mediador central para comunicação entre componentes
+     * @param gameState O estado atual do jogo
+     * @param playerId O ID do jogador (1 ou 2)
      */
     public InputHandler(GameMediator mediator, GameState gameState, int playerId) {
         this.mediator = mediator;
         this.gameState = gameState;
         this.playerId = playerId;
 
-
         if (playerId == 1) {
-            keyLeft    = KeyCode.A;
-            keyRight   = KeyCode.D;
-            keyDown    = KeyCode.S;
-            keyRotate  = KeyCode.W;
-            keyDrop    = KeyCode.SPACE;
-            keyPause   = KeyCode.ESCAPE;
-            keyRestart = KeyCode.R;
+            keyLeft    = KeyCode.valueOf(GameConfig.P1_KEY_LEFT);
+            keyRight   = KeyCode.valueOf(GameConfig.P1_KEY_RIGHT);
+            keyDown    = KeyCode.valueOf(GameConfig.P1_KEY_DOWN);
+            keyRotate  = KeyCode.valueOf(GameConfig.P1_KEY_ROTATE);
+            keyDrop    = KeyCode.valueOf(GameConfig.P1_KEY_DROP);
+            keyPause   = KeyCode.valueOf(GameConfig.P1_KEY_PAUSE);
+            keyRestart = KeyCode.valueOf(GameConfig.P1_KEY_RESTART);
 
         } else {
-            keyLeft    = KeyCode.LEFT;
-            keyRight   = KeyCode.RIGHT;
-            keyDown    = KeyCode.DOWN;
-            keyRotate  = KeyCode.UP;
-            keyDrop    = KeyCode.ENTER;
-            keyPause   = KeyCode.P;
-            keyRestart = KeyCode.BACK_SPACE;
+            keyLeft    = KeyCode.valueOf(GameConfig.P2_KEY_LEFT);
+            keyRight   = KeyCode.valueOf(GameConfig.P2_KEY_RIGHT);
+            keyDown    = KeyCode.valueOf(GameConfig.P2_KEY_DOWN);
+            keyRotate  = KeyCode.valueOf(GameConfig.P2_KEY_ROTATE);
+            keyDrop    = KeyCode.valueOf(GameConfig.P2_KEY_DROP);
+            keyPause   = KeyCode.valueOf(GameConfig.P2_KEY_PAUSE);
+            keyRestart = KeyCode.valueOf(GameConfig.P2_KEY_RESTART);
         }
     }
 
@@ -83,8 +89,9 @@ public class InputHandler {
      * Deve ser chamado uma vez durante a inicialização do jogo.
      */
     public void setupInputHandling() {
-        if (actionsRegistered)
+        if (actionsRegistered) {
             return;
+        }
         setupMoveLeftAction();
         setupMoveRightAction();
         setupSoftDropAction();
@@ -102,7 +109,7 @@ public class InputHandler {
      * @return true se o jogo estiver pausado ou terminado, false caso contrário
      */
     private boolean isGameNotPlayable() {
-        return gameState.isPaused() || gameState.isGameOver();
+        return gameState.isPaused() || gameState.isGameOver() || !inputEnabled;
     }
 
     /**
@@ -110,15 +117,18 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupMoveLeftAction() {
-        FXGL.getInput().addAction(new UserAction("Move Left P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Move Left P"+ playerId + " " + uniqueId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
             @Override
             protected void onActionBegin() {
+                if (isGameNotPlayable()) return;
+                
                 leftKeyPressed = true;
                 lastHorizontalKeyPressed = keyLeft;
                 mediator.emit(GameplayEvents.MOVE_LEFT, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "LEFT"));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -156,15 +166,18 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupMoveRightAction() {
-        FXGL.getInput().addAction(new UserAction("Move Right P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Move Right P"+ playerId + " " + uniqueId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
             @Override
             protected void onActionBegin() {
+                if (isGameNotPlayable()) return;
+                
                 rightKeyPressed = true;
                 lastHorizontalKeyPressed = keyRight;
                 mediator.emit(GameplayEvents.MOVE_RIGHT, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "RIGHT"));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -202,7 +215,7 @@ public class InputHandler {
      * Trata tanto o pressionamento inicial quanto o movimento contínuo com atrasos apropriados.
      */
     private void setupSoftDropAction() {
-        FXGL.getInput().addAction(new UserAction("Soft Drop P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Soft Drop P"+ playerId + " " + uniqueId) {
             private double lastMoveTime = 0;
             private boolean isFirstMove = true;
 
@@ -211,6 +224,7 @@ public class InputHandler {
                 if (isGameNotPlayable()) return;
 
                 mediator.emit(GameplayEvents.MOVE_DOWN, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "DOWN"));
                 lastMoveTime = FXGL.getGameTimer().getNow();
                 isFirstMove = false;
             }
@@ -239,11 +253,12 @@ public class InputHandler {
      * Configura a ação de rotação para o tetrominó atual.
      */
     private void setupRotateAction() {
-        FXGL.getInput().addAction(new UserAction("Rotate P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Rotate P"+ playerId + " " + uniqueId) {
             @Override
             protected void onAction() {
                 if (isGameNotPlayable()) return;
                 mediator.emit(GameplayEvents.ROTATE, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "UP"));
             }
 
             @Override
@@ -258,12 +273,13 @@ public class InputHandler {
      * Configura a ação de queda rápida (queda instantânea).
      */
     private void setupHardDropAction() {
-        FXGL.getInput().addAction(new UserAction("Hard Drop P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Hard Drop P"+ playerId + " " + uniqueId) {
             @Override
             protected void onActionBegin() {
                 if (isGameNotPlayable()) return;
 
                 mediator.emit(GameplayEvents.DROP, new GameplayEvents.MoveEvent(playerId));
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "SPACE"));
             }
         }, keyDrop);
     }
@@ -272,10 +288,11 @@ public class InputHandler {
      * Configura a ação de pausa do jogo.
      */
     private void setupPauseAction() {
-        FXGL.getInput().addAction(new UserAction("Pause P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Pause P"+ playerId + " " + uniqueId) {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.PAUSE, null);
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "ESCAPE"));
             }
         }, keyPause);
     }
@@ -284,11 +301,47 @@ public class InputHandler {
      * Configura a ação de reinício do jogo.
      */
     private void setupRestartAction() {
-        FXGL.getInput().addAction(new UserAction("Restart P"+ playerId) {
+        FXGL.getInput().addAction(new UserAction("Restart P"+ playerId + " " + uniqueId) {
             @Override
             protected void onActionBegin() {
                 mediator.emit(GameplayEvents.RESTART, null);
+                mediator.emit(InputEvents.KEY_PRESSED, new InputEvents.KeyPressEvent(playerId, "BACK_SPACE"));
             }
         }, keyRestart);
+    }
+
+    /**
+     * Reseta todas as flags e estados internos do InputHandler.
+     * Deve ser chamado ao iniciar ou terminar uma partida para evitar resíduos de entradas anteriores.
+     */
+    public void reset() {
+        leftKeyPressed = false;
+        rightKeyPressed = false;
+        lastHorizontalKeyPressed = null;
+        inputEnabled = true;
+    }
+
+    /**
+     * Atualiza o GameState associado a este InputHandler.
+     */
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    /**
+     * Limpa todos os recursos utilizados pelo InputHandler.
+     * Mantém as ações registradas para reutilização.
+     */
+    public void cleanup() {
+        reset();
+    }
+
+    /**
+     * Habilita ou desabilita o input para este jogador.
+     *
+     * @param enabled true para habilitar, false para desabilitar
+     */
+    public void setInputEnabled(boolean enabled) {
+        this.inputEnabled = enabled;
     }
 }

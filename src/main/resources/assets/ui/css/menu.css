@@ -1,0 +1,107 @@
+/* === MENU PRINCIPAL === */
+/* Estilos para o menu principal e seus elementos */
+
+.menu-layout {
+    -fx-alignment: center;
+}
+
+/* === TÍTULO PRINCIPAL === */
+.title-flux {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 100px;
+    -fx-fill: linear-gradient(to right, #40e0d0, #80e0ff, #40e0d0);
+}
+
+.title-blocks {
+    -fx-font-family: 'That Sounds Great', sans-serif;
+    -fx-font-size: 120px;
+    -fx-font-weight: 900;
+    -fx-fill: linear-gradient(to bottom, #e0e0e0, #a0a0a0);
+    -fx-stroke: #1a1a2e;
+    -fx-stroke-width: 3px;
+    -fx-letter-spacing: 15px;
+}
+
+.menu-buttons {
+    -fx-spacing: 15px;
+    -fx-alignment: center-left;
+}
+
+.game-button {
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-font-size: 24px;
+    -fx-pref-width: 500px;
+    -fx-pref-height: 50px;
+    -fx-background-color: linear-gradient(to right, rgba(0, 0, 0, 0.35), transparent);
+    -fx-text-fill: #bfc9d1;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 40px;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-transition: all 0.2s ease-in-out;
+}
+
+.game-button.selected {
+    -fx-text-fill: #1a1a2e;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(to bottom, #4df0e7, #40e0d0, #33d1c0);
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-width: 1px 0 0 0;
+    -fx-shape: "M 0 0 L 380 0 L 360 50 L 0 50 Z";
+}
+
+.game-button.focused {
+    -fx-background-color: rgba(78, 205, 196, 0.3);
+    -fx-border-color: rgba(78, 205, 196, 0.8);
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(78, 205, 196, 0.5), 10, 0, 0, 0);
+}
+
+/* === RODAPÉ === */
+.menu-footer {
+    -fx-background-color: transparent;
+    -fx-padding: 20px 40px;
+    -fx-spacing: 25px;
+    -fx-alignment: center-right;
+}
+
+.footer-item {
+    -fx-spacing: 12px;
+    -fx-alignment: center;
+    -fx-padding: 8px 16px;
+    -fx-background-color: linear-gradient(to right,
+    transparent 0%,
+    rgba(26, 42, 58, 0.9) 20%,
+    rgba(26, 42, 58, 0.9) 80%,
+    transparent 100%);
+}
+
+.footer-label {
+    -fx-font-size: 14px;
+    -fx-font-family: "That Sounds Great", sans-serif;
+    -fx-fill: #bfc9d1;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 2px;
+}
+
+.footer-key-container {
+    -fx-background-color:
+            linear-gradient(to bottom, #1a3a4e, #122d3d),
+            linear-gradient(to bottom, #4df0e7, #40e0d0);
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0, 1;
+    -fx-border-color: linear-gradient(to bottom, #60efff, #2a9d8f);
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-padding: 2px;
+}
+
+.footer-key {
+    -fx-font-size: 16px;
+    -fx-font-family: "Consolas", monospace;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e0fbfc;
+    -fx-padding: 3px 12px;
+    -fx-letter-spacing: 1px;
+} 
