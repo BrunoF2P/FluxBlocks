@@ -4,7 +4,6 @@ import com.uneb.fluxblocks.configuration.GameConfig;
 
 import javafx.animation.*;
 import javafx.application.Platform;
-import javafx.scene.CacheHint;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
