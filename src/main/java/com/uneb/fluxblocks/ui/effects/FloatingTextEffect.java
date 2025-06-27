@@ -40,7 +40,7 @@ public class FloatingTextEffect {
 
         if (text.isEmpty()) return;
 
-        int score = ScoreCalculator.calculateLinesClearedScore(linesCleared, currentLevel);
+        int score = ScoreCalculator.calculateBaseScore(linesCleared, currentLevel);
 
         double lineY = clearedLine * cellSize;
         double centerX = effectsLayer.getWidth() / 2;

@@ -8,6 +8,8 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.piece.collision.CollisionDetector;
+import com.uneb.fluxblocks.piece.collision.SpinDetector;
+import com.uneb.fluxblocks.piece.collision.TripleSpinDetector;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.factory.BlockShapeFactory;
 import com.uneb.fluxblocks.piece.movement.PieceMovementHandler;
@@ -204,6 +206,10 @@ public class PieceSystem {
     public void lockPiece(boolean isHardDrop) {
         if (currentPiece == null || board == null) return;
 
+        // Obtém o Spin detectado durante a rotação
+        var spinType = rotationHandler.getLastSpin();
+        var tripleSpinType = rotationHandler.getLastTripleSpin();
+
         currentPiece.getCells().forEach(cell -> {
             if (board.isValidPosition(cell.getX(), cell.getY())) {
                 board.setCell(cell.getX(), cell.getY(), cell.getType());
@@ -221,32 +227,39 @@ public class PieceSystem {
             mediator.emit(UiEvents.PIECE_LANDED_NORMAL, new UiEvents.BoardEvent(playerId));
         }
 
-        int totalPoints = 0;
-
         int linesCleared = board.removeCompletedLines(boardScreen.getEffectsLayer());
+        
         if (linesCleared > 0) {
-            boolean leveledUp = gameState.processLinesCleared(linesCleared);
+            boolean levelUp = gameState.processLinesCleared(linesCleared);
+            
+            int totalScore;
+            if (tripleSpinType != TripleSpinDetector.TripleSpinType.NONE) {
+                totalScore = ScoreCalculator.calculateTotalScoreWithTripleSpin(linesCleared, tripleSpinType, gameState.getCurrentLevel());
+            } else {
+                totalScore = ScoreCalculator.calculateTotalScore(linesCleared, spinType, gameState.getCurrentLevel());
+            }
+            
+            gameState.addScore(totalScore);
 
-            int linesClearedScore = ScoreCalculator.calculateLinesClearedScore(linesCleared, gameState.getCurrentLevel());
-            gameState.addScore(linesClearedScore);
-
-            mediator.emit(GameplayEvents.LINE_CLEARED, new GameplayEvents.LineClearEvent(playerId, linesCleared));
             mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
-
-            if (leveledUp) {
+            
+            if (levelUp) {
                 mediator.emit(UiEvents.LEVEL_UPDATE, new UiEvents.LevelUiEvent(playerId, gameState.getCurrentLevel()));
             }
-        }
 
-        if (movementHandler.isSoftDropping()) {
-            int distance = movementHandler.getSoftDropDistance();
-            if (distance > 0) {
-                int softDropScore = ScoreCalculator.calculateSoftDropScore(gameState.getCurrentLevel());
-                gameState.addScore(softDropScore);
-                mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
+            mediator.emit(GameplayEvents.LINE_CLEARED, new GameplayEvents.LineClearEvent(playerId, linesCleared));
+
+            if (spinType != SpinDetector.SpinType.NONE) {
+                mediator.emit(GameplayEvents.SPIN_DETECTED, new GameplayEvents.SpinEvent(playerId, spinType, linesCleared));
+            }
+
+            if (tripleSpinType != TripleSpinDetector.TripleSpinType.NONE) {
+                mediator.emit(GameplayEvents.TRIPLE_SPIN_DETECTED, new GameplayEvents.TripleSpinEvent(playerId, tripleSpinType, linesCleared));
             }
         }
 
+        rotationHandler.resetLastSpin();
+        rotationHandler.resetLastTripleSpin();
         lockDelayHandler.reset();
         spawnNewPiece();
     }
@@ -294,7 +307,7 @@ public class PieceSystem {
         updateBoardWithCurrentPiece();
 
         if (distance > 0) {
-            int hardDropScore = ScoreCalculator.calculateHardDropScore(distance);
+            int hardDropScore = ScoreCalculator.calculateHardDropScore(distance, gameState.getCurrentLevel());
             gameState.addScore(hardDropScore);
             mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
         }
@@ -306,8 +319,8 @@ public class PieceSystem {
      * Rotaciona a peça atual no sentido horário.
      */
     public void rotate() {
-        if (rotationHandler.rotate(currentPiece)) {
-            movementHandler.resetWallPushState();
+        if (currentPiece != null) {
+            rotationHandler.rotateClockwise(currentPiece);
             updateBoardWithCurrentPiece();
         }
     }

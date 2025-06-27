@@ -7,23 +7,27 @@ import com.uneb.fluxblocks.piece.factory.provider.SevenBagBlockShapeProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Fábrica responsável por criar diferentes tipos de peças BlockShape.
  * Implementa o padrão Factory Method para encapsular a criação de objetos.
  */
 public class BlockShapeFactory {
-    private static final Random random = new Random();
     private static final FixedExtendedBagBlockShapeProvider fixedExtendedBagProvider = new FixedExtendedBagBlockShapeProvider();
     private static final SevenBagBlockShapeProvider sevenBagProvider = new SevenBagBlockShapeProvider();
+    
     /**
      * Cria um novo BlockShape do tipo especificado.
      *
      * @param type O tipo de BlockShape a ser criado
      * @return Um novo BlockShape do tipo especificado
+     * @throws IllegalArgumentException Se o tipo for null
      */
     public static BlockShape createBlockShape(BlockShape.Type type) {
+        if (type == null) {
+            throw new IllegalArgumentException("Tipo de peça não pode ser null");
+        }
+        
         List<Cell> cells = new ArrayList<>();
         switch (type) {
             case I -> createIPiece(cells);
@@ -34,9 +38,10 @@ public class BlockShapeFactory {
             case T -> createTPiece(cells);
             case Z -> createZPiece(cells);
             case X -> createXPiece(cells);
+            default -> throw new IllegalArgumentException("Tipo de peça não suportado: " + type);
         }
 
-        return new BlockShape(cells, type.ordinal());
+        return new BlockShape(cells, type.getValue());
     }
 
     /**
@@ -57,7 +62,7 @@ public class BlockShapeFactory {
      * [ ][ ][ ][ ]
      */
     private static void createIPiece(List<Cell> cells) {
-        int type = BlockShape.Type.I.ordinal();
+        int type = BlockShape.Type.I.getValue();
         cells.add(new Cell(-1, 0, type));
         cells.add(new Cell(0, 0, type));
         cells.add(new Cell(1, 0, type));
@@ -72,7 +77,7 @@ public class BlockShapeFactory {
      * [ ][ ][ ]
      */
     private static void createJPiece(List<Cell> cells) {
-        int type = BlockShape.Type.J.ordinal();
+        int type = BlockShape.Type.J.getValue();
         cells.add(new Cell(-1, -1, type));
         cells.add(new Cell(-1, 0, type));
         cells.add(new Cell(0, 0, type));
@@ -87,7 +92,7 @@ public class BlockShapeFactory {
      * [ ][ ][ ]
      */
     private static void createLPiece(List<Cell> cells) {
-        int type = BlockShape.Type.L.ordinal();
+        int type = BlockShape.Type.L.getValue();
         cells.add(new Cell(1, -1, type));
         cells.add(new Cell(-1, 0, type));
         cells.add(new Cell(0, 0, type));
@@ -101,7 +106,7 @@ public class BlockShapeFactory {
      * [O][O]
      */
     private static void createOPiece(List<Cell> cells) {
-        int type = BlockShape.Type.O.ordinal();
+        int type = BlockShape.Type.O.getValue();
         cells.add(new Cell(0, -1, type));
         cells.add(new Cell(1, -1, type));
         cells.add(new Cell(0, 0, type));
@@ -116,7 +121,7 @@ public class BlockShapeFactory {
      * [ ][ ][ ]
      */
     private static void createSPiece(List<Cell> cells) {
-        int type = BlockShape.Type.S.ordinal();
+        int type = BlockShape.Type.S.getValue();
         cells.add(new Cell(0, -1, type));
         cells.add(new Cell(1, -1, type));
         cells.add(new Cell(-1, 0, type));
@@ -131,7 +136,7 @@ public class BlockShapeFactory {
      * [ ][ ][ ]
      */
     private static void createTPiece(List<Cell> cells) {
-        int type = BlockShape.Type.T.ordinal();
+        int type = BlockShape.Type.T.getValue();
         cells.add(new Cell(0, -1, type));
         cells.add(new Cell(-1, 0, type));
         cells.add(new Cell(0, 0, type));
@@ -146,22 +151,28 @@ public class BlockShapeFactory {
      * [ ][ ][ ]
      */
     private static void createZPiece(List<Cell> cells) {
-        int type = BlockShape.Type.Z.ordinal();
+        int type = BlockShape.Type.Z.getValue();
         cells.add(new Cell(-1, -1, type));
         cells.add(new Cell(0, -1, type));
         cells.add(new Cell(0, 0, type));
         cells.add(new Cell(1, 0, type));
     }
 
+    /**
+     * Configuração da peça X (cruz).
+     * Forma:
+     * [ ][X][ ]
+     * [X][X][X]
+     * [ ][X][ ]
+     */
     private static void createXPiece(List<Cell> cells) {
-        int type = BlockShape.Type.X.ordinal();
-        cells.add(new Cell(0, -1, type));
-        cells.add(new Cell(-1, 0, type));
-        cells.add(new Cell(0, 0, type));
-        cells.add(new Cell(1, 0, type));
-        cells.add(new Cell(0, 1, type));
+        int type = BlockShape.Type.X.getValue();
+        cells.add(new Cell(0, -1, type));  // Topo
+        cells.add(new Cell(-1, 0, type));  // Esquerda
+        cells.add(new Cell(0, 0, type));   // Centro
+        cells.add(new Cell(1, 0, type));   // Direita
+        cells.add(new Cell(0, 1, type));   // Baixo
     }
-
 
     /**
      * Cria e posiciona um {@link BlockShape} aleatório no topo do tabuleiro.
@@ -175,13 +186,18 @@ public class BlockShapeFactory {
      * @param boardWidth Largura do tabuleiro, utilizada para centralizar a peça
      * @return Uma nova instância válida de {@link BlockShape} posicionada no topo
      * @throws IllegalStateException Se a peça gerada for inválida (nula ou vazia)
+     * @throws IllegalArgumentException Se boardWidth for menor ou igual a zero
      */
     public static BlockShape createBlockShapeAtTop(int boardWidth) {
-        BlockShape BlockShape = createRandomBlockShape();
-        if (BlockShape.getCells().isEmpty()) {
+        if (boardWidth <= 0) {
+            throw new IllegalArgumentException("Largura do tabuleiro deve ser maior que zero");
+        }
+        
+        BlockShape blockShape = createRandomBlockShape();
+        if (blockShape == null || blockShape.getCells().isEmpty()) {
             throw new IllegalStateException("BlockShape inválido gerado");
         }
-        BlockShape.setPosition(boardWidth / 2, 0);
-        return BlockShape;
+        blockShape.setPosition(boardWidth / 2, 0);
+        return blockShape;
     }
 }

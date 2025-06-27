@@ -11,6 +11,7 @@ import com.uneb.fluxblocks.ui.components.TimeDisplay;
 import com.uneb.fluxblocks.ui.effects.DropTrailEffect;
 import com.uneb.fluxblocks.ui.effects.Effects;
 import com.uneb.fluxblocks.ui.effects.FloatingTextEffect;
+import com.uneb.fluxblocks.ui.effects.SpinEffects;
 import com.uneb.fluxblocks.ui.theme.BlockShapeColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -356,6 +357,11 @@ public class GameScreen {
         mediator.receiver(UiEvents.PIECE_LANDED_HARD, event -> safeExecute.accept(() -> {
             if (event.playerId() != playerId) return;
             Effects.applyHardLanding(centerContainer, null);
+        }));
+
+        mediator.receiver(GameplayEvents.SPIN_DETECTED, event -> safeExecute.accept(() -> {
+            VBox leftPanel = (VBox) layout.getLeft();
+            SpinEffects.applySpinEffect(leftPanel, event.spinType(), event.linesCleared());
         }));
 
         mediator.receiver(UiEvents.COUNTDOWN, (UiEvents.CountdownEvent event) -> safeExecute.accept(() -> {

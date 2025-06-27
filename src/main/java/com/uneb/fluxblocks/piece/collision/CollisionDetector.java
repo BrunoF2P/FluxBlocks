@@ -8,7 +8,6 @@ import com.uneb.fluxblocks.piece.entities.BlockShape;
 /**
  * Responsável por detectar colisões de peças com outras peças
  * ou com os limites do tabuleiro.
- * Implementa lógica compatível com TETR.IO.
  */
 public class CollisionDetector {
     private final GameBoard board;
@@ -74,9 +73,7 @@ public class CollisionDetector {
     }
 
     /**
-     * Verifica se é possível spawnar uma peça na posição especificada.
-     * Esta é a verificação principal para game over no estilo TETR.IO.
-     *
+     * Verifica se é possível spawnar uma peça na posição especificada.     *
      * @param piece A peça a ser spawnada
      * @param spawnX Posição X de spawn
      * @param spawnY Posição Y de spawn
@@ -94,5 +91,14 @@ public class CollisionDetector {
         piece.setPosition(originalX, originalY);
 
         return canSpawn;
+    }
+
+    /**
+     * Retorna o tabuleiro associado a este detector de colisão.
+     *
+     * @return O tabuleiro do jogo
+     */
+    public GameBoard getBoard() {
+        return board;
     }
 }
