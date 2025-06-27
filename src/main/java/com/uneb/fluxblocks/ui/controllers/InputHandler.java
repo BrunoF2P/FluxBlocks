@@ -123,6 +123,8 @@ public class InputHandler {
 
             @Override
             protected void onActionBegin() {
+                if (isGameNotPlayable()) return;
+                
                 leftKeyPressed = true;
                 lastHorizontalKeyPressed = keyLeft;
                 mediator.emit(GameplayEvents.MOVE_LEFT, new GameplayEvents.MoveEvent(playerId));
@@ -170,6 +172,8 @@ public class InputHandler {
 
             @Override
             protected void onActionBegin() {
+                if (isGameNotPlayable()) return;
+                
                 rightKeyPressed = true;
                 lastHorizontalKeyPressed = keyRight;
                 mediator.emit(GameplayEvents.MOVE_RIGHT, new GameplayEvents.MoveEvent(playerId));

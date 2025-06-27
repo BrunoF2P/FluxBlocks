@@ -53,6 +53,8 @@ public class PieceSystem {
     private final PieceRenderer renderer;
     private final GameBoardScreen boardScreen;
     private boolean isGameOver = false;
+    
+    private boolean lockDelayTimerActive = false;
 
     /**
      * Cria um gerenciador de peças.
@@ -103,10 +105,14 @@ public class PieceSystem {
         });
 
         mediator.receiver(GameplayEvents.MOVE_DOWN, (ev) -> {
-            if (ev.playerId() == playerId && !isGameOver) moveDown();
+            if (ev.playerId() == playerId && !isGameOver && !gameState.isPaused()) {
+                moveDown();
+            }
         });
         mediator.receiver(GameplayEvents.AUTO_MOVE_DOWN, (GameplayEvents.MoveEvent ev) -> {
-            if (ev.playerId() == playerId && !isGameOver && !gameState.isPaused()) moveDown();
+            if (ev.playerId() == playerId && !isGameOver && !gameState.isPaused()) {
+                moveDown();
+            }
         });
 
         mediator.receiver(GameplayEvents.ROTATE, (ev) -> {
@@ -126,7 +132,8 @@ public class PieceSystem {
             mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         });
 
-        FXGL.getGameTimer().runAtInterval(this::checkLockDelay, Duration.millis(16.67)); // 60 FPS
+        // Inicia o timer de lock delay
+        startLockDelayTimer();
     }
 
     /**
@@ -142,6 +149,8 @@ public class PieceSystem {
      * Verifica se o lock delay expirou, fixando a peça se necessário.
      */
     private void checkLockDelay() {
+        if (!lockDelayTimerActive || gameState.isPaused()) return;
+        
         if (lockDelayHandler.isLockPending() && lockDelayHandler.isLockDelayExpired()) {
             lockPiece(false);
         }
@@ -265,7 +274,7 @@ public class PieceSystem {
      */
     public void moveDown() {
         if (currentPiece == null) return;
-
+        
         if (!movementHandler.moveDown(currentPiece)) { // Se não conseguiu mover para baixo
             if (!lockDelayHandler.isLockPending()) {
                 lockDelayHandler.startLockDelay(currentPiece);
@@ -330,4 +339,30 @@ public class PieceSystem {
         return gameState.getLinesCleared();
     }
 
+    /**
+     * Inicia o timer de verificação de lock delay.
+     */
+    private void startLockDelayTimer() {
+        lockDelayTimerActive = true;
+        FXGL.getGameTimer().runAtInterval(this::checkLockDelay, Duration.millis(16.67)); // 60 FPS
+    }
+    
+    /**
+     * Para o timer de lock delay.
+     */
+    private void stopLockDelayTimer() {
+        lockDelayTimerActive = false;
+        FXGL.getGameTimer().clear();
+    }
+    
+    /**
+     * Pausa ou despausa o timer de lock delay baseado no estado do jogo.
+     */
+    public void handlePauseState(boolean isPaused) {
+        if (isPaused) {
+            stopLockDelayTimer();
+        } else {
+            startLockDelayTimer();
+        }
+    }
 }

@@ -1,9 +1,11 @@
 package com.uneb.fluxblocks.ui.managers;
 
+import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.core.GameController;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.ui.components.BackgroundComponent;
+import com.uneb.fluxblocks.ui.components.PauseOverlay;
 import com.uneb.fluxblocks.ui.components.PlayerContainer;
 import com.uneb.fluxblocks.ui.controllers.InputHandler;
 import com.uneb.fluxblocks.ui.screens.GameScreen;
@@ -29,6 +31,10 @@ public class GameManager {
     // Referências aos GameScreens para manipular overlays
     private GameScreen screenP1 = null;
     private GameScreen screenP2 = null;
+    
+    // Overlay de pausa global
+    private PauseOverlay pauseOverlay = null;
+    private StackPane gameContainer = null;
 
     public GameManager(GameMediator mediator, InputManager inputManager, 
                       ScreenManager screenManager, BackgroundComponent backgroundComponent) {
@@ -36,6 +42,66 @@ public class GameManager {
         this.inputManager = inputManager;
         this.screenManager = screenManager;
         this.backgroundComponent = backgroundComponent;
+        
+        // Registra eventos de pausa
+        registerPauseEvents();
+    }
+    
+    /**
+     * Registra os eventos de pausa no mediator.
+     */
+    public void registerPauseEvents() {
+        mediator.receiver(UiEvents.GAME_PAUSED, (Boolean isPaused) -> {
+            if (isPaused) {
+                showPauseOverlay();
+            } else {
+                hidePauseOverlay();
+            }
+        });
+        
+        mediator.receiver(UiEvents.RESTART_GAME, event -> {
+            hidePauseOverlay();
+            restartCurrentGame();
+        });
+        
+        mediator.receiver(UiEvents.RESUME_GAME, event -> {
+            hidePauseOverlay();
+            resumeCurrentGame();
+        });
+    }
+    
+    private void showPauseOverlay() {
+        if (pauseOverlay == null) {
+            pauseOverlay = new PauseOverlay(mediator);
+        }
+        
+        if (gameContainer != null && !gameContainer.getChildren().contains(pauseOverlay.getNode())) {
+            gameContainer.getChildren().add(pauseOverlay.getNode());
+            pauseOverlay.setVisible(true);
+        }
+    }
+    
+    private void hidePauseOverlay() {
+        if (pauseOverlay != null && gameContainer != null) {
+            gameContainer.getChildren().remove(pauseOverlay.getNode());
+            pauseOverlay.setVisible(false);
+        }
+    }
+    
+    private void restartCurrentGame() {
+        for (GameController controller : gameControllers) {
+            if (controller != null) {
+                controller.restart();
+            }
+        }
+    }
+    
+    private void resumeCurrentGame() {
+        for (GameController controller : gameControllers) {
+            if (controller != null) {
+                controller.togglePause();
+            }
+        }
     }
 
     /**
@@ -55,7 +121,7 @@ public class GameManager {
 
         PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false, 0.9);
 
-        StackPane gameContainer = new StackPane();
+        gameContainer = new StackPane();
         gameContainer.getChildren().addAll(backgroundComponent.getBackground(), playerContainer.getContainer());
 
         screenManager.clearScreen();
@@ -91,7 +157,7 @@ public class GameManager {
 
         HBox playersContainer = createPlayersContainer(player1Container, player2Container);
 
-        StackPane gameContainer = new StackPane();
+        gameContainer = new StackPane();
         gameContainer.getChildren().addAll(backgroundComponent.getBackground(), playersContainer);
 
         screenManager.clearScreen();
@@ -151,6 +217,13 @@ public class GameManager {
         inputManager.cleanup();
 
         clearAllWaitingOverlays();
+        
+        // Limpa o overlay de pausa
+        if (pauseOverlay != null) {
+            pauseOverlay.destroy();
+            pauseOverlay = null;
+        }
+        gameContainer = null;
     }
 
     private HBox createPlayersContainer(PlayerContainer player1Container, PlayerContainer player2Container) {

@@ -103,5 +103,7 @@ public class UIScreenHandler {
         mediator.clearAllListeners();
 
         registerEvents();
+        
+        gameManager.registerPauseEvents();
     }
 }

@@ -9,7 +9,7 @@ import com.uneb.fluxblocks.configuration.GameConfig;
  */
 public class GameState {
     /** Estado de pausa do jogo */
-    private boolean isPaused = true;
+    private volatile boolean isPaused = true;
     
     /** Indica se o jogo terminou */
     private boolean isGameOver = false;
@@ -69,7 +69,7 @@ public class GameState {
     }
 
 
-    public void togglePause() {
+    public synchronized void togglePause() {
         isPaused = !isPaused;
     }
 
@@ -92,7 +92,7 @@ public class GameState {
     }
 
     // Setters
-    public void setPaused(boolean paused) { this.isPaused = paused; }
+    public synchronized void setPaused(boolean paused) { this.isPaused = paused; }
     public void setGameOver(boolean gameOver) { this.isGameOver = gameOver; }
     public void setCurrentLevel(int level) {
         this.currentLevel = level;

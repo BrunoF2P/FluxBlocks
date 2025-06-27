@@ -86,6 +86,7 @@ public class GameController {
         });
         mediator.receiver(GameplayEvents.PAUSE, unused -> togglePause());
         mediator.receiver(GameplayEvents.RESTART, unused -> restart());
+        mediator.receiver(UiEvents.RESUME_GAME, unused -> togglePause());
         
         mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, pieceManager.getNextPiece()));
     }
@@ -137,6 +138,7 @@ public class GameController {
     public void togglePause() {
         gameState.togglePause();
         gameTimer.handlePauseState(gameState.isPaused());
+        pieceManager.handlePauseState(gameState.isPaused());
         mediator.emit(UiEvents.GAME_PAUSED, gameState.isPaused());
     }
 

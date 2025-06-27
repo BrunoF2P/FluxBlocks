@@ -78,18 +78,19 @@ public class GameTimer extends AnimationTimer {
             return;
         }
 
-        if (!gameState.isPaused() && !gameState.isGameOver()) {
-            if (now - lastGameLoop >= gameSpeed) {
-                onGameLoopTick();
-                lastGameLoop = now;
-            }
-        }
-
+        // Sempre atualiza o tempo do jogo, mesmo quando pausado
         if (!gameState.isGameOver()) {
             if (now - lastClockUpdate >= CLOCK_INTERVAL) {
                 updateGameTime(now);
                 onClockTick(now);
                 lastClockUpdate = now;
+            }
+        }
+
+        if (!gameState.isPaused() && !gameState.isGameOver()) {
+            if (now - lastGameLoop >= gameSpeed) {
+                onGameLoopTick();
+                lastGameLoop = now;
             }
         }
 
@@ -132,12 +133,12 @@ public class GameTimer extends AnimationTimer {
 
     /**
      * Gerencia o estado de pausa do timer.
-     * O AnimationTimer continua rodando, mas os ticks são ignorados
-     * baseado no estado do jogo.
+     * O timer continua rodando para manter o tempo, mas não executa o loop do jogo.
      *
      * @param isPaused true para pausar, false para resumir
      */
     public void handlePauseState(boolean isPaused) {
+
     }
 
     /**
