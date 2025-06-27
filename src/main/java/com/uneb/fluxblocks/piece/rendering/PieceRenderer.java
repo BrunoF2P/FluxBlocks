@@ -19,6 +19,11 @@ public class PieceRenderer {
     /** Código para representar células de sombra no grid */
     private static final int SHADOW_CELL_CODE = 9;
 
+    /** Grid reutilizável para evitar alocações frequentes */
+    private int[][] reusableGrid;
+    private final int gridWidth;
+    private final int gridHeight;
+
     /**
      * Cria um novo renderizador de peças.
      *
@@ -29,6 +34,11 @@ public class PieceRenderer {
         this.board = board;
         this.shadowCalculator = shadowCalculator;
         this.playerId = playerId;
+        
+        // Inicializa o grid reutilizável
+        this.gridWidth = board.getWidth();
+        this.gridHeight = board.getHeight() + GameConfig.BOARD_VISIBLE_ROW;
+        this.reusableGrid = new int[gridHeight][gridWidth];
     }
 
     /**
@@ -46,45 +56,58 @@ public class PieceRenderer {
      * @param currentPiece A peça atual
      */
     public void updateBoardWithCurrentPiece(BlockShape currentPiece) {
-        int[][] grid = createBoardGridWithShadow(currentPiece);
-        addPieceToGrid(currentPiece, grid);
+        if (currentPiece == null) {
+            throw new IllegalArgumentException("A peça atual não pode ser null");
+        }
+        
+        if (mediator == null) {
+            throw new IllegalStateException("O mediador deve ser configurado antes de usar o renderizador");
+        }
 
-        mediator.emit(UiEvents.BOARD_UPDATE, new UiEvents.BoardUpdateEvent(playerId, grid));
+        updateGridWithPiece(currentPiece);
+        mediator.emit(UiEvents.BOARD_UPDATE, new UiEvents.BoardUpdateEvent(playerId, reusableGrid));
     }
 
     /**
-     * Cria uma representação do tabuleiro incluindo a peça sombra.
-     *
+     * Atualiza o grid com a peça atual e sua sombra.
      * @param currentPiece A peça atual
-     * @return Uma matriz representando o estado atual do tabuleiro com a sombra
      */
-    private int[][] createBoardGridWithShadow(BlockShape currentPiece) {
-        int totalHeight = board.getHeight() + GameConfig.BOARD_VISIBLE_ROW;
-        int[][] grid = new int[totalHeight][board.getWidth()];
-
-        copyBoardStateToGrid(grid);
-
+    private void updateGridWithPiece(BlockShape currentPiece) {
+        // Limpa o grid reutilizável
+        clearGrid();
+        
+        // Copia o estado do tabuleiro
+        copyBoardStateToGrid();
+        
+        // Adiciona a sombra da peça
         BlockShape shadow = shadowCalculator.calculateShadowPiece(currentPiece);
         if (shadow != null) {
-            addShadowToGrid(shadow, grid);
+            addShadowToGrid(shadow);
         }
+        
+        // Adiciona a peça atual
+        addPieceToGrid(currentPiece);
+    }
 
-        return grid;
+    /**
+     * Limpa o grid, preenchendo com zeros.
+     */
+    private void clearGrid() {
+        for (int r = 0; r < gridHeight; r++) {
+            for (int c = 0; c < gridWidth; c++) {
+                reusableGrid[r][c] = 0;
+            }
+        }
     }
 
     /**
      * Copia o estado atual do tabuleiro para o grid.
-     *
-     * @param grid O grid para onde copiar o estado do tabuleiro
      */
-    private void copyBoardStateToGrid(int[][] grid) {
-        int totalHeight = grid.length;
-        int width = grid[0].length;
-
-        for (int r = 0; r < totalHeight; r++) {
-            for (int c = 0; c < width; c++) {
+    private void copyBoardStateToGrid() {
+        for (int r = 0; r < gridHeight; r++) {
+            for (int c = 0; c < gridWidth; c++) {
                 int logicalY = r - GameConfig.BOARD_VISIBLE_ROW;
-                grid[r][c] = board.getCell(c, logicalY);
+                reusableGrid[r][c] = board.getCell(c, logicalY);
             }
         }
     }
@@ -93,13 +116,12 @@ public class PieceRenderer {
      * Adiciona a sombra da peça ao grid.
      *
      * @param shadow A peça sombra
-     * @param grid O grid onde a sombra será adicionada
      */
-    private void addShadowToGrid(BlockShape shadow, int[][] grid) {
+    private void addShadowToGrid(BlockShape shadow) {
         shadow.getCells().forEach(cell -> {
             int gridY = cell.getY() + GameConfig.BOARD_VISIBLE_ROW;
-            if (isWithinBounds(cell) && gridY >= 0 && gridY < grid.length) {
-                grid[gridY][cell.getX()] = SHADOW_CELL_CODE;
+            if (isWithinBounds(cell) && gridY >= 0 && gridY < gridHeight) {
+                reusableGrid[gridY][cell.getX()] = SHADOW_CELL_CODE;
             }
         });
     }
@@ -108,13 +130,12 @@ public class PieceRenderer {
      * Adiciona a peça atual ao grid.
      *
      * @param piece A peça a ser adicionada
-     * @param grid O grid onde a peça será adicionada
      */
-    private void addPieceToGrid(BlockShape piece, int[][] grid) {
+    private void addPieceToGrid(BlockShape piece) {
         piece.getCells().forEach(cell -> {
             int gridY = cell.getY() + GameConfig.BOARD_VISIBLE_ROW;
-            if (isWithinBounds(cell) && gridY >= 0 && gridY < grid.length) {
-                grid[gridY][cell.getX()] = cell.getType();
+            if (isWithinBounds(cell) && gridY >= 0 && gridY < gridHeight) {
+                reusableGrid[gridY][cell.getX()] = cell.getType();
             }
         });
     }
