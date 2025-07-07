@@ -23,7 +23,7 @@ public class BlockShapeFactory {
      * @return Um novo BlockShape do tipo especificado
      * @throws IllegalArgumentException Se o tipo for null
      */
-    public static BlockShape createBlockShape(BlockShape.Type type) {
+    public static BlockShape createBlockShape(BlockShape.Type type, boolean glass) {
         if (type == null) {
             throw new IllegalArgumentException("Tipo de peça não pode ser null");
         }
@@ -41,7 +41,7 @@ public class BlockShapeFactory {
             default -> throw new IllegalArgumentException("Tipo de peça não suportado: " + type);
         }
 
-        return new BlockShape(cells, type.getValue());
+        return new BlockShape(cells, type.getValue(), glass);
     }
 
     /**
@@ -199,5 +199,9 @@ public class BlockShapeFactory {
         }
         blockShape.setPosition(boardWidth / 2, 0);
         return blockShape;
+    }
+
+    public static BlockShape createBlockShape(BlockShape.Type type) {
+        return createBlockShape(type, false);
     }
 }

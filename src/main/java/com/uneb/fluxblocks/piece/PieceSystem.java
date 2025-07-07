@@ -234,9 +234,11 @@ public class PieceSystem {
     private void placePieceOnBoard() {
         currentPiece.getCells().forEach(cell -> {
             if (board.isValidPosition(cell.getX(), cell.getY())) {
-                board.setCell(cell.getX(), cell.getY(), cell.getType());
+                board.setCell(cell.getX(), cell.getY(), currentPiece.isGlass() ? 10 : cell.getType());
             }
         });
+        board.removeFragileGlassBlocks();
+        board.notifyBoardUpdated();
     }
     
     /**
@@ -260,21 +262,27 @@ public class PieceSystem {
      */
     private void processLineClearing(SpinDetector.SpinType spinType, TripleSpinDetector.TripleSpinType tripleSpinType) {
         int linesCleared = board.removeCompletedLines(boardScreen.getEffectsLayer());
-        
+        boolean glassBonus = false;
         if (linesCleared > 0) {
+            // Descobrir as linhas eliminadas
+            int boardHeight = board.getHeight();
+            for (int y = boardHeight - 1; y >= 0; y--) {
+                if (board.lineHasGlass(y)) {
+                    glassBonus = true;
+                    break;
+                }
+            }
             boolean levelUp = gameState.processLinesCleared(linesCleared);
-            
             int totalScore = calculateScore(linesCleared, spinType, tripleSpinType);
+            if (glassBonus) {
+                totalScore *= 2;
+            }
             gameState.addScore(totalScore);
-
             mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
-            
             if (levelUp) {
                 mediator.emit(UiEvents.LEVEL_UPDATE, new UiEvents.LevelUiEvent(playerId, gameState.getCurrentLevel()));
             }
-
             mediator.emit(GameplayEvents.LINE_CLEARED, new GameplayEvents.LineClearEvent(playerId, linesCleared));
-
             emitSpinEvents(spinType, tripleSpinType, linesCleared);
         }
     }

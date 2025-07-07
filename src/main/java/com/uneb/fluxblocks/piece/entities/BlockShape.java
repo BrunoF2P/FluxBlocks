@@ -41,14 +41,16 @@ public class BlockShape implements Shape {
     private final int typeValue;
     private final Type type;
     private final List<int[]> initialRelativePositions;
+    private final boolean glass;
     /**
-     * Construtor que recebe uma lista de células e o valor do tipo.
+     * Construtor que recebe uma lista de células, o valor do tipo e se é vidro.
      * Este construtor é chamado pela BlockShapeFactory.
      */
-    public BlockShape(List<Cell> cells, int typeValue) {
+    public BlockShape(List<Cell> cells, int typeValue, boolean glass) {
         this.cells = new ArrayList<>(cells);
         this.typeValue = typeValue;
         this.type = Type.fromOrdinal(typeValue);
+        this.glass = glass;
 
         this.initialRelativePositions = new ArrayList<>(cells.size());
         for (Cell cell : cells) {
@@ -56,6 +58,13 @@ public class BlockShape implements Shape {
         }
 
         updateCellPositions();
+    }
+
+    /**
+     * Construtor antigo para retrocompatibilidade (não vidro).
+     */
+    public BlockShape(List<Cell> cells, int typeValue) {
+        this(cells, typeValue, false);
     }
 
     @Override
@@ -137,5 +146,9 @@ public class BlockShape implements Shape {
             positions.add(new int[]{ cell.getX(), cell.getY() });
         }
         return positions;
+    }
+
+    public boolean isGlass() {
+        return glass;
     }
 }

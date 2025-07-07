@@ -18,6 +18,7 @@ public class PieceRenderer {
 
     /** Código para representar células de sombra no grid */
     private static final int SHADOW_CELL_CODE = 9;
+    private static final int GLASS_CELL_CODE = 10;
 
     /** Grid reutilizável para evitar alocações frequentes */
     private int[][] reusableGrid;
@@ -135,7 +136,11 @@ public class PieceRenderer {
         piece.getCells().forEach(cell -> {
             int gridY = cell.getY() + GameConfig.BOARD_VISIBLE_ROW;
             if (isWithinBounds(cell) && gridY >= 0 && gridY < gridHeight) {
-                reusableGrid[gridY][cell.getX()] = cell.getType();
+                if (piece.isGlass()) {
+                    reusableGrid[gridY][cell.getX()] = GLASS_CELL_CODE;
+                } else {
+                    reusableGrid[gridY][cell.getX()] = cell.getType();
+                }
             }
         });
     }

@@ -239,4 +239,80 @@ public class GameBoard {
         hasChanges = true;
         notifyBoardUpdated();
     }
+
+    /**
+     * Remove blocos de vidro que tenham 2 ou mais blocos acima deles.
+     */
+    public void removeFragileGlassBlocks() {
+        boolean[][] visited = new boolean[height][width];
+        for (int x = 0; x < width; x++) {
+            for (int y = height - 1; y >= 0; y--) {
+                if (grid[y][x] == 10 && !visited[y][x]) {
+                    // Busca todas as células conectadas de vidro (BFS)
+                    List<int[]> pieceCells = new ArrayList<>();
+                    List<int[]> toVisit = new ArrayList<>();
+                    toVisit.add(new int[]{x, y});
+                    visited[y][x] = true;
+                    while (!toVisit.isEmpty()) {
+                        int[] cell = toVisit.remove(toVisit.size() - 1);
+                        int cx = cell[0], cy = cell[1];
+                        pieceCells.add(cell);
+                        // Busca vizinhos ortogonais de vidro
+                        int[][] dirs = {{0,1},{1,0},{0,-1},{-1,0}};
+                        for (int[] d : dirs) {
+                            int nx = cx + d[0], ny = cy + d[1];
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height && grid[ny][nx] == 10 && !visited[ny][nx]) {
+                                toVisit.add(new int[]{nx, ny});
+                                visited[ny][nx] = true;
+                            }
+                        }
+                    }
+                    // Para cada coluna ocupada pela peça, encontre a célula mais alta da peça naquela coluna
+                    boolean shouldRemove = true;
+                    for (int col = 0; col < width; col++) {
+                        int minY = height;
+                        for (int[] cell : pieceCells) {
+                            if (cell[0] == col) {
+                                minY = Math.min(minY, cell[1]);
+                            }
+                        }
+                        if (minY < height) {
+                            // Conta blocos acima da célula mais alta da peça nesta coluna
+                            int blocksAbove = 0;
+                            for (int aboveY = minY - 1; aboveY >= 0; aboveY--) {
+                                if (grid[aboveY][col] != EMPTY_CELL) {
+                                    blocksAbove++;
+                                }
+                            }
+                            if (blocksAbove < 2) {
+                                shouldRemove = false;
+                                break;
+                            }
+                        }
+                    }
+                    // Se todas as colunas ocupadas têm 2+ blocos acima, remove a peça inteira
+                    if (shouldRemove) {
+                        for (int[] cell : pieceCells) {
+                            grid[cell[1]][cell[0]] = EMPTY_CELL;
+                            hasChanges = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Verifica se uma linha contém pelo menos um bloco de vidro.
+     * @param y linha (coordenada interna do grid)
+     * @return true se houver vidro na linha
+     */
+    public boolean lineHasGlass(int y) {
+        for (int x = 0; x < width; x++) {
+            if (grid[y][x] == 10) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
