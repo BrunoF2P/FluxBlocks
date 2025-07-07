@@ -1,6 +1,7 @@
 package com.uneb.fluxblocks.piece.rendering;
 
 import com.uneb.fluxblocks.piece.collision.CollisionDetector;
+import com.uneb.fluxblocks.piece.collision.StandardCollisionDetector;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.entities.Cell;
 import com.uneb.fluxblocks.piece.factory.BlockShapeFactory;
@@ -41,7 +42,7 @@ public class ShadowPieceCalculator {
         int fallDistance = 0;
         while (fallDistance < MAX_FALL_DISTANCE) {
             shadow.move(0, 1);
-            if (!collisionDetector.isValidPosition(shadow)) {
+            if (!((StandardCollisionDetector) collisionDetector).isValidPosition(shadow)) {
                 shadow.move(0, -1); // Volta uma posição
                 break;
             }

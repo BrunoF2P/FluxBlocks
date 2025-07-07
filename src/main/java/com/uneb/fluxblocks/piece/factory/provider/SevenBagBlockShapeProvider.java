@@ -46,6 +46,34 @@ public class SevenBagBlockShapeProvider implements BlockShapeProvider {
         index++;
         return BlockShapeFactory.createBlockShape(type, isGlass);
     }
+    
+    @Override
+    public BlockShape peek() {
+        if (index >= bag.size()) {
+            refillBag();
+        }
+        BlockShape.Type type = bag.get(index);
+        boolean isGlass = glassBag.get(index);
+        return BlockShapeFactory.createBlockShape(type, isGlass);
+    }
+    
+    @Override
+    public void reset() {
+        index = 0;
+        bag.clear();
+        glassBag.clear();
+        refillBag();
+    }
+    
+    @Override
+    public String getName() {
+        return "SevenBagBlockShapeProvider";
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return true; // Sempre tem peças disponíveis
+    }
 
     /**
      * Reabastece o saco com um novo conjunto de 7 peças em ordem aleatória.

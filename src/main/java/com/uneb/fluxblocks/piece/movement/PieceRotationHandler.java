@@ -5,6 +5,7 @@ import com.uneb.fluxblocks.configuration.GameConfig;
 import com.uneb.fluxblocks.piece.collision.CollisionDetector;
 import com.uneb.fluxblocks.piece.collision.SpinDetector;
 import com.uneb.fluxblocks.piece.collision.TripleSpinDetector;
+import com.uneb.fluxblocks.piece.collision.StandardCollisionDetector;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.timing.LockDelayHandler;
 
@@ -80,8 +81,8 @@ public class PieceRotationHandler {
     public PieceRotationHandler(CollisionDetector collisionDetector,
                                 LockDelayHandler lockDelayHandler) {
         this.collisionDetector = collisionDetector;
-        this.spinDetector = new SpinDetector(collisionDetector.getBoard());
-        this.tripleSpinDetector = new TripleSpinDetector(collisionDetector.getBoard());
+        this.spinDetector = new SpinDetector(((StandardCollisionDetector) collisionDetector).getBoard());
+        this.tripleSpinDetector = new TripleSpinDetector(((StandardCollisionDetector) collisionDetector).getBoard());
         this.lockDelayHandler = lockDelayHandler;
     }
 
@@ -138,7 +139,7 @@ public class PieceRotationHandler {
         piece.rotate();
 
         // Verifica se a nova posição é válida
-        if (collisionDetector.isValidPosition(piece)) {
+        if (((StandardCollisionDetector) collisionDetector).isValidPosition(piece)) {
             // Detecta Spin após rotação bem-sucedida
             lastSpin = spinDetector.detectSpin(piece, true, originalPosition);
             lastTripleSpin = tripleSpinDetector.detectTripleSpin(piece, true, originalPosition);
@@ -178,7 +179,7 @@ public class PieceRotationHandler {
         int originalY = piece.getY();
 
         piece.rotate();
-        if (collisionDetector.isValidPosition(piece)) {
+        if (((StandardCollisionDetector) collisionDetector).isValidPosition(piece)) {
             return new RotationResult(true, originalX, originalY);
         }
 
@@ -198,7 +199,7 @@ public class PieceRotationHandler {
         
         for (int[] kick : wallKicks) {
             piece.move(kick[0], kick[1]);
-            if (collisionDetector.isValidPosition(piece)) {
+            if (((StandardCollisionDetector) collisionDetector).isValidPosition(piece)) {
                 return new RotationResult(true, originalX, originalY);
             }
             piece.move(-kick[0], -kick[1]); // Volta à posição anterior
@@ -269,7 +270,7 @@ public class PieceRotationHandler {
      * @param piece A peça atual
      */
     private void completeSuccessfulRotation(BlockShape piece) {
-        boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
+        boolean isAtRest = ((StandardCollisionDetector) collisionDetector).isAtRestingPosition(piece);
         lockDelayHandler.resetLockDelay(piece, isAtRest);
 
         lastRotateTime = FXGL.getGameTimer().getNow();

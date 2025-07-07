@@ -8,6 +8,7 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.piece.collision.CollisionDetector;
+import com.uneb.fluxblocks.piece.collision.StandardCollisionDetector;
 import com.uneb.fluxblocks.piece.collision.SpinDetector;
 import com.uneb.fluxblocks.piece.collision.TripleSpinDetector;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
@@ -70,7 +71,7 @@ public class PieceSystem {
         this.board = board;
         this.gameState = gameState;
         this.boardScreen = boardScreen;
-        this.collisionDetector = new CollisionDetector(board);
+        this.collisionDetector = new StandardCollisionDetector(board);
         this.playerId = playerId;
         this.lockDelayHandler = new LockDelayHandler();
         this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayHandler, mediator, playerId);
@@ -163,6 +164,39 @@ public class PieceSystem {
     }
 
     /**
+     * Reseta o sistema de peças para o estado inicial.
+     * Gera novas peças e as posiciona no topo do tabuleiro.
+     */
+    public void reset() {
+        isGameOver = false;
+        
+        // Limpa estados relacionados
+        lockDelayHandler.reset();
+        movementHandler.resetSoftDropTracking();
+        movementHandler.resetWallPushState();
+        rotationHandler.resetLastSpin();
+        rotationHandler.resetLastTripleSpin();
+        
+        // Gera novas peças
+        int spawnX = board.getWidth() / 2 - 1;
+        int spawnY = -2;
+        
+        // Gera uma nova peça para nextPiece
+        nextPiece = BlockShapeFactory.createRandomBlockShape();
+        nextPiece.setPosition(spawnX, spawnY);
+        
+        // Gera uma nova peça para currentPiece
+        currentPiece = BlockShapeFactory.createRandomBlockShape();
+        currentPiece.setPosition(spawnX, spawnY);
+        
+        // Emite evento de atualização da próxima peça
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
+        
+        // Atualiza o tabuleiro com a nova peça
+        updateBoardWithCurrentPiece();
+    }
+
+    /**
      * Gera uma nova peça e a posiciona no topo do tabuleiro.
      */
     public void spawnNewPiece() {
@@ -179,7 +213,7 @@ public class PieceSystem {
         mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         movementHandler.resetWallPushState();
 
-        if (!collisionDetector.canSpawn(currentPiece, spawnX, spawnY)) {
+        if (!((StandardCollisionDetector) collisionDetector).canSpawn(currentPiece, spawnX, spawnY)) {
             isGameOver = true;
             mediator.emit(GameplayEvents.GAME_OVER, new GameplayEvents.GameOverEvent(playerId));
             return;

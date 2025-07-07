@@ -148,6 +148,7 @@ public class GameController {
         gameTimer.stopTimer();
         gameState.setGameTimeMs(0);
         pieceManager.handlePauseState(false);
+        pieceManager.reset();
         start();
     }
 

@@ -3,6 +3,7 @@ package com.uneb.fluxblocks.piece.movement;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.piece.collision.CollisionDetector;
+import com.uneb.fluxblocks.piece.collision.StandardCollisionDetector;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.timing.LockDelayHandler;
 
@@ -48,7 +49,7 @@ public class PieceMovementHandler {
         if (moved) {
             mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
             mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
-            boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
+            boolean isAtRest = ((StandardCollisionDetector) collisionDetector).isAtRestingPosition(piece);
             lockDelayHandler.resetLockDelay(piece, isAtRest);
         } else {
             mediator.emit(UiEvents.PIECE_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
@@ -68,7 +69,7 @@ public class PieceMovementHandler {
         if (moved) {
             mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
             mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
-            boolean isAtRest = collisionDetector.isAtRestingPosition(piece);
+            boolean isAtRest = ((StandardCollisionDetector) collisionDetector).isAtRestingPosition(piece);
             lockDelayHandler.resetLockDelay(piece, isAtRest);
         } else {
             mediator.emit(UiEvents.PIECE_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
@@ -89,7 +90,7 @@ public class PieceMovementHandler {
         boolean moved = tryMove(piece, 0, 1);
 
         if (moved) {
-            lockDelayHandler.resetLockDelay(piece, collisionDetector.isAtRestingPosition(piece));
+            lockDelayHandler.resetLockDelay(piece, ((StandardCollisionDetector) collisionDetector).isAtRestingPosition(piece));
             softDropDistance++;
             mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
             mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
@@ -181,7 +182,7 @@ public class PieceMovementHandler {
         int originalY = piece.getY();
 
         piece.move(deltaX, deltaY);
-        boolean isValid = collisionDetector.isValidPosition(piece);
+        boolean isValid = ((StandardCollisionDetector) collisionDetector).isValidPosition(piece);
 
         if (!isValid) {
             piece.setPosition(originalX, originalY);

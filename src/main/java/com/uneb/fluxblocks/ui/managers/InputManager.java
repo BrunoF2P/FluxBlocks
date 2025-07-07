@@ -3,6 +3,7 @@ package com.uneb.fluxblocks.ui.managers;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.ui.controllers.InputHandler;
+import com.uneb.fluxblocks.ui.controllers.KeyboardInputHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class InputManager {
     public InputHandler getOrCreateHandler(GameState gameState, int playerId) {
         InputHandler handler = inputHandlers.get(playerId);
         if (handler == null) {
-            handler = new InputHandler(mediator, gameState, playerId);
+            handler = new KeyboardInputHandler(mediator, gameState, playerId);
             handler.setupInputHandling();
             inputHandlers.put(playerId, handler);
         } else {
