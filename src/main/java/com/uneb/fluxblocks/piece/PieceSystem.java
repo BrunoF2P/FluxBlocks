@@ -15,11 +15,13 @@ import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.factory.BlockShapeFactory;
 import com.uneb.fluxblocks.piece.movement.PieceMovementHandler;
 import com.uneb.fluxblocks.piece.movement.PieceRotationHandler;
-import com.uneb.fluxblocks.piece.rendering.PieceRenderer;
 import com.uneb.fluxblocks.piece.rendering.ShadowPieceCalculator;
-import com.uneb.fluxblocks.piece.scoring.ScoreCalculator;
+import com.uneb.fluxblocks.piece.rendering.StandardPieceRenderer;
+import com.uneb.fluxblocks.game.scoring.ScoringStrategy;
+import com.uneb.fluxblocks.game.scoring.StandardScoringStrategy;
 import com.uneb.fluxblocks.piece.timing.LockDelayHandler;
 import com.uneb.fluxblocks.ui.screens.GameBoardScreen;
+import com.uneb.fluxblocks.piece.scoring.StandardScoreCalculator;
 
 import javafx.util.Duration;
 
@@ -53,8 +55,9 @@ public class PieceSystem {
     private final PieceMovementHandler movementHandler;
     private final PieceRotationHandler rotationHandler;
     private final ShadowPieceCalculator shadowCalculator;
-    private final PieceRenderer renderer;
+    private final StandardPieceRenderer renderer;
     private final GameBoardScreen boardScreen;
+    private final StandardScoreCalculator scoreCalculator;
     private boolean isGameOver = false;
     
     private boolean lockDelayTimerActive = false;
@@ -77,7 +80,8 @@ public class PieceSystem {
         this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayHandler, mediator, playerId);
         this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayHandler);
         this.shadowCalculator = new ShadowPieceCalculator(collisionDetector);
-        this.renderer = new PieceRenderer(board, shadowCalculator, playerId);
+        this.renderer = new StandardPieceRenderer(board, shadowCalculator, playerId);
+        this.scoreCalculator = new StandardScoreCalculator();
 
         this.renderer.setMediator(mediator);
 
@@ -326,9 +330,9 @@ public class PieceSystem {
      */
     private int calculateScore(int linesCleared, SpinDetector.SpinType spinType, TripleSpinDetector.TripleSpinType tripleSpinType) {
         if (tripleSpinType != TripleSpinDetector.TripleSpinType.NONE) {
-            return ScoreCalculator.calculateTotalScoreWithTripleSpin(linesCleared, tripleSpinType, gameState.getCurrentLevel());
+            return scoreCalculator.calculateTotalScoreWithTripleSpin(linesCleared, tripleSpinType, gameState.getCurrentLevel());
         } else {
-            return ScoreCalculator.calculateTotalScore(linesCleared, spinType, gameState.getCurrentLevel());
+            return scoreCalculator.calculateTotalScore(linesCleared, spinType, gameState.getCurrentLevel());
         }
     }
     
@@ -401,7 +405,7 @@ public class PieceSystem {
         updateBoardWithCurrentPiece();
 
         if (distance > 0) {
-            int hardDropScore = ScoreCalculator.calculateHardDropScore(distance, gameState.getCurrentLevel());
+            int hardDropScore = scoreCalculator.calculateHardDropScore(distance, gameState.getCurrentLevel());
             gameState.addScore(hardDropScore);
             mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
         }

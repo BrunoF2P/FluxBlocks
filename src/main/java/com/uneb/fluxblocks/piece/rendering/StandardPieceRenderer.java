@@ -7,10 +7,11 @@ import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.piece.entities.Cell;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 
+
 /**
  * Responsável pela renderização das peças no tabuleiro.
  */
-public class PieceRenderer {
+public class StandardPieceRenderer implements Renderer {
     private final GameBoard board;
     private final ShadowPieceCalculator shadowCalculator;
     private GameMediator mediator;
@@ -31,7 +32,7 @@ public class PieceRenderer {
      * @param board O tabuleiro do jogo
      * @param shadowCalculator O calculador de sombras
      */
-    public PieceRenderer(GameBoard board, ShadowPieceCalculator shadowCalculator, int playerId) {
+    public StandardPieceRenderer(GameBoard board, ShadowPieceCalculator shadowCalculator, int playerId) {
         this.board = board;
         this.shadowCalculator = shadowCalculator;
         this.playerId = playerId;
@@ -156,5 +157,92 @@ public class PieceRenderer {
             && cell.getY() < board.getHeight()
             && cell.getX() >= 0 
             && cell.getX() < board.getWidth();
+    }
+    
+    // Implementação dos métodos da interface Renderer
+    
+    @Override
+    public void renderPiece(BlockShape shape, javafx.scene.canvas.GraphicsContext gc, double x, double y, double cellSize) {
+        // Implementação básica - pode ser expandida conforme necessário
+        if (shape != null) {
+            shape.getCells().forEach(cell -> {
+                double cellX = x + cell.getX() * cellSize;
+                double cellY = y + cell.getY() * cellSize;
+                renderCell(cell.getType(), gc, cellX, cellY, cellSize);
+            });
+        }
+    }
+    
+    @Override
+    public void renderBoard(GameBoard board, javafx.scene.canvas.GraphicsContext gc, double x, double y, double cellSize) {
+        // Implementação básica - renderiza o tabuleiro
+        for (int row = 0; row < board.getHeight(); row++) {
+            for (int col = 0; col < board.getWidth(); col++) {
+                int cellValue = board.getCell(col, row);
+                double cellX = x + col * cellSize;
+                double cellY = y + row * cellSize;
+                renderCell(cellValue, gc, cellX, cellY, cellSize);
+            }
+        }
+    }
+    
+    @Override
+    public void renderCell(int cellValue, javafx.scene.canvas.GraphicsContext gc, double x, double y, double cellSize) {
+        // Implementação básica - renderiza uma célula
+        if (cellValue > 0) {
+            gc.setFill(javafx.scene.paint.Color.BLUE);
+            gc.fillRect(x, y, cellSize, cellSize);
+        }
+    }
+    
+    @Override
+    public void renderShadow(BlockShape shape, javafx.scene.canvas.GraphicsContext gc, double x, double y, double cellSize) {
+        // Implementação básica - renderiza a sombra
+        if (shape != null) {
+            BlockShape shadow = shadowCalculator.calculateShadowPiece(shape);
+            if (shadow != null) {
+                renderPiece(shadow, gc, x, y, cellSize);
+            }
+        }
+    }
+    
+    @Override
+    public void renderNextPiece(BlockShape shape, javafx.scene.canvas.GraphicsContext gc, double x, double y, double cellSize) {
+        renderPiece(shape, gc, x, y, cellSize);
+    }
+    
+    @Override
+    public void renderHoldPiece(BlockShape shape, javafx.scene.canvas.GraphicsContext gc, double x, double y, double cellSize) {
+        renderPiece(shape, gc, x, y, cellSize);
+    }
+    
+    @Override
+    public void clearArea(javafx.scene.canvas.GraphicsContext gc, double x, double y, double width, double height) {
+        gc.clearRect(x, y, width, height);
+    }
+    
+    @Override
+    public String getName() {
+        return "StandardPieceRenderer";
+    }
+    
+    @Override
+    public boolean isActive() {
+        return true; // Sempre ativo por padrão
+    }
+    
+    @Override
+    public void setActive(boolean active) {
+        // Implementação básica - pode ser expandida conforme necessário
+    }
+    
+    @Override
+    public void setStyle(String style) {
+        // Implementação básica - pode ser expandida conforme necessário
+    }
+    
+    @Override
+    public String getStyle() {
+        return "default";
     }
 }

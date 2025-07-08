@@ -1,6 +1,8 @@
 package com.uneb.fluxblocks.piece.scoring;
 
 import com.uneb.fluxblocks.configuration.GameConfig;
+import com.uneb.fluxblocks.game.logic.GameState;
+import com.uneb.fluxblocks.game.scoring.ScoringStrategy;
 import com.uneb.fluxblocks.piece.collision.SpinDetector;
 import com.uneb.fluxblocks.piece.collision.TripleSpinDetector;
 
@@ -10,8 +12,10 @@ import com.uneb.fluxblocks.piece.collision.TripleSpinDetector;
  * <p>Esta classe implementa o sistema de pontuação oficial do Tetris,
  * incluindo pontuação para linhas limpas, Spins e combos.</p>
  */
-public class ScoreCalculator {
+public class StandardScoreCalculator implements ScoringStrategy {
     
+    public StandardScoreCalculator() {}
+
     /**
      * Calcula pontuação base para linhas completadas.
      *
@@ -139,14 +143,52 @@ public class ScoreCalculator {
         return GameConfig.SCORE_SOFT_DROP * level;
     }
     
-    /**
-     * Calcula pontuação para hard drop.
-     *
-     * @param distance Distância percorrida pelo hard drop
-     * @param level Nível atual do jogo
-     * @return Pontuação calculada para hard drop
-     */
-    public static int calculateHardDropScore(int distance, int level) {
+
+    
+    // Implementação dos métodos da interface ScoringStrategy
+    
+    @Override
+    public int calculateLineClearScore(int linesCleared, int level, int combo) {
+        int baseScore = calculateBaseScore(linesCleared, level);
+        return baseScore + (combo * 50); // Bônus de combo
+    }
+    
+    @Override
+    public int calculateRotationScore(int level) {
+        return 0; // Rotação não dá pontos no sistema padrão
+    }
+    
+    @Override
+    public int calculateMovementScore(int level) {
+        return 0; // Movimento não dá pontos no sistema padrão
+    }
+    
+    @Override
+    public int calculateHardDropScore(int distance, int level) {
         return distance * GameConfig.SCORE_HARD_DROP * level;
+    }
+    
+    @Override
+    public int calculateTSpinScore(int level, boolean isMini) {
+        if (isMini) {
+            return GameConfig.SCORE_SPIN_MINI_BASE * level;
+        } else {
+            return GameConfig.SCORE_SPIN_BASE * level;
+        }
+    }
+    
+    @Override
+    public int calculateComboScore(int comboCount, int level) {
+        return comboCount * 50 * level; // 50 pontos por combo, multiplicado pelo nível
+    }
+    
+    @Override
+    public String getName() {
+        return "StandardScoreCalculator";
+    }
+    
+    @Override
+    public void applyToGameState(GameState gameState) {
+        // Implementação padrão vazia - o GameState já gerencia sua própria lógica
     }
 }

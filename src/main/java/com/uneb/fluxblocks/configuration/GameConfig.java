@@ -12,7 +12,7 @@ import javafx.scene.CacheHint;
  * Classe de configuração centralizada para o jogo FluxBlocks.
  * Contém todas as constantes e configurações do jogo.
  */
-public class GameConfig {
+public class GameConfig implements ConfigurationManager {
     private static Properties properties = new Properties();
     private static final String CONFIG_FILE = "config.properties";
 
@@ -395,5 +395,109 @@ public class GameConfig {
         } catch (Exception e) {
             System.out.println("Erro ao detectar resolução: " + e.getMessage());
         }
+    }
+    
+    // Implementação dos métodos da interface ConfigurationManager
+    
+    @Override
+    public void loadConfiguration() {
+        loadConfig();
+    }
+    
+    @Override
+    public void saveConfiguration() {
+        saveConfig();
+    }
+    
+    @Override
+    public String getString(String key) {
+        return properties.getProperty(key);
+    }
+    
+    @Override
+    public String getString(String key, String defaultValue) {
+        return properties.getProperty(key, defaultValue);
+    }
+    
+    @Override
+    public int getInt(String key) {
+        String value = properties.getProperty(key);
+        return value != null ? Integer.parseInt(value) : 0;
+    }
+    
+    @Override
+    public int getInt(String key, int defaultValue) {
+        String value = properties.getProperty(key);
+        return value != null ? Integer.parseInt(value) : defaultValue;
+    }
+    
+    @Override
+    public double getDouble(String key) {
+        String value = properties.getProperty(key);
+        return value != null ? Double.parseDouble(value) : 0.0;
+    }
+    
+    @Override
+    public double getDouble(String key, double defaultValue) {
+        String value = properties.getProperty(key);
+        return value != null ? Double.parseDouble(value) : defaultValue;
+    }
+    
+    @Override
+    public boolean getBoolean(String key) {
+        String value = properties.getProperty(key);
+        return value != null ? Boolean.parseBoolean(value) : false;
+    }
+    
+    @Override
+    public boolean getBoolean(String key, boolean defaultValue) {
+        String value = properties.getProperty(key);
+        return value != null ? Boolean.parseBoolean(value) : defaultValue;
+    }
+    
+    @Override
+    public void setValue(String key, Object value) {
+        properties.setProperty(key, value.toString());
+    }
+    
+    @Override
+    public void removeValue(String key) {
+        properties.remove(key);
+    }
+    
+    @Override
+    public boolean hasValue(String key) {
+        return properties.containsKey(key);
+    }
+    
+    @Override
+    public java.util.Map<String, Object> getAllValues() {
+        java.util.Map<String, Object> map = new java.util.HashMap<>();
+        for (String key : properties.stringPropertyNames()) {
+            map.put(key, properties.getProperty(key));
+        }
+        return map;
+    }
+    
+    @Override
+    public void resetToDefaults() {
+        properties.clear();
+        // Recarrega as configurações padrão
+        loadConfig();
+    }
+    
+    @Override
+    public String getName() {
+        return "GameConfig";
+    }
+    
+    @Override
+    public boolean isActive() {
+        return true; // Sempre ativo
+    }
+    
+    @Override
+    public void setActive(boolean active) {
+        // Implementação básica - pode ser expandida conforme necessário
     }
 }

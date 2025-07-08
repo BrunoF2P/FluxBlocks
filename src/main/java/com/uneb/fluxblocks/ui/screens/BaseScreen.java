@@ -15,7 +15,7 @@ import javafx.util.Duration;
  * Classe base para todas as telas do jogo.
  * Fornece transições padronizadas e métodos utilitários comuns.
  */
-public abstract class BaseScreen {
+public abstract class BaseScreen implements Screen {
     
     protected static final Duration FADE_DURATION = Duration.millis(600);
     protected static final Duration SLIDE_DURATION = Duration.millis(800);
@@ -262,4 +262,36 @@ public abstract class BaseScreen {
      * Método abstrato para limpeza de recursos.
      */
     public abstract void destroy();
+    
+    // Implementação dos métodos da interface Screen
+    
+    @Override
+    public void initialize() {
+        // Implementação padrão vazia - pode ser sobrescrita pelas subclasses
+    }
+    
+    @Override
+    public void show() {
+        // Implementação padrão vazia - pode ser sobrescrita pelas subclasses
+    }
+    
+    @Override
+    public void hide() {
+        // Implementação padrão vazia - pode ser sobrescrita pelas subclasses
+    }
+    
+    @Override
+    public void update() {
+        // Implementação padrão vazia - pode ser sobrescrita pelas subclasses
+    }
+    
+    @Override
+    public String getName() {
+        return this.getClass().getSimpleName();
+    }
+    
+    @Override
+    public boolean isActive() {
+        return true; // Sempre ativo por padrão
+    }
 } 
