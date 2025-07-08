@@ -7,6 +7,7 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.game.scoring.ScoreTracker;
+import com.uneb.fluxblocks.architecture.interfaces.GameTimer;
 import com.uneb.fluxblocks.game.statistics.GameStatistics;
 import com.uneb.fluxblocks.piece.PieceSystem;
 import com.uneb.fluxblocks.ui.controllers.InputHandler;
@@ -67,7 +68,7 @@ public class GameController {
         this.pieceManager = new PieceSystem(mediator, gameBoard, gameState, boardScreen, playerId);
         this.inputHandler = inputHandler;
         this.scoreTracker = new ScoreTracker(mediator, gameState, playerId);
-        this.gameTimer = new GameTimer(mediator, gameState, playerId);
+        this.gameTimer = new StandardGameTimer(mediator, gameState, playerId);
         this.gameStatistics = new GameStatistics(mediator, gameState, playerId);
 
         registerEvents();
@@ -110,7 +111,7 @@ public class GameController {
     private void startCountdown() {
         int[] countdown = {3};
         FXGL.getInput().setProcessInput(false);
-        gameTimer.stopTimer();
+        gameTimer.stop();
 
         FXGL.getGameTimer().runAtInterval(() -> {
             if (countdown[0] > 0) {
@@ -121,7 +122,7 @@ public class GameController {
                 pieceManager.handlePauseState(false);
                 FXGL.getInput().setProcessInput(true);
                 
-                gameTimer.startTimer();
+                gameTimer.start();
                 
                 mediator.emit(UiEvents.GAME_STARTED, null);
                 mediator.emit(UiEvents.COUNTDOWN, new UiEvents.CountdownEvent(playerId, 0));
@@ -135,7 +136,11 @@ public class GameController {
      */
     public void togglePause() {
         gameState.togglePause();
-        gameTimer.handlePauseState(gameState.isPaused());
+        if (gameState.isPaused()) {
+            gameTimer.pause();
+        } else {
+            gameTimer.resume();
+        }
         pieceManager.handlePauseState(gameState.isPaused());
         mediator.emit(UiEvents.GAME_PAUSED, gameState.isPaused());
     }
@@ -145,7 +150,7 @@ public class GameController {
      * Para o timer atual e inicia uma nova partida.
      */
     public void restart() {
-        gameTimer.stopTimer();
+        gameTimer.stop();
         gameState.setGameTimeMs(0);
         pieceManager.handlePauseState(false);
         pieceManager.reset();
@@ -159,7 +164,7 @@ public class GameController {
      */
     private void handleGameOver() {
         gameState.setGameOver(true);
-        gameTimer.stopTimer();
+        gameTimer.stop();
         mediator.emit(UiEvents.GAME_OVER, new UiEvents.GameOverEvent(playerId, gameStatistics));
     }
 
@@ -188,7 +193,7 @@ public class GameController {
 
             // Para o timer do jogo
             if (gameTimer != null) {
-                gameTimer.stopTimer();
+                gameTimer.stop();
             }
             
             // Limpa as ações de entrada registradas
