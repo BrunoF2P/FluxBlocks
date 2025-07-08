@@ -26,6 +26,31 @@ public class FixedExtendedBagBlockShapeProvider implements BlockShapeProvider {
         }
         return BlockShapeFactory.createBlockShape(bag.get(index++));
     }
+    
+    @Override
+    public BlockShape peek() {
+        if (index >= bag.size()) {
+            refillBag();
+        }
+        return BlockShapeFactory.createBlockShape(bag.get(index));
+    }
+    
+    @Override
+    public void reset() {
+        index = 0;
+        bag.clear();
+        refillBag();
+    }
+    
+    @Override
+    public String getName() {
+        return "FixedExtendedBagBlockShapeProvider";
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return true;
+    }
 
     private void refillBag() {
         bag.clear();

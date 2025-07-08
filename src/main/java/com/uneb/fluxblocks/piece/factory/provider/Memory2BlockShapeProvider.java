@@ -53,4 +53,29 @@ public class Memory2BlockShapeProvider implements BlockShapeProvider {
         history.addLast(next);
         return BlockShapeFactory.createBlockShape(next);
     }
+    
+    @Override
+    public BlockShape peek() {
+        BlockShape.Type next;
+        do {
+            List<BlockShape.Type> validTypes = BlockShapeUtil.STANDARD_TYPES;
+            next = validTypes.get(random.nextInt(validTypes.size()));
+        } while (history.contains(next));
+        return BlockShapeFactory.createBlockShape(next);
+    }
+    
+    @Override
+    public void reset() {
+        history.clear();
+    }
+    
+    @Override
+    public String getName() {
+        return "Memory2BlockShapeProvider";
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return true;
+    }
 }

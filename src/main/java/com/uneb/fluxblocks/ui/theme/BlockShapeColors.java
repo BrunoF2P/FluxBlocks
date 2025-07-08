@@ -36,6 +36,13 @@ public final class BlockShapeColors {
      * @return cor correspondente ou {@link Color#TRANSPARENT} se inválido
      */
     public static Color getColor(int type) {
+        if (type == 10) {
+            return getGlassColor();
+        }
         return COLOR_CACHE.getOrDefault(type, Color.TRANSPARENT);
+    }
+
+    public static Color getGlassColor() {
+        return Color.web("rgba(120, 200, 255, 0.45)");
     }
 }

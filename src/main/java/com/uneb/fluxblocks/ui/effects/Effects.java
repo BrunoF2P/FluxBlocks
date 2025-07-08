@@ -9,7 +9,7 @@ import javafx.util.Duration;
  * Fachada (Facade) para todos os efeitos visuais do jogo.
  * Delega as chamadas para classes especializadas em cada tipo de efeito.
  */
-public class Effects {
+public class Effects implements VisualEffect {
     // Expondo constantes necessárias
     public static final double SHAKE_INTENSITY_BASE = EffectConstants.SHAKE_INTENSITY_BASE;
     public static final double SHAKE_INTENSITY_MULTIPLIER = EffectConstants.SHAKE_INTENSITY_MULTIPLIER;
@@ -109,5 +109,40 @@ public class Effects {
         });
 
         EffectObjectPool.cleanupUnusedBlurEffects();
+    }
+    
+    // Implementação dos métodos da interface VisualEffect
+    
+    @Override
+    public void apply(Node target, Duration duration, Runnable onComplete) {
+        // Implementação padrão - aplica um fade in
+        TransitionEffects.applyFadeIn(target, duration, onComplete);
+    }
+    
+    @Override
+    public void stop(Node target) {
+        if (target != null) {
+            Animation animation = (Animation) target.getProperties().get("animation");
+            if (animation != null) {
+                animation.stop();
+                target.getProperties().remove("animation");
+            }
+        }
+    }
+    
+    @Override
+    public boolean isActive(Node target) {
+        if (target == null) return false;
+        return target.getProperties().containsKey("animation");
+    }
+    
+    @Override
+    public void clearAll(Pane container) {
+        clearAllEffects(container);
+    }
+    
+    @Override
+    public String getName() {
+        return "Effects";
     }
 }

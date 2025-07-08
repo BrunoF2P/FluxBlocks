@@ -40,6 +40,28 @@ public class FourteenBagBlockShapeProvider implements BlockShapeProvider {
         if (bag.isEmpty()) refillBag();
         return BlockShapeFactory.createBlockShape(Objects.requireNonNull(bag.poll()));
     }
+    
+    @Override
+    public BlockShape peek() {
+        if (bag.isEmpty()) refillBag();
+        return BlockShapeFactory.createBlockShape(bag.peek());
+    }
+    
+    @Override
+    public void reset() {
+        bag.clear();
+        refillBag();
+    }
+    
+    @Override
+    public String getName() {
+        return "FourteenBagBlockShapeProvider";
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return true;
+    }
 
     /**
      * Reabastece o saco com um novo conjunto de 14 peças em ordem aleatória.

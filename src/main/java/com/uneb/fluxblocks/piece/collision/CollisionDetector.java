@@ -1,98 +1,73 @@
 package com.uneb.fluxblocks.piece.collision;
 
-import com.uneb.fluxblocks.configuration.GameConfig;
-import com.uneb.fluxblocks.game.logic.GameBoard;
-import com.uneb.fluxblocks.piece.entities.Cell;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
+import com.uneb.fluxblocks.game.logic.GameBoard;
 
 /**
- * Responsável por detectar colisões de peças com outras peças
- * ou com os limites do tabuleiro.
- * Implementa lógica compatível com TETR.IO.
+ * Interface para detectores de colisão do jogo.
+ * Permite implementar diferentes algoritmos de detecção de colisão.
  */
-public class CollisionDetector {
-    private final GameBoard board;
-
-    public CollisionDetector(GameBoard board) {
-        this.board = board;
-    }
-
+public interface CollisionDetector {
+    
     /**
-     * Verifica se uma peça está numa posição válida no tabuleiro.
-     *
-     * @param piece A peça a ser verificada
-     * @return true se a posição é válida, false caso contrário
+     * Verifica se uma peça colide com o tabuleiro
+     * @param shape A peça a ser verificada
+     * @param board O tabuleiro do jogo
+     * @return true se houver colisão
      */
-    public boolean isValidPosition(BlockShape piece) {
-        if (piece == null || board == null) {
-            return false;
-        }
-
-        return piece.getCells().stream()
-                .noneMatch(this::isCellInvalid);
-    }
-
-    private boolean isCellInvalid(Cell cell) {
-        int x = cell.getX();
-        int y = cell.getY();
-
-        if (x < 0 || x >= board.getWidth()) {
-            return true;
-        }
-
-
-        if (y < -4) {
-            return true;
-        }
-
-        if (board.isValidPosition(x, y)) {
-            return board.getCell(x, y) != 0;
-        }
-
-        return y >= board.getHeight() - GameConfig.BOARD_VISIBLE_ROW;
-    }
-
+    boolean checkCollision(BlockShape shape, GameBoard board);
+    
     /**
-     * Verifica se a peça está numa posição de descanso válida
-     * (sobre outra peça ou, no fundo do tabuleiro).
-     *
-     * @param piece A peça a verificar
-     * @return true se a peça está numa posição de descanso
+     * Verifica se uma peça colide com outras peças no tabuleiro
+     * @param shape A peça a ser verificada
+     * @param board O tabuleiro do jogo
+     * @return true se houver colisão com outras peças
      */
-    public boolean isAtRestingPosition(BlockShape piece) {
-        if (piece == null) return false;
-
-        int originalX = piece.getX();
-        int originalY = piece.getY();
-
-        piece.move(0, 1);
-        boolean wouldCollide = !isValidPosition(piece);
-
-        piece.setPosition(originalX, originalY);
-
-        return wouldCollide;
-    }
-
+    boolean checkPieceCollision(BlockShape shape, GameBoard board);
+    
     /**
-     * Verifica se é possível spawnar uma peça na posição especificada.
-     * Esta é a verificação principal para game over no estilo TETR.IO.
-     *
-     * @param piece A peça a ser spawnada
-     * @param spawnX Posição X de spawn
-     * @param spawnY Posição Y de spawn
-     * @return true se é possível spawnar, false se causaria game over
+     * Verifica se uma peça colide com as bordas do tabuleiro
+     * @param shape A peça a ser verificada
+     * @param boardWidth Largura do tabuleiro
+     * @param boardHeight Altura do tabuleiro
+     * @return true se houver colisão com as bordas
      */
-    public boolean canSpawn(BlockShape piece, int spawnX, int spawnY) {
-        if (piece == null) return false;
-
-        int originalX = piece.getX();
-        int originalY = piece.getY();
-
-        piece.setPosition(spawnX, spawnY);
-        boolean canSpawn = isValidPosition(piece);
-
-        piece.setPosition(originalX, originalY);
-
-        return canSpawn;
-    }
+    boolean checkWallCollision(BlockShape shape, int boardWidth, int boardHeight);
+    
+    /**
+     * Verifica se uma peça está dentro dos limites do tabuleiro
+     * @param shape A peça a ser verificada
+     * @param boardWidth Largura do tabuleiro
+     * @param boardHeight Altura do tabuleiro
+     * @return true se a peça estiver dentro dos limites
+     */
+    boolean isWithinBounds(BlockShape shape, int boardWidth, int boardHeight);
+    
+    /**
+     * Calcula a distância até a próxima colisão na direção especificada
+     * @param shape A peça a ser verificada
+     * @param board O tabuleiro do jogo
+     * @param directionX Direção X (-1, 0, 1)
+     * @param directionY Direção Y (-1, 0, 1)
+     * @return Distância até a colisão, ou -1 se não houver colisão
+     */
+    int getDistanceToCollision(BlockShape shape, GameBoard board, int directionX, int directionY);
+    
+    /**
+     * Retorna o nome do detector
+     * @return Nome do detector
+     */
+    String getName();
+    
+    /**
+     * Verifica se o detector está ativo
+     * @return true se o detector estiver ativo
+     */
+    boolean isActive();
+    
+    /**
+     * Ativa/desativa o detector
+     * @param active true para ativar, false para desativar
+     */
+    void setActive(boolean active);
 }

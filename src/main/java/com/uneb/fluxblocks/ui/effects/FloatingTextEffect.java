@@ -1,6 +1,6 @@
 package com.uneb.fluxblocks.ui.effects;
 
-import com.uneb.fluxblocks.piece.scoring.ScoreCalculator;
+import com.uneb.fluxblocks.piece.scoring.StandardScoreCalculator;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -24,6 +24,7 @@ public class FloatingTextEffect {
     private static final Color YELLOW = Color.web("#fcd34d");
 
     private static int currentLevel = 1;
+    private static final StandardScoreCalculator scoreCalculator = new StandardScoreCalculator();
 
     public static void updateLevel(int level) {
         currentLevel = level;
@@ -40,7 +41,7 @@ public class FloatingTextEffect {
 
         if (text.isEmpty()) return;
 
-        int score = ScoreCalculator.calculateLinesClearedScore(linesCleared, currentLevel);
+        int score = scoreCalculator.calculateBaseScore(linesCleared, currentLevel);
 
         double lineY = clearedLine * cellSize;
         double centerX = effectsLayer.getWidth() / 2;

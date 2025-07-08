@@ -44,4 +44,28 @@ public class Memory1BlockShapeProvider implements BlockShapeProvider {
         lastType = next;
         return BlockShapeFactory.createBlockShape(next);
     }
+    
+    @Override
+    public BlockShape peek() {
+        BlockShape.Type next;
+        do {
+            next = BlockShapeUtil.STANDARD_TYPES.get(random.nextInt(BlockShapeUtil.STANDARD_TYPES.size()));
+        } while (next == lastType);
+        return BlockShapeFactory.createBlockShape(next);
+    }
+    
+    @Override
+    public void reset() {
+        lastType = null;
+    }
+    
+    @Override
+    public String getName() {
+        return "Memory1BlockShapeProvider";
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return true;
+    }
 }

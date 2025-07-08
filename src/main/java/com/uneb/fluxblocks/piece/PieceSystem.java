@@ -8,15 +8,20 @@ import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.logic.GameBoard;
 import com.uneb.fluxblocks.game.logic.GameState;
 import com.uneb.fluxblocks.piece.collision.CollisionDetector;
+import com.uneb.fluxblocks.piece.collision.StandardCollisionDetector;
+import com.uneb.fluxblocks.piece.collision.SpinDetector;
+import com.uneb.fluxblocks.piece.collision.TripleSpinDetector;
 import com.uneb.fluxblocks.piece.entities.BlockShape;
 import com.uneb.fluxblocks.piece.factory.BlockShapeFactory;
 import com.uneb.fluxblocks.piece.movement.PieceMovementHandler;
 import com.uneb.fluxblocks.piece.movement.PieceRotationHandler;
-import com.uneb.fluxblocks.piece.rendering.PieceRenderer;
 import com.uneb.fluxblocks.piece.rendering.ShadowPieceCalculator;
-import com.uneb.fluxblocks.piece.scoring.ScoreCalculator;
+import com.uneb.fluxblocks.piece.rendering.StandardPieceRenderer;
+import com.uneb.fluxblocks.game.scoring.ScoringStrategy;
+import com.uneb.fluxblocks.game.scoring.StandardScoringStrategy;
 import com.uneb.fluxblocks.piece.timing.LockDelayHandler;
 import com.uneb.fluxblocks.ui.screens.GameBoardScreen;
+import com.uneb.fluxblocks.piece.scoring.StandardScoreCalculator;
 
 import javafx.util.Duration;
 
@@ -50,8 +55,9 @@ public class PieceSystem {
     private final PieceMovementHandler movementHandler;
     private final PieceRotationHandler rotationHandler;
     private final ShadowPieceCalculator shadowCalculator;
-    private final PieceRenderer renderer;
+    private final StandardPieceRenderer renderer;
     private final GameBoardScreen boardScreen;
+    private final StandardScoreCalculator scoreCalculator;
     private boolean isGameOver = false;
     
     private boolean lockDelayTimerActive = false;
@@ -68,13 +74,14 @@ public class PieceSystem {
         this.board = board;
         this.gameState = gameState;
         this.boardScreen = boardScreen;
-        this.collisionDetector = new CollisionDetector(board);
+        this.collisionDetector = new StandardCollisionDetector(board);
         this.playerId = playerId;
         this.lockDelayHandler = new LockDelayHandler();
         this.movementHandler = new PieceMovementHandler(collisionDetector, lockDelayHandler, mediator, playerId);
         this.rotationHandler = new PieceRotationHandler(collisionDetector, lockDelayHandler);
         this.shadowCalculator = new ShadowPieceCalculator(collisionDetector);
-        this.renderer = new PieceRenderer(board, shadowCalculator, playerId);
+        this.renderer = new StandardPieceRenderer(board, shadowCalculator, playerId);
+        this.scoreCalculator = new StandardScoreCalculator();
 
         this.renderer.setMediator(mediator);
 
@@ -86,8 +93,11 @@ public class PieceSystem {
      * Inicializa o sistema de peças, gerando a primeira peça e a próxima peça.
      */
     private void initialize() {
+        int spawnX = board.getWidth() / 2 - 1;
+        int spawnY = -2;
+        
         nextPiece = BlockShapeFactory.createRandomBlockShape();
-        nextPiece.setPosition(board.getWidth() / 2, 0);
+        nextPiece.setPosition(spawnX, spawnY);
 
         spawnNewPiece();
     }
@@ -151,9 +161,43 @@ public class PieceSystem {
     private void checkLockDelay() {
         if (!lockDelayTimerActive || gameState.isPaused()) return;
         
-        if (lockDelayHandler.isLockPending() && lockDelayHandler.isLockDelayExpired()) {
+        // Só verifica se há uma peça atual e se o lock delay está pendente
+        if (currentPiece != null && lockDelayHandler.isLockPending() && lockDelayHandler.isLockDelayExpired()) {
             lockPiece(false);
         }
+    }
+
+    /**
+     * Reseta o sistema de peças para o estado inicial.
+     * Gera novas peças e as posiciona no topo do tabuleiro.
+     */
+    public void reset() {
+        isGameOver = false;
+        
+        // Limpa estados relacionados
+        lockDelayHandler.reset();
+        movementHandler.resetSoftDropTracking();
+        movementHandler.resetWallPushState();
+        rotationHandler.resetLastSpin();
+        rotationHandler.resetLastTripleSpin();
+        
+        // Gera novas peças
+        int spawnX = board.getWidth() / 2 - 1;
+        int spawnY = -2;
+        
+        // Gera uma nova peça para nextPiece
+        nextPiece = BlockShapeFactory.createRandomBlockShape();
+        nextPiece.setPosition(spawnX, spawnY);
+        
+        // Gera uma nova peça para currentPiece
+        currentPiece = BlockShapeFactory.createRandomBlockShape();
+        currentPiece.setPosition(spawnX, spawnY);
+        
+        // Emite evento de atualização da próxima peça
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
+        
+        // Atualiza o tabuleiro com a nova peça
+        updateBoardWithCurrentPiece();
     }
 
     /**
@@ -173,7 +217,7 @@ public class PieceSystem {
         mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         movementHandler.resetWallPushState();
 
-        if (!collisionDetector.canSpawn(currentPiece, spawnX, spawnY)) {
+        if (!((StandardCollisionDetector) collisionDetector).canSpawn(currentPiece, spawnX, spawnY)) {
             isGameOver = true;
             mediator.emit(GameplayEvents.GAME_OVER, new GameplayEvents.GameOverEvent(playerId));
             return;
@@ -204,12 +248,41 @@ public class PieceSystem {
     public void lockPiece(boolean isHardDrop) {
         if (currentPiece == null || board == null) return;
 
+        // Obtém o Spin detectado durante a rotação
+        var spinType = rotationHandler.getLastSpin();
+        var tripleSpinType = rotationHandler.getLastTripleSpin();
+
+        // Fixa a peça no tabuleiro
+        placePieceOnBoard();
+        
+        // Emite eventos de estado da peça
+        emitPieceStateEvents(isHardDrop);
+        
+        // Processa linhas completadas e pontuação
+        processLineClearing(spinType, tripleSpinType);
+        
+        // Limpa estados e gera nova peça
+        resetPieceStates();
+        spawnNewPiece();
+    }
+    
+    /**
+     * Coloca a peça atual no tabuleiro.
+     */
+    private void placePieceOnBoard() {
         currentPiece.getCells().forEach(cell -> {
             if (board.isValidPosition(cell.getX(), cell.getY())) {
-                board.setCell(cell.getX(), cell.getY(), cell.getType());
+                board.setCell(cell.getX(), cell.getY(), currentPiece.isGlass() ? 10 : cell.getType());
             }
         });
-
+        board.removeFragileGlassBlocks();
+        board.notifyBoardUpdated();
+    }
+    
+    /**
+     * Emite eventos relacionados ao estado da peça.
+     */
+    private void emitPieceStateEvents(boolean isHardDrop) {
         mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_LEFT, new UiEvents.BoardEvent(playerId));
         mediator.emit(UiEvents.PIECE_NOT_PUSHING_WALL_RIGHT, new UiEvents.BoardEvent(playerId));
 
@@ -220,41 +293,77 @@ public class PieceSystem {
         } else {
             mediator.emit(UiEvents.PIECE_LANDED_NORMAL, new UiEvents.BoardEvent(playerId));
         }
-
-        int totalPoints = 0;
-
+    }
+    
+    /**
+     * Processa a eliminação de linhas e calcula pontuação.
+     */
+    private void processLineClearing(SpinDetector.SpinType spinType, TripleSpinDetector.TripleSpinType tripleSpinType) {
         int linesCleared = board.removeCompletedLines(boardScreen.getEffectsLayer());
+        boolean glassBonus = false;
         if (linesCleared > 0) {
-            boolean leveledUp = gameState.processLinesCleared(linesCleared);
-
-            int linesClearedScore = ScoreCalculator.calculateLinesClearedScore(linesCleared, gameState.getCurrentLevel());
-            gameState.addScore(linesClearedScore);
-
-            mediator.emit(GameplayEvents.LINE_CLEARED, new GameplayEvents.LineClearEvent(playerId, linesCleared));
+            // Descobrir as linhas eliminadas
+            int boardHeight = board.getHeight();
+            for (int y = boardHeight - 1; y >= 0; y--) {
+                if (board.lineHasGlass(y)) {
+                    glassBonus = true;
+                    break;
+                }
+            }
+            boolean levelUp = gameState.processLinesCleared(linesCleared);
+            int totalScore = calculateScore(linesCleared, spinType, tripleSpinType);
+            if (glassBonus) {
+                totalScore *= 2;
+            }
+            gameState.addScore(totalScore);
             mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
-
-            if (leveledUp) {
+            if (levelUp) {
                 mediator.emit(UiEvents.LEVEL_UPDATE, new UiEvents.LevelUiEvent(playerId, gameState.getCurrentLevel()));
             }
+            mediator.emit(GameplayEvents.LINE_CLEARED, new GameplayEvents.LineClearEvent(playerId, linesCleared));
+            emitSpinEvents(spinType, tripleSpinType, linesCleared);
+        }
+    }
+    
+    /**
+     * Calcula a pontuação baseada no tipo de spin e linhas eliminadas.
+     */
+    private int calculateScore(int linesCleared, SpinDetector.SpinType spinType, TripleSpinDetector.TripleSpinType tripleSpinType) {
+        if (tripleSpinType != TripleSpinDetector.TripleSpinType.NONE) {
+            return scoreCalculator.calculateTotalScoreWithTripleSpin(linesCleared, tripleSpinType, gameState.getCurrentLevel());
+        } else {
+            return scoreCalculator.calculateTotalScore(linesCleared, spinType, gameState.getCurrentLevel());
+        }
+    }
+    
+    /**
+     * Emite eventos relacionados a spins detectados.
+     */
+    private void emitSpinEvents(SpinDetector.SpinType spinType, TripleSpinDetector.TripleSpinType tripleSpinType, int linesCleared) {
+        if (spinType != SpinDetector.SpinType.NONE) {
+            mediator.emit(GameplayEvents.SPIN_DETECTED, new GameplayEvents.SpinEvent(playerId, spinType, linesCleared));
         }
 
-        if (movementHandler.isSoftDropping()) {
-            int distance = movementHandler.getSoftDropDistance();
-            if (distance > 0) {
-                int softDropScore = ScoreCalculator.calculateSoftDropScore(gameState.getCurrentLevel());
-                gameState.addScore(softDropScore);
-                mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
-            }
+        if (tripleSpinType != TripleSpinDetector.TripleSpinType.NONE) {
+            mediator.emit(GameplayEvents.TRIPLE_SPIN_DETECTED, new GameplayEvents.TripleSpinEvent(playerId, tripleSpinType, linesCleared));
         }
-
+    }
+    
+    /**
+     * Reseta os estados relacionados à peça atual.
+     */
+    private void resetPieceStates() {
+        rotationHandler.resetLastSpin();
+        rotationHandler.resetLastTripleSpin();
         lockDelayHandler.reset();
-        spawnNewPiece();
     }
 
     /**
      * Move a peça atual para a esquerda se possível.
      */
     public void moveLeft() {
+        if (!canPerformAction()) return;
+        
         if (movementHandler.moveLeft(currentPiece)) {
             updateBoardWithCurrentPiece();
         }
@@ -264,6 +373,8 @@ public class PieceSystem {
      * Move a peça atual para a direita se possível.
      */
     public void moveRight() {
+        if (!canPerformAction()) return;
+        
         if (movementHandler.moveRight(currentPiece)) {
             updateBoardWithCurrentPiece();
         }
@@ -273,7 +384,7 @@ public class PieceSystem {
      * Move a peça atual para baixo (soft drop).
      */
     public void moveDown() {
-        if (currentPiece == null) return;
+        if (!canPerformAction()) return;
         
         if (!movementHandler.moveDown(currentPiece)) { // Se não conseguiu mover para baixo
             if (!lockDelayHandler.isLockPending()) {
@@ -288,13 +399,13 @@ public class PieceSystem {
      * Realiza um hard drop da peça atual.
      */
     public void hardDrop() {
-        if (currentPiece == null) return;
+        if (!canPerformAction()) return;
 
         int distance = movementHandler.hardDrop(currentPiece);
         updateBoardWithCurrentPiece();
 
         if (distance > 0) {
-            int hardDropScore = ScoreCalculator.calculateHardDropScore(distance);
+            int hardDropScore = scoreCalculator.calculateHardDropScore(distance, gameState.getCurrentLevel());
             gameState.addScore(hardDropScore);
             mediator.emit(GameplayEvents.SCORE_UPDATED, new GameplayEvents.ScoreEvent(playerId, gameState.getScore()));
         }
@@ -306,10 +417,10 @@ public class PieceSystem {
      * Rotaciona a peça atual no sentido horário.
      */
     public void rotate() {
-        if (rotationHandler.rotate(currentPiece)) {
-            movementHandler.resetWallPushState();
-            updateBoardWithCurrentPiece();
-        }
+        if (!canPerformAction()) return;
+        
+        rotationHandler.rotateClockwise(currentPiece);
+        updateBoardWithCurrentPiece();
     }
 
     /**
@@ -364,5 +475,12 @@ public class PieceSystem {
         } else {
             startLockDelayTimer();
         }
+    }
+
+    /**
+     * Verifica se uma ação pode ser executada no estado atual do jogo.
+     */
+    private boolean canPerformAction() {
+        return currentPiece != null && !isGameOver && !gameState.isPaused();
     }
 }

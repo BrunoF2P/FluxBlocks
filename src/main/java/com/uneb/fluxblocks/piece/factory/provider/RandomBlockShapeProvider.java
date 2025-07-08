@@ -38,4 +38,25 @@ public class RandomBlockShapeProvider implements BlockShapeProvider {
         );
         return BlockShapeFactory.createBlockShape(randomType);
     }
+    
+    @Override
+    public BlockShape peek() {
+        // Para random, peek é o mesmo que next
+        return next();
+    }
+    
+    @Override
+    public void reset() {
+        // Random provider não precisa de reset
+    }
+    
+    @Override
+    public String getName() {
+        return "RandomBlockShapeProvider";
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return true; // Sempre tem peças disponíveis
+    }
 }
