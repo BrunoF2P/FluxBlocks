@@ -54,9 +54,56 @@ public class StandardRenderer implements Renderer {
     public void renderCell(int cellValue, GraphicsContext gc, double x, double y, double cellSize) {
         if (!active) return;
         
-        Color cellColor = getCellColor(cellValue);
-        gc.setFill(cellColor);
-        gc.fillRect(x, y, cellSize, cellSize);
+        if (cellValue == 10) {
+            Color glassColor = getCellColor(cellValue);
+            gc.setFill(glassColor);
+            gc.fillRect(x, y, cellSize, cellSize);
+            
+            // Gradiente de brilho
+            gc.save();
+            gc.setGlobalAlpha(0.35);
+            javafx.scene.paint.LinearGradient shine = new javafx.scene.paint.LinearGradient(
+                x, y, x, y + cellSize / 2, false, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                new javafx.scene.paint.Stop(0, Color.rgb(255, 255, 255, 0.9)),
+                new javafx.scene.paint.Stop(1, Color.rgb(255, 255, 255, 0.0))
+            );
+            gc.setFill(shine);
+            gc.fillRect(x, y, cellSize, cellSize / 2);
+            gc.restore();
+            
+            // Rachaduras
+            gc.save();
+            gc.setStroke(Color.rgb(255, 255, 255, 0.25));
+            gc.setLineWidth(0.8);
+            
+            double cx = x + cellSize / 2;
+            double cy = y + cellSize / 2;
+            int cracks = 6;
+            double radius = cellSize / 2;
+            
+            for (int i = 0; i < cracks; i++) {
+                double angle = Math.toRadians(360.0 / cracks * i + Math.random() * 15 - 7.5);
+                double ex = cx + Math.cos(angle) * radius;
+                double ey = cy + Math.sin(angle) * radius;
+                gc.strokeLine(cx, cy, ex, ey);
+                
+                double branchAngle1 = angle + Math.toRadians(20 + Math.random() * 10);
+                double bx1 = cx + Math.cos(branchAngle1) * (radius * 0.5);
+                double by1 = cy + Math.sin(branchAngle1) * (radius * 0.5);
+                gc.strokeLine((cx + ex) / 2, (cy + ey) / 2, bx1, by1);
+                
+                double branchAngle2 = angle - Math.toRadians(20 + Math.random() * 10);
+                double bx2 = cx + Math.cos(branchAngle2) * (radius * 0.4);
+                double by2 = cy + Math.sin(branchAngle2) * (radius * 0.4);
+                gc.strokeLine((cx + ex) / 2, (cy + ey) / 2, bx2, by2);
+            }
+            
+            gc.restore();
+        } else {
+            Color cellColor = getCellColor(cellValue);
+            gc.setFill(cellColor);
+            gc.fillRect(x, y, cellSize, cellSize);
+        }
         
         // Borda da célula
         gc.setStroke(Color.BLACK);

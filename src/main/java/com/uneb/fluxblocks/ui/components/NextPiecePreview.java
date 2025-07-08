@@ -93,24 +93,83 @@ public class NextPiecePreview {
             int spacing = 1;
             int innerSize = cellSize - (spacing * 2);
 
-            Color tetroColor = BlockShapeColors.getColor(type);
+            if (type == 10) {
+                Color glassColor = BlockShapeColors.getGlassColor();
+                gc.setFill(glassColor);
+                gc.fillRoundRect(
+                        x * cellSize + spacing,
+                        y * cellSize + spacing,
+                        innerSize,
+                        innerSize,
+                        10, 10);
+            
+                // Gradiente de brilho
+                gc.save();
+                gc.setGlobalAlpha(0.35);
+                javafx.scene.paint.LinearGradient shine = new javafx.scene.paint.LinearGradient(
+                    x * cellSize + spacing, y * cellSize + spacing, 
+                    x * cellSize + spacing, y * cellSize + spacing + innerSize / 2, 
+                    false, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, Color.rgb(255, 255, 255, 0.9)),
+                    new javafx.scene.paint.Stop(1, Color.rgb(255, 255, 255, 0.0))
+                );
+                gc.setFill(shine);
+                gc.fillRoundRect(
+                        x * cellSize + spacing,
+                        y * cellSize + spacing,
+                        innerSize,
+                        innerSize / 2,
+                        10, 10);
+                gc.restore();
+            
+                // Rachaduras
+                gc.save();
+                gc.setStroke(Color.rgb(255, 255, 255, 0.25));
+                gc.setLineWidth(0.8);
+            
+                double cx = x * cellSize + spacing + innerSize / 2;
+                double cy = y * cellSize + spacing + innerSize / 2;
+                int cracks = 6;
+                double radius = innerSize / 2;
+            
+                for (int i = 0; i < cracks; i++) {
+                    double angle = Math.toRadians(360.0 / cracks * i + Math.random() * 15 - 7.5);
+                    double ex = cx + Math.cos(angle) * radius;
+                    double ey = cy + Math.sin(angle) * radius;
+                    gc.strokeLine(cx, cy, ex, ey);
+            
+                    double branchAngle1 = angle + Math.toRadians(20 + Math.random() * 10);
+                    double bx1 = cx + Math.cos(branchAngle1) * (radius * 0.5);
+                    double by1 = cy + Math.sin(branchAngle1) * (radius * 0.5);
+                    gc.strokeLine((cx + ex) / 2, (cy + ey) / 2, bx1, by1);
+            
+                    double branchAngle2 = angle - Math.toRadians(20 + Math.random() * 10);
+                    double bx2 = cx + Math.cos(branchAngle2) * (radius * 0.4);
+                    double by2 = cy + Math.sin(branchAngle2) * (radius * 0.4);
+                    gc.strokeLine((cx + ex) / 2, (cy + ey) / 2, bx2, by2);
+                }
+            
+                gc.restore();
+            } else {
+                Color tetroColor = BlockShapeColors.getColor(type);
 
-            gc.setFill(tetroColor);
-            gc.fillRoundRect(
-                    x * cellSize + spacing,
-                    y * cellSize + spacing,
-                    innerSize,
-                    innerSize,
-                    10, 10);
+                gc.setFill(tetroColor);
+                gc.fillRoundRect(
+                        x * cellSize + spacing,
+                        y * cellSize + spacing,
+                        innerSize,
+                        innerSize,
+                        10, 10);
 
-            gc.setStroke(Color.web("#ffffff", 0.3));
-            gc.setLineWidth(0.5);
-            gc.strokeRoundRect(
-                    x * cellSize + spacing,
-                    y * cellSize + spacing,
-                    innerSize,
-                    innerSize,
-                    10, 10);
+                gc.setStroke(Color.web("#ffffff", 0.3));
+                gc.setLineWidth(0.5);
+                gc.strokeRoundRect(
+                        x * cellSize + spacing,
+                        y * cellSize + spacing,
+                        innerSize,
+                        innerSize,
+                        10, 10);
+            }
         }
 
         public void destroy() {

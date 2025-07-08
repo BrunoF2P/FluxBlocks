@@ -84,10 +84,7 @@ public class BoardRenderComponent extends Component {
         gc.setFill(Color.rgb(21, 32, 43, 0.3));
         gc.fillRect(pixelX, pixelY, cellSize, cellSize);
 
-
         if (cellType != 0) {
-            Color pieceColor = BlockShapeColors.getColor(cellType);
-
             if (cellType == 9) { 
                 // Peça fantasma na área de buffer
                 Color shadowColor = BlockShapeColors.getColor(cellType);
@@ -103,7 +100,55 @@ public class BoardRenderComponent extends Component {
                 gc.setLineWidth(1);
                 gc.strokeRoundRect(pixelX + CELL_SPACING + 1, pixelY + CELL_SPACING + 1,
                         innerSize - 2, innerSize - 2, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS);
+            } else if (cellType == 10) {
+                Color glassColor = BlockShapeColors.getGlassColor();
+                gc.setFill(glassColor);
+                gc.fillRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING, innerSize, innerSize, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS);
+            
+                // Gradiente de brilho
+                gc.save();
+                gc.setGlobalAlpha(0.35);
+                LinearGradient shine = new LinearGradient(
+                    pixelX + CELL_SPACING, pixelY + CELL_SPACING, 
+                    pixelX + CELL_SPACING, pixelY + CELL_SPACING + innerSize / 2, 
+                    false, CycleMethod.NO_CYCLE,
+                    new Stop(0, Color.rgb(255, 255, 255, 0.9)),
+                    new Stop(1, Color.rgb(255, 255, 255, 0.0))
+                );
+                gc.setFill(shine);
+                gc.fillRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING, innerSize, innerSize / 2, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS);
+                gc.restore();
+            
+                // Rachaduras
+                gc.save();
+                gc.setStroke(Color.rgb(255, 255, 255, 0.25));
+                gc.setLineWidth(0.8);
+            
+                double cx = pixelX + CELL_SPACING + innerSize / 2;
+                double cy = pixelY + CELL_SPACING + innerSize / 2;
+                int cracks = 6;
+                double radius = innerSize / 2;
+            
+                for (int i = 0; i < cracks; i++) {
+                    double angle = Math.toRadians(360.0 / cracks * i + Math.random() * 15 - 7.5);
+                    double ex = cx + Math.cos(angle) * radius;
+                    double ey = cy + Math.sin(angle) * radius;
+                    gc.strokeLine(cx, cy, ex, ey);
+            
+                    double branchAngle1 = angle + Math.toRadians(20 + Math.random() * 10);
+                    double bx1 = cx + Math.cos(branchAngle1) * (radius * 0.5);
+                    double by1 = cy + Math.sin(branchAngle1) * (radius * 0.5);
+                    gc.strokeLine((cx + ex) / 2, (cy + ey) / 2, bx1, by1);
+            
+                    double branchAngle2 = angle - Math.toRadians(20 + Math.random() * 10);
+                    double bx2 = cx + Math.cos(branchAngle2) * (radius * 0.4);
+                    double by2 = cy + Math.sin(branchAngle2) * (radius * 0.4);
+                    gc.strokeLine((cx + ex) / 2, (cy + ey) / 2, bx2, by2);
+                }
+            
+                gc.restore();
             } else {
+                Color pieceColor = BlockShapeColors.getColor(cellType);
                 gc.setFill(pieceColor);
                 gc.fillRoundRect(pixelX + CELL_SPACING, pixelY + CELL_SPACING,
                         innerSize, innerSize, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS);
