@@ -82,7 +82,8 @@ public class NextPiecePreview {
             for (Cell cell : nextPiece.getCells()) {
                 int x = cell.getRelativeX() - minX;
                 int y = cell.getRelativeY() - minY;
-                drawCell(gc, x, y, cell.getType());
+                int cellType = nextPiece.isGlass() ? 10 : cell.getType();
+                drawCell(gc, x, y, cellType);
             }
 
             container.getChildren().add(previewCanvas);
