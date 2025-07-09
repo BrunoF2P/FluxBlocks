@@ -94,6 +94,16 @@ jobs:
           mkdir -p AppDir/usr/bin
           dpkg -x build/jpackage/*.deb AppDir/
           cp -r build/jpackage/FluxBlocks/. AppDir/usr/bin/
+
+          cat <<EOF > AppDir/FluxBlocks.desktop
+          [Desktop Entry]
+          Name=FluxBlocks
+          Exec=usr/bin/FluxBlocks
+          Icon=usr/share/icons/fluxblocks.png
+          Type=Application
+          Categories=Game;
+          EOF
+          
           ./appimagetool AppDir FluxBlocks-${GITHUB_REF##*/}.AppImage
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
