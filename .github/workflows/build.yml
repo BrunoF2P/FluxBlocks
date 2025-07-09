@@ -94,11 +94,14 @@ jobs:
           dpkg -x build/jpackage/*.deb AppDir/
           cp -r build/jpackage/FluxBlocks/. AppDir/usr/bin/
 
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          cp build/jpackage/ic_game.png AppDir/usr/share/icons/hicolor/256x256/apps/ic_game.png
+
           cat <<EOF > AppDir/FluxBlocks.desktop
           [Desktop Entry]
           Name=FluxBlocks
           Exec=usr/bin/FluxBlocks
-          Icon=usr/share/icons/fluxblocks.png
+          Icon=ic_game
           Type=Application
           Categories=Game;
           EOF
