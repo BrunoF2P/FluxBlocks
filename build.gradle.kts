@@ -49,7 +49,7 @@ jlink {
         when {
             isWindows -> {
                 // Windows - configurações específicas
-                icon = "src/main/resources/assets/textures/ui/icons/ic_game.ico"
+                icon = "install/ic_game.ico"
                 installerType = "msi"
 
                 // Opções específicas do Windows
@@ -70,7 +70,7 @@ jlink {
 
             isMacOs -> {
                 // macOS - configurações específicas
-                icon = "src/main/resources/assets/textures/ui/icons/ic_game.icns"
+                icon = "install/ic_game.icns"
                 installerType = "dmg"
 
                 installerOptions.addAll(listOf(
@@ -81,7 +81,7 @@ jlink {
 
             isLinux -> {
                 // Linux - configurações específicas
-                icon = "src/main/resources/assets/textures/ui/icons/ic_game.png"
+                icon = "install/ic_game.png"
                 installerType = "deb"
 
                 installerOptions.addAll(listOf(
