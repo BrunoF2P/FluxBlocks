@@ -1,3 +1,6 @@
+import java.time.Instant
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.bundling.Jar
 plugins {
     `java-library`
     `maven-publish`
@@ -176,7 +179,7 @@ tasks {
                 "Implementation-Version" to project.version,
                 "Implementation-Vendor" to "Bruno Bispo, Caique Silva",
                 "Built-By" to System.getProperty("user.name"),
-                "Build-Timestamp" to java.time.Instant.now().toString(),
+                "Build-Timestamp" to Instant.now().toString(),
                 "Main-Class" to "com.uneb.fluxblocks.Main",
                 "License" to "MIT"
             )
@@ -236,7 +239,7 @@ tasks {
                 "Implementation-Version" to project.version,
                 "Implementation-Vendor" to "Bruno Bispo, Caique Silva",
                 "Built-By" to System.getProperty("user.name"),
-                "Build-Timestamp" to java.time.Instant.now().toString(),
+                "Build-Timestamp" to Instant.now().toString(),
                 "Main-Class" to "com.uneb.fluxblocks.Main",
                 "License" to "MIT"
             )
