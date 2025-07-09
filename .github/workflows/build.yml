@@ -95,7 +95,7 @@ jobs:
           cp -r build/jpackage/FluxBlocks/. AppDir/usr/bin/
 
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-          cp build/jpackage/ic_game.png AppDir/usr/share/icons/hicolor/256x256/apps/ic_game.png
+          cp build/jpackage/FluxBlocks/lib/FluxBlocks.png AppDir/usr/share/icons/hicolor/256x256/apps/ic_game.png
 
           cat <<EOF > AppDir/FluxBlocks.desktop
           [Desktop Entry]
