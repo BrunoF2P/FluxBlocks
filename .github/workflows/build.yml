@@ -53,9 +53,9 @@ jobs:
       - name: Build MSI
         run: ./gradlew jpackage
       - name: Build Portable (App-Image)
-        run: >
-          ./gradlew jpackage \
-            -PjpackageType=app-image
+        run: |
+          ./gradlew jpackage -PjpackageType=app-image
+        shell: bash
       - name: Zip Portable Directory
         run: |
           cd build/jpackage
@@ -93,7 +93,7 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           dpkg -x build/jpackage/*.deb AppDir/
-          cp build/jpackage/FluxBlocks AppDir/usr/bin/
+          cp -r build/jpackage/FluxBlocks/. AppDir/usr/bin/
           ./appimagetool AppDir FluxBlocks-${GITHUB_REF##*/}.AppImage
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
