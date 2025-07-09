@@ -82,7 +82,7 @@ jlink {
             isLinux -> {
                 // Linux - configurações específicas
                 icon = "install/ic_game.png"
-                installerType = "deb"
+                installerType = findProperty("installerType") as String? ?: "deb"
 
                 installerOptions.addAll(listOf(
                     "--linux-package-name", "fluxblocks",

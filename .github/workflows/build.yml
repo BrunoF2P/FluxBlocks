@@ -32,8 +32,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 21
-      - name: Build DEB/RPM
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y fakeroot rpm
+      - name: Build DEB
         run: ./gradlew jpackage
+      - name: Build RPM
+        run: ./gradlew jpackage -PinstallerType=rpm
+      - name: List jpackage output
+        run: ls -lh build/jpackage/
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -92,12 +98,12 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           dpkg -x build/jpackage/*.deb AppDir/
-          cp -r build/jpackage/FluxBlocks/. AppDir/usr/bin/
+          cp -r build/jpackage/FluxBlocks/bin/. AppDir/usr/bin/
 
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
           cp build/jpackage/FluxBlocks/lib/FluxBlocks.png AppDir/usr/share/icons/hicolor/256x256/apps/ic_game.png
           cp build/jpackage/FluxBlocks/lib/FluxBlocks.png AppDir/ic_game.png
-          
+
           cat <<EOF > AppDir/FluxBlocks.desktop
           [Desktop Entry]
           Name=FluxBlocks
@@ -130,15 +136,22 @@ jobs:
           VERSION=${VERSION#v}
           mkdir release
           # JAR
-          find artifacts/fluxblocks-fat-jar -name "*.jar" -exec cp -n {} release/FluxBlocks-v${VERSION}.jar \;
-          # DEB
-          find artifacts/fluxblocks-linux-installer -name "*.deb" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.deb \;
-          # RPM
-          find artifacts/fluxblocks-linux-installer -name "*.rpm" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.rpm \;
+          if [ -d artifacts/fluxblocks-fat-jar ]; then
+            find artifacts/fluxblocks-fat-jar -name "*.jar" -exec cp -n {} release/FluxBlocks-v${VERSION}.jar \;
+          fi
+          # DEB/RPM
+          if [ -d artifacts/fluxblocks-linux-installer ]; then
+            find artifacts/fluxblocks-linux-installer -name "*.deb" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.deb \;
+            find artifacts/fluxblocks-linux-installer -name "*.rpm" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.rpm \;
+          fi
           # MSI
-          find artifacts/fluxblocks-windows-installer -name "*.msi" -exec cp -n {} release/FluxBlocks-v${VERSION}-windows.msi \;
+          if [ -d artifacts/fluxblocks-windows-installer ]; then
+            find artifacts/fluxblocks-windows-installer -name "*.msi" -exec cp -n {} release/FluxBlocks-v${VERSION}-windows.msi \;
+          fi
           # AppImage
-          find artifacts/fluxblocks-appimage -name "*.AppImage" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.AppImage \;
+          if [ -d artifacts/fluxblocks-appimage ]; then
+            find artifacts/fluxblocks-appimage -name "*.AppImage" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.AppImage \;
+          fi
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
