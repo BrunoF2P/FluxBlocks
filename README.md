@@ -144,6 +144,12 @@ cd FluxBlocks
 
 ---
 
+## 📦 Notas sobre Build e Distribuição
+
+- **AppImage**: Atualmente, a geração do instalador AppImage depende do pacote `.deb` criado pelo `jpackage`. O workflow extrai os arquivos do `.deb` para montar o AppImage. Futuras versões do `jpackage` podem permitir a criação direta do AppImage (acompanhe as atualizações da ferramenta).
+
+---
+
 ## 🎮 Controles
 
 ### 🎯 Jogador 1

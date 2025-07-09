@@ -6,6 +6,7 @@
 !**/src/main/**/build/
 !**/src/test/**/build/
 logs
+config.properties
 
 # Maven/Gradle
 .gradle/

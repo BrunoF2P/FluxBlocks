@@ -1,0 +1,135 @@
+name: Build FluxBlocks
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  build-fat-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - name: Build Fat JAR
+        run: ./gradlew shadowJar
+      - name: Upload Fat JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluxblocks-fat-jar
+          path: build/libs/*all.jar
+
+  build-linux-installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - name: Build DEB/RPM
+        run: ./gradlew jpackage
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluxblocks-linux-installer
+          path: build/jpackage/*.{deb,rpm}
+
+  build-windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - name: Build MSI
+        run: ./gradlew jpackage
+      - name: Build Portable (App-Image)
+        run: >
+          ./gradlew jpackage \
+            -PjpackageType=app-image
+      - name: Zip Portable Directory
+        run: |
+          cd build/jpackage
+          powershell Compress-Archive -Path FluxBlocks -DestinationPath FluxBlocks-portable-windows.zip
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluxblocks-windows-installer
+          path: build/jpackage/*.msi
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluxblocks-windows-portable
+          path: build/jpackage/FluxBlocks-portable-windows.zip
+
+  build-appimage:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - name: Build DEB
+        run: ./gradlew jpackage
+      - name: Install AppImageTool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
+          wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool
+          chmod +x appimagetool
+      - name: Create AppImage
+        run: |
+          mkdir -p AppDir/usr/bin
+          dpkg -x build/jpackage/*.deb AppDir/
+          cp build/jpackage/FluxBlocks AppDir/usr/bin/
+          ./appimagetool AppDir FluxBlocks-${GITHUB_REF##*/}.AppImage
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluxblocks-appimage
+          path: FluxBlocks-*.AppImage
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-fat-jar, build-linux-installer, build-windows-installer, build-appimage]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Renomear artefatos para padrão amigável
+        run: |
+          VERSION=${GITHUB_REF##*/}
+          VERSION=${VERSION#v}
+          mkdir release
+          # JAR
+          find artifacts/fluxblocks-fat-jar -name "*.jar" -exec cp -n {} release/FluxBlocks-v${VERSION}.jar \;
+          # DEB
+          find artifacts/fluxblocks-linux-installer -name "*.deb" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.deb \;
+          # RPM
+          find artifacts/fluxblocks-linux-installer -name "*.rpm" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.rpm \;
+          # MSI
+          find artifacts/fluxblocks-windows-installer -name "*.msi" -exec cp -n {} release/FluxBlocks-v${VERSION}-windows.msi \;
+          # AppImage
+          find artifacts/fluxblocks-appimage -name "*.AppImage" -exec cp -n {} release/FluxBlocks-v${VERSION}-linux.AppImage \;
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

@@ -174,7 +174,11 @@ tasks {
             attributes(
                 "Implementation-Title" to project.name,
                 "Implementation-Version" to project.version,
-                "Main-Class" to "com.uneb.fluxblocks.Main"
+                "Implementation-Vendor" to "Bruno Bispo, Caique Silva",
+                "Built-By" to System.getProperty("user.name"),
+                "Build-Timestamp" to java.time.Instant.now().toString(),
+                "Main-Class" to "com.uneb.fluxblocks.Main",
+                "License" to "MIT"
             )
         }
     }
@@ -220,6 +224,23 @@ tasks {
     // Validar ícones antes de fazer jpackage
     named("jpackage") {
         dependsOn("validateIcons")
+    }
+
+    named<ShadowJar>("shadowJar") {
+        archiveBaseName.set("FluxBlocks")
+        archiveClassifier.set("all")
+        archiveVersion.set(project.version.toString())
+        manifest {
+            attributes(
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+                "Implementation-Vendor" to "Bruno Bispo, Caique Silva",
+                "Built-By" to System.getProperty("user.name"),
+                "Build-Timestamp" to java.time.Instant.now().toString(),
+                "Main-Class" to "com.uneb.fluxblocks.Main",
+                "License" to "MIT"
+            )
+        }
     }
 }
 
