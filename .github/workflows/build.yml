@@ -2,9 +2,8 @@ name: Build FluxBlocks
 
 on:
   push:
-    branches: [main]
-    tags: ["v*"]
-  pull_request:
+    tags:
+      - "v*"
 
 jobs:
   build-fat-jar:
@@ -103,7 +102,7 @@ jobs:
           Type=Application
           Categories=Game;
           EOF
-          
+
           ./appimagetool AppDir FluxBlocks-${GITHUB_REF##*/}.AppImage
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
