@@ -7,7 +7,8 @@
 !**/src/test/**/build/
 logs
 config.properties
-
+/data
+fluxblocks.db
 # Maven/Gradle
 .gradle/
 .mvn/
