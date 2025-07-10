@@ -122,6 +122,7 @@ dependencies {
     implementation("com.github.almasb:fxgl:21.1") {
         exclude(group = "org.openjfx")
     }
+    implementation("org.xerial:sqlite-jdbc:3.50.2.0")
 
     // Testes
     testImplementation(platform("org.junit:junit-bom:${versions["junit"]}"))
