@@ -7,8 +7,13 @@ import com.uneb.fluxblocks.ui.screens.GameOverScreen;
 import com.uneb.fluxblocks.ui.screens.GameOverMultiplayerScreen;
 import com.uneb.fluxblocks.ui.screens.MenuScreen;
 import com.uneb.fluxblocks.ui.screens.OptionScreen;
+import com.uneb.fluxblocks.ui.screens.RankingScreen;
 import com.uneb.fluxblocks.ui.screens.VideoConfigScreen;
 import com.uneb.fluxblocks.ui.screens.ControlConfigScreen;
+import com.uneb.fluxblocks.ui.screens.UserLoginModal;
+import com.uneb.fluxblocks.user.UserManager;
+import com.uneb.fluxblocks.game.logic.GameState;
+import com.uneb.fluxblocks.game.ranking.RankingManager;
 
 /**
  * Gerencia a exibição de diferentes telas de UI.
@@ -16,6 +21,7 @@ import com.uneb.fluxblocks.ui.screens.ControlConfigScreen;
 public class ScreenManager {
     private final GameScene gameScene;
     private final GameMediator mediator;
+    private final UserLoginModal userLoginModal;
     
     // Referências às telas de Game Over para destruí-las corretamente
     private GameOverScreen gameOverScreen = null;
@@ -24,6 +30,7 @@ public class ScreenManager {
     public ScreenManager(GameScene gameScene, GameMediator mediator) {
         this.gameScene = gameScene;
         this.mediator = mediator;
+        this.userLoginModal = new UserLoginModal(mediator);
     }
 
     /**
@@ -72,10 +79,34 @@ public class ScreenManager {
     }
 
     /**
-     * Exibe a tela de ranking (redireciona para menu por enquanto).
+     * Exibe a tela de ranking.
      */
     public void showRankingScreen() {
-        showMenuScreen();
+        clearScreen();
+        
+        UserManager userManager = mediator.getUserManager();
+        RankingManager rankingManager = mediator.getRankingManager();
+        
+        if (userManager == null || rankingManager == null) {
+            System.err.println("❌ Managers não disponíveis - criando novos");
+            try {
+                GameState gameState = new GameState();
+                rankingManager = new RankingManager(mediator, gameState);
+                userManager = new UserManager(mediator, rankingManager);
+            } catch (Exception e) {
+                System.err.println("Erro ao criar managers temporários: " + e.getMessage());
+                showMenuScreen();
+                return;
+            }
+        }
+        
+        try {
+            RankingScreen rankingScreen = new RankingScreen(mediator, rankingManager, userManager);
+            gameScene.addUINode(rankingScreen.getNode());
+        } catch (Exception e) {
+            System.err.println("Erro ao criar tela de ranking: " + e.getMessage());
+            showMenuScreen();
+        }
     }
 
     /**
@@ -96,6 +127,28 @@ public class ScreenManager {
         gameOverMultiplayerScreen = screen;
         clearScreen();
         gameScene.addUINode(screen.getNode());
+    }
+
+    /**
+     * Exibe o modal de login/criação de usuário.
+     */
+    public void showUserLoginModal() {
+        if (!userLoginModal.isVisible()) {
+            if (!gameScene.getUINodes().contains(userLoginModal.getNode())) {
+                gameScene.addUINode(userLoginModal.getNode());
+            }
+            userLoginModal.show();
+        }
+    }
+
+    /**
+     * Esconde o modal de login/criação de usuário.
+     */
+    public void hideUserLoginModal() {
+        if (userLoginModal.isVisible()) {
+            userLoginModal.hide();
+            gameScene.removeUINode(userLoginModal.getNode());
+        }
     }
 
     /**

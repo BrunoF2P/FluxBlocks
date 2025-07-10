@@ -2,6 +2,8 @@ package com.uneb.fluxblocks.ui;
 
 import com.almasb.fxgl.app.scene.GameScene;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
+import com.uneb.fluxblocks.architecture.events.UserEvents;
+import com.uneb.fluxblocks.architecture.events.UserEventTypes;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.ui.components.BackgroundComponent;
 import com.uneb.fluxblocks.ui.managers.GameManager;
@@ -19,6 +21,7 @@ public class UIScreenHandler {
     private final GameManager gameManager;
     private final GameOverManager gameOverManager;
     private final BackgroundComponent backgroundComponent;
+    private boolean modalAutomaticoHabilitado = true;
 
     public UIScreenHandler(GameScene gameScene, GameMediator mediator) {
         this.mediator = mediator;
@@ -26,7 +29,9 @@ public class UIScreenHandler {
         
         this.screenManager = new ScreenManager(gameScene, mediator);
         this.inputManager = new InputManager(mediator);
-        this.gameManager = new GameManager(mediator, inputManager, screenManager, backgroundComponent);
+        
+        GameOverManager tempGameOverManager = new GameOverManager(mediator, screenManager, inputManager, null);
+        this.gameManager = new GameManager(mediator, inputManager, screenManager, backgroundComponent, tempGameOverManager);
         this.gameOverManager = new GameOverManager(mediator, screenManager, inputManager, gameManager);
 
         registerEvents();
@@ -34,17 +39,63 @@ public class UIScreenHandler {
     }
 
     private void registerEvents() {
-        mediator.receiver(UiEvents.PLAY_GAME, event -> showGameModeScreen());
-        mediator.receiver(UiEvents.SHOW_GAME_MODE_SCREEN, event -> showGameModeScreen());
+        mediator.receiver(UiEvents.START, event -> {
+            modalAutomaticoHabilitado = true;
+            emitirVerificacaoSessao();
+        });
+        mediator.receiver(UiEvents.PLAY_GAME, event -> {
+            modalAutomaticoHabilitado = false;
+            showGameModeScreen();
+        });
+        mediator.receiver(UiEvents.SHOW_GAME_MODE_SCREEN, event -> {
+            modalAutomaticoHabilitado = false;
+            showGameModeScreen();
+        });
         mediator.receiver(UiEvents.START_SINGLE_PLAYER, event -> startSinglePlayerGame());
         mediator.receiver(UiEvents.START_LOCAL_MULTIPLAYER, event -> startLocalMultiplayerGame());
-        mediator.receiver(UiEvents.OPTIONS, event -> showOptionsScreen());
-        mediator.receiver(UiEvents.RANKING, event -> showRankingScreen());
-        mediator.receiver(UiEvents.BACK_TO_MENU, event -> showMenuScreen());
-        mediator.receiver(UiEvents.OPEN_VIDEO_CONFIG, event -> showVideoConfigScreen());
-        mediator.receiver(UiEvents.OPEN_CONTROL_CONFIG, event -> showControlConfigScreen());
+        mediator.receiver(UiEvents.OPTIONS, event -> {
+            modalAutomaticoHabilitado = false;
+            showOptionsScreen();
+        });
+        mediator.receiver(UiEvents.RANKING, event -> {
+            modalAutomaticoHabilitado = false;
+            showRankingScreen();
+        });
+        mediator.receiver(UiEvents.BACK_TO_MENU, event -> {
+            modalAutomaticoHabilitado = false; // Desabilita modal automático ao voltar
+            showMenuScreen();
+        });
+        mediator.receiver(UiEvents.OPEN_VIDEO_CONFIG, event -> {
+            modalAutomaticoHabilitado = false;
+            showVideoConfigScreen();
+        });
+        mediator.receiver(UiEvents.OPEN_CONTROL_CONFIG, event -> {
+            modalAutomaticoHabilitado = false;
+            showControlConfigScreen();
+        });
         mediator.receiver(UiEvents.GAME_OVER, event -> handleGameOver(event));
         mediator.receiver(UiEvents.GAME_OVER_MULTIPLAYER, event -> handleGameOverMultiplayer(event));
+        mediator.receiver(UiEvents.SHOW_USER_LOGIN_MODAL, event -> showUserLoginModal());
+        mediator.receiver(UiEvents.HIDE_USER_LOGIN_MODAL, event -> hideUserLoginModal());
+        
+        mediator.receiver(UserEventTypes.CHECK_SESSION_RESPONSE, 
+                         this::onCheckSessionResponse);
+    }
+
+    /**
+     * Emite o evento de verificação de sessão de usuário
+     */
+    private void emitirVerificacaoSessao() {
+        mediator.emit(UserEventTypes.CHECK_SESSION_REQUEST, new UserEvents.CheckSessionRequestEvent());
+    }
+
+    /**
+     * Handler para resposta da verificação de sessão
+     */
+    private void onCheckSessionResponse(UserEvents.CheckSessionResponseEvent event) {
+        if (!event.hasValidSession() && modalAutomaticoHabilitado) {
+            showUserLoginModal();
+        }
     }
 
     public void showMenuScreen() {
@@ -70,6 +121,14 @@ public class UIScreenHandler {
 
     public void showRankingScreen() {
         screenManager.showRankingScreen();
+    }
+
+    public void showUserLoginModal() {
+        screenManager.showUserLoginModal();
+    }
+
+    public void hideUserLoginModal() {
+        screenManager.hideUserLoginModal();
     }
 
     private void startSinglePlayerGame() {
@@ -98,11 +157,6 @@ public class UIScreenHandler {
     private void cleanup() {
         gameManager.cleanup();
         gameOverManager.cleanup();
-        
-        // Limpa todos os listeners do mediator para evitar interferência entre partidas
-        mediator.clearAllListeners();
-
-        registerEvents();
         
         gameManager.registerPauseEvents();
     }

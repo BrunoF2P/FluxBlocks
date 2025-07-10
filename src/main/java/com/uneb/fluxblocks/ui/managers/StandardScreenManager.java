@@ -10,6 +10,10 @@ import com.uneb.fluxblocks.ui.screens.MenuScreen;
 import com.uneb.fluxblocks.ui.screens.OptionScreen;
 import com.uneb.fluxblocks.ui.screens.VideoConfigScreen;
 import com.uneb.fluxblocks.ui.screens.ControlConfigScreen;
+import com.uneb.fluxblocks.ui.screens.RankingScreen;
+import com.uneb.fluxblocks.game.logic.GameState;
+import com.uneb.fluxblocks.game.ranking.RankingManager;
+import com.uneb.fluxblocks.user.UserManager;
 import javafx.scene.Parent;
 import javafx.scene.Node;
 
@@ -137,8 +141,19 @@ public class StandardScreenManager implements ScreenManager {
     
     @Override
     public void showRankingScreen() {
-        showMenuScreen(); // Redireciona para menu por enquanto
-        updateCurrentScreen(ScreenType.RANKING);
+        clearScreen();
+        try {
+            GameState gameState = new GameState();
+            RankingManager rankingManager = new RankingManager(mediator, gameState);
+            UserManager userManager = new UserManager(mediator, rankingManager);
+            
+            RankingScreen rankingScreen = new RankingScreen(mediator, rankingManager, userManager);
+            gameScene.addUINode(rankingScreen.getNode());
+            updateCurrentScreen(ScreenType.RANKING);
+        } catch (Exception e) {
+            System.err.println("Erro ao criar tela de ranking: " + e.getMessage());
+            showMenuScreen();
+        }
     }
     
     @Override
@@ -261,5 +276,18 @@ public class StandardScreenManager implements ScreenManager {
     
     public void addUINode(Node node) {
         gameScene.addUINode(node);
+    }
+    
+    /**
+     * Exibe o modal de login/criação de usuário.
+     */
+    public void showUserLoginModal() {
+        showMenuScreen();
+    }
+    
+    /**
+     * Esconde o modal de login/criação de usuário.
+     */
+    public void hideUserLoginModal() {
     }
 } 

@@ -78,4 +78,10 @@ public abstract class UiEvents {
     };
     public static final EventType<Void> RESUME_GAME = new EventType<>() {
     };
+    public static final EventType<Void> RANKING_UPDATED = new EventType<>() {
+    };
+    public static final EventType<Void> SHOW_USER_LOGIN_MODAL = new EventType<>() {
+    };
+    public static final EventType<Void> HIDE_USER_LOGIN_MODAL = new EventType<>() {
+    };
 }
