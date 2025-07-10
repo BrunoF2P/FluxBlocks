@@ -75,7 +75,11 @@ public class StandardGameTimer implements GameTimer {
     
     private void subscribeToEvents() {
         mediator.receiver(GameplayEvents.UPDATE_SPEED, this::onSpeedUpdate);
-        mediator.receiver(GameplayEvents.RESTART, unused -> restartGame());
+        mediator.receiver(GameplayEvents.RESTART, unused -> {
+            if (!gameState.isGameOver()) {
+                restartGame();
+            }
+        });
         mediator.receiver(UiEvents.LEVEL_UPDATE, ev -> {
             if (ev.playerId() == playerId) {
                 updateGameSpeed();

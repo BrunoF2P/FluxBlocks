@@ -71,6 +71,14 @@ public class ScoreTracker {
         return gameState.getScore();
     }
 
+    /**
+     * Limpa os recursos do ScoreTracker, removendo os listeners do mediator.
+     */
+    public void cleanup() {
+        mediator.removeReceiver(GameplayEvents.SCORE_UPDATED, this::handleScoreUpdate);
+        mediator.removeReceiver(GameplayEvents.LINE_CLEARED, this::handleLinesCleared);
+    }
+
     private void updateUI() {
         Platform.runLater(() -> {
             FloatingTextEffect.updateLevel(gameState.getCurrentLevel());

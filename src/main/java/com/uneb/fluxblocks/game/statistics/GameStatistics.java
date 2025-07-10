@@ -234,7 +234,6 @@ public class GameStatistics {
      * Limpa os recursos do GameStatistics, removendo os listeners do mediator.
      */
     public void cleanup() {
-        // Remove os listeners registrados no registerEvents()
         mediator.removeReceiver(InputEvents.KEY_PRESSED, ev -> {
             if (ev.playerId() == playerId) incrementKeysPressed();
         });
