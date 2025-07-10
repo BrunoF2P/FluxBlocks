@@ -17,8 +17,6 @@ import com.uneb.fluxblocks.piece.movement.PieceMovementHandler;
 import com.uneb.fluxblocks.piece.movement.PieceRotationHandler;
 import com.uneb.fluxblocks.piece.rendering.ShadowPieceCalculator;
 import com.uneb.fluxblocks.piece.rendering.StandardPieceRenderer;
-import com.uneb.fluxblocks.game.scoring.ScoringStrategy;
-import com.uneb.fluxblocks.game.scoring.StandardScoringStrategy;
 import com.uneb.fluxblocks.piece.timing.LockDelayHandler;
 import com.uneb.fluxblocks.ui.screens.GameBoardScreen;
 import com.uneb.fluxblocks.piece.scoring.StandardScoreCalculator;
@@ -98,6 +96,7 @@ public class PieceSystem {
         
         nextPiece = BlockShapeFactory.createRandomBlockShape();
         nextPiece.setPosition(spawnX, spawnY);
+        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
 
         spawnNewPiece();
     }
@@ -138,8 +137,8 @@ public class PieceSystem {
             if (ev.playerId() != this.playerId) return;
             updateLevel(ev.level());
         });
+
         mediator.receiver(UiEvents.GAME_STARTED, unused -> {
-            mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         });
 
         // Inicia o timer de lock delay
@@ -192,7 +191,7 @@ public class PieceSystem {
         // Gera uma nova peça para currentPiece
         currentPiece = BlockShapeFactory.createRandomBlockShape();
         currentPiece.setPosition(spawnX, spawnY);
-        
+
         // Emite evento de atualização da próxima peça
         mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, nextPiece));
         
@@ -330,9 +329,9 @@ public class PieceSystem {
      */
     private int calculateScore(int linesCleared, SpinDetector.SpinType spinType, TripleSpinDetector.TripleSpinType tripleSpinType) {
         if (tripleSpinType != TripleSpinDetector.TripleSpinType.NONE) {
-            return scoreCalculator.calculateTotalScoreWithTripleSpin(linesCleared, tripleSpinType, gameState.getCurrentLevel());
+            return StandardScoreCalculator.calculateTotalScoreWithTripleSpin(linesCleared, tripleSpinType, gameState.getCurrentLevel());
         } else {
-            return scoreCalculator.calculateTotalScore(linesCleared, spinType, gameState.getCurrentLevel());
+            return StandardScoreCalculator.calculateTotalScore(linesCleared, spinType, gameState.getCurrentLevel());
         }
     }
     
@@ -482,5 +481,13 @@ public class PieceSystem {
      */
     private boolean canPerformAction() {
         return currentPiece != null && !isGameOver && !gameState.isPaused();
+    }
+
+    public void cleanup() {
+        stopLockDelayTimer();
+        
+        isGameOver = true;
+        currentPiece = null;
+        nextPiece = null;
     }
 }

@@ -51,6 +51,10 @@ public class GameController {
     private final GameStatistics gameStatistics;
 
     private final int playerId;
+    
+    // Controle para evitar múltiplos processamentos
+    private boolean hasProcessedGameOver = false;
+    private static int totalGameOverProcessed = 0;
 
     /**
      * Cria um novo gerenciador do jogo e inicializa todos os subsistemas.
@@ -88,8 +92,6 @@ public class GameController {
         mediator.receiver(GameplayEvents.PAUSE, unused -> togglePause());
         mediator.receiver(GameplayEvents.RESTART, unused -> restart());
         mediator.receiver(UiEvents.RESUME_GAME, unused -> togglePause());
-        
-        mediator.emit(UiEvents.NEXT_PIECE_UPDATE, new UiEvents.NextPieceEvent(playerId, pieceManager.getNextPiece()));
     }
 
     /**
@@ -98,6 +100,9 @@ public class GameController {
      * inicia o ciclo de jogo.
      */
     public void start() {
+        // Reseta o estado de processamento
+        hasProcessedGameOver = false;
+        
         gameBoard.clearGrid();
         gameState.reset();
         gameStatistics.reset();
@@ -163,7 +168,26 @@ public class GameController {
      * com a pontuação final e estatísticas.
      */
     private void handleGameOver() {
+        // Verifica se já foi processado
+        if (hasProcessedGameOver) {
+            return;
+        }
+        
+        // Verifica se há outros controllers processando simultaneamente
+        if (totalGameOverProcessed > 0) {
+            return;
+        }
+        
+        // Marca como processado
+        hasProcessedGameOver = true;
+        totalGameOverProcessed++;
+        
         gameState.setGameOver(true);
+        
+        // Captura o tempo final antes de parar o timer
+        long finalTime = gameTimer.getGameTime();
+        gameState.setGameTimeMs(finalTime);
+        
         gameTimer.stop();
         mediator.emit(UiEvents.GAME_OVER, new UiEvents.GameOverEvent(playerId, gameStatistics));
     }
@@ -190,31 +214,63 @@ public class GameController {
      * e conflitos ao iniciar novas partidas.
      */
     public void cleanup() {
-
-            // Para o timer do jogo
-            if (gameTimer != null) {
-                gameTimer.stop();
-            }
-            
-            // Limpa as ações de entrada registradas
-            if (inputHandler != null) {
-                inputHandler.cleanup();
-            }
-            
-            // Para qualquer timer em execução do FXGL relacionado a este controller
-            // (como o countdown timer)
-            FXGL.getGameTimer().clear();
-            
-            // Reseta o estado do jogo
-            if (gameState != null) {
-                gameState.reset();
-            }
-            
-            // Limpa o tabuleiro
-            if (gameBoard != null) {
-                gameBoard.clearGrid();
-            }
-
-
+        // Para o timer do jogo
+        if (gameTimer != null) {
+            gameTimer.stop();
+            gameTimer.cleanup();
         }
+        
+        // Limpa as ações de entrada registradas
+        if (inputHandler != null) {
+            inputHandler.cleanup();
+        }
+        
+        // Limpa o PieceSystem para remover listeners
+        if (pieceManager != null) {
+            pieceManager.cleanup();
+        }
+        
+        // Limpa o ScoreTracker
+        if (scoreTracker != null) {
+            // O ScoreTracker tem seus próprios listeners que são limpos internamente
+            scoreTracker.cleanup();
+        }
+        
+        // Limpa o GameStatistics
+        if (gameStatistics != null) {
+            gameStatistics.cleanup();
+        }
+        
+        // Remove os listeners registrados no registerEvents()
+        mediator.removeReceiver(GameplayEvents.GAME_OVER, event -> {
+            if (event.playerId() == this.playerId) {
+                handleGameOver();
+            }
+        });
+        mediator.removeReceiver(GameplayEvents.PAUSE, unused -> togglePause());
+        mediator.removeReceiver(GameplayEvents.RESTART, unused -> restart());
+        mediator.removeReceiver(UiEvents.RESUME_GAME, unused -> togglePause());
+        
+        // Para qualquer timer em execução do FXGL relacionado a este controller
+        // (como o countdown timer)
+        FXGL.getGameTimer().clear();
+        
+        // Reseta o estado do jogo
+        if (gameState != null) {
+            gameState.reset();
+        }
+        
+        // Limpa o tabuleiro
+        if (gameBoard != null) {
+            gameBoard.clearGrid();
+        }
+    }
+    
+    /**
+     * Reseta o contador global de game over processados.
+     * Deve ser chamado quando um novo jogo é iniciado.
+     */
+    public static void resetGlobalGameOverCounter() {
+        totalGameOverProcessed = 0;
+    }
 }

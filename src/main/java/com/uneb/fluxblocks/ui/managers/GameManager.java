@@ -9,6 +9,7 @@ import com.uneb.fluxblocks.ui.components.PauseOverlay;
 import com.uneb.fluxblocks.ui.components.PlayerContainer;
 import com.uneb.fluxblocks.ui.controllers.InputHandler;
 import com.uneb.fluxblocks.ui.screens.GameScreen;
+import com.uneb.fluxblocks.user.UserManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
@@ -25,6 +26,7 @@ public class GameManager {
     private final InputManager inputManager;
     private final ScreenManager screenManager;
     private final BackgroundComponent backgroundComponent;
+    private final GameOverManager gameOverManager;
     
     private final List<GameController> gameControllers = new ArrayList<>();
     
@@ -35,13 +37,19 @@ public class GameManager {
     // Overlay de pausa global
     private PauseOverlay pauseOverlay = null;
     private StackPane gameContainer = null;
+    
+    // Controle de estado para evitar múltiplos controllers ativos
+    private boolean isGameActive = false;
+    private static int activeControllerCount = 0; // Contador global de controllers ativos
 
     public GameManager(GameMediator mediator, InputManager inputManager, 
-                      ScreenManager screenManager, BackgroundComponent backgroundComponent) {
+                      ScreenManager screenManager, BackgroundComponent backgroundComponent,
+                      GameOverManager gameOverManager) {
         this.mediator = mediator;
         this.inputManager = inputManager;
         this.screenManager = screenManager;
         this.backgroundComponent = backgroundComponent;
+        this.gameOverManager = gameOverManager;
         
         // Registra eventos de pausa
         registerPauseEvents();
@@ -108,8 +116,21 @@ public class GameManager {
      * Inicia um jogo single player.
      */
     public void startSinglePlayerGame() {
+        // FORÇA limpeza completa se há controllers ativos
+        if (activeControllerCount > 0 || isGameActive) {
+            forceCleanup();
+        }
+        
+        // Limpa completamente os controllers antigos ANTES de criar novos
         cleanup();
         
+        // Reseta o GameOverManager para o novo jogo
+        gameOverManager.onNewGameStarted();
+        
+        // Reseta o contador global de game over
+        GameController.resetGlobalGameOverCounter();
+        
+        // SEMPRE cria um novo GameState para evitar reutilização de estados resetados
         GameState gameState = new GameState();
         GameScreen gameScreen = new GameScreen(mediator, gameState, 1, backgroundComponent);
         
@@ -118,8 +139,14 @@ public class GameManager {
 
         gameScreen.initialize();
         gameControllers.add(controller);
+        activeControllerCount++;
+        
+        // Marca o jogo como ativo
+        isGameActive = true;
 
-        PlayerContainer playerContainer = new PlayerContainer("Jogador", gameScreen, false, 0.9);
+        // Obtém o nome do usuário logado ou usa "Jogador" como fallback
+        String playerName = getCurrentPlayerName();
+        PlayerContainer playerContainer = new PlayerContainer(playerName, gameScreen, false, 0.9);
 
         gameContainer = new StackPane();
         gameContainer.getChildren().addAll(backgroundComponent.getBackground(), playerContainer.getContainer());
@@ -132,8 +159,21 @@ public class GameManager {
      * Inicia um jogo multiplayer local.
      */
     public void startLocalMultiplayerGame() {
+        // FORÇA limpeza completa se há controllers ativos
+        if (activeControllerCount > 0 || isGameActive) {
+            forceCleanup();
+        }
+        
+        // Limpa completamente os controllers antigos ANTES de criar novos
         cleanup();
         
+        // Reseta o GameOverManager para o novo jogo
+        gameOverManager.onNewGameStarted();
+        
+        // Reseta o contador global de game over
+        GameController.resetGlobalGameOverCounter();
+        
+        // SEMPRE cria novos GameStates para evitar reutilização de estados resetados
         GameState gameState1 = new GameState();
         GameState gameState2 = new GameState();
 
@@ -151,6 +191,10 @@ public class GameManager {
 
         gameControllers.add(controller1);
         gameControllers.add(controller2);
+        activeControllerCount += 2;
+        
+        // Marca o jogo como ativo
+        isGameActive = true;
 
         PlayerContainer player1Container = new PlayerContainer("Jogador 1", screenP1, true, 0.7);
         PlayerContainer player2Container = new PlayerContainer("Jogador 2", screenP2, true, 0.7);
@@ -202,17 +246,60 @@ public class GameManager {
     public int getTotalPlayers() {
         return gameControllers.size();
     }
+    
+    /**
+     * Verifica se há um jogo ativo.
+     */
+    public boolean isGameActive() {
+        return isGameActive && !gameControllers.isEmpty();
+    }
+    
+    /**
+     * Obtém o número de controllers ativos.
+     */
+    public int getActiveControllersCount() {
+        return activeControllerCount;
+    }
+    
+    /**
+     * Verifica se há controllers ativos.
+     */
+    public boolean hasActiveControllers() {
+        return activeControllerCount > 0;
+    }
+    
+    /**
+     * Obtém informações detalhadas sobre o estado dos controllers.
+     */
+    public String getControllersStatus() {
+        return String.format("Controllers: %d ativos, isGameActive: %s, lista: %d", 
+                           activeControllerCount, isGameActive, gameControllers.size());
+    }
 
     /**
      * Limpa todos os game controllers e recursos.
      */
     public void cleanup() {
+        // Destrói os GameScreens primeiro para limpar os listeners
+        if (screenP1 != null) {
+            screenP1.destroy();
+            screenP1 = null;
+        }
+        if (screenP2 != null) {
+            screenP2.destroy();
+            screenP2 = null;
+        }
+        
+        // Limpa todos os controllers e remove seus listeners
         for (GameController controller : gameControllers) {
             if (controller != null) {
                 controller.cleanup();
             }
         }
         gameControllers.clear();
+        
+        // Atualiza o contador global
+        activeControllerCount = Math.max(0, activeControllerCount - gameControllers.size());
 
         inputManager.cleanup();
 
@@ -224,6 +311,15 @@ public class GameManager {
             pauseOverlay = null;
         }
         gameContainer = null;
+        
+        // Reseta o estado de jogo ativo
+        isGameActive = false;
+    }
+
+    private void forceCleanup() {
+        cleanup();
+        activeControllerCount = 0;
+        isGameActive = false;
     }
 
     private HBox createPlayersContainer(PlayerContainer player1Container, PlayerContainer player2Container) {
@@ -233,5 +329,18 @@ public class GameManager {
 
         container.getChildren().addAll(player1Container.getContainer(), player2Container.getContainer());
         return container;
+    }
+
+    /**
+     * Obtém o nome do jogador atual
+     */
+    private String getCurrentPlayerName() {
+        // Tenta obter o UserManager do mediator
+        UserManager userManager = mediator.getUserManager();
+        if (userManager != null && userManager.hasCurrentUser()) {
+            return userManager.getCurrentPlayerName();
+        }
+        // Fallback para "Jogador" se não houver usuário logado
+        return "Jogador";
     }
 } 

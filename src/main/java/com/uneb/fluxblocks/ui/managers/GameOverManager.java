@@ -3,6 +3,7 @@ package com.uneb.fluxblocks.ui.managers;
 import com.uneb.fluxblocks.architecture.events.UiEvents;
 import com.uneb.fluxblocks.architecture.mediators.GameMediator;
 import com.uneb.fluxblocks.game.statistics.GameStatistics;
+import com.uneb.fluxblocks.user.UserManager;
 import com.uneb.fluxblocks.ui.screens.GameOverScreen;
 import com.uneb.fluxblocks.ui.screens.GameOverMultiplayerScreen;
 
@@ -38,6 +39,14 @@ public class GameOverManager {
         gameOverHandled = false;
         statsP1 = null;
         statsP2 = null;
+    }
+    
+    /**
+     * Reseta o estado quando um novo jogo é iniciado.
+     * Deve ser chamado pelo GameManager quando inicia um novo jogo.
+     */
+    public void onNewGameStarted() {
+        reset();
     }
 
     /**
@@ -76,6 +85,9 @@ public class GameOverManager {
         if (gameOverHandled) return;
         gameOverHandled = true;
         
+        // Salva a pontuação no ranking se houver usuário logado
+        saveScoreToRanking(event.statistics());
+        
         GameOverScreen screen = new GameOverScreen(mediator, event.statistics());
         screenManager.showGameOverScreen(screen);
     }
@@ -106,6 +118,8 @@ public class GameOverManager {
             victoriesP2++;
         }
         
+        // Multiplayer não salva no ranking - apenas single player
+        
         mediator.emit(UiEvents.GAME_OVER_MULTIPLAYER, 
             new UiEvents.GameOverMultiplayerEvent(statsP1, statsP2, victoriesP1, victoriesP2)
         );
@@ -113,6 +127,39 @@ public class GameOverManager {
         statsP1 = null;
         statsP2 = null;
         gameManager.clearAllWaitingOverlays();
+    }
+    
+    /**
+     * Salva a pontuação no ranking se houver usuário logado.
+     * @param statistics Estatísticas do jogo
+     */
+    private void saveScoreToRanking(GameStatistics statistics) {
+        try {
+            // Obtém os managers do mediator
+            UserManager userManager = mediator.getUserManager();
+            
+            if (userManager == null) {
+                return;
+            }
+            
+            // Verifica se há usuário logado
+            if (!userManager.hasCurrentUser()) {
+                return;
+            }
+            
+            String playerName = userManager.getCurrentUser().getName();
+            int score = statistics.getScore();
+            int level = statistics.getLevel();
+            int linesCleared = statistics.getTotalLinesCleared();
+            long gameTimeMs = statistics.getGameTimeMs();
+            
+            // Usa o UserManager para salvar (que já faz tudo: ranking + estatísticas)
+            userManager.saveGameResult(score, level, linesCleared, gameTimeMs);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao salvar pontuação: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**

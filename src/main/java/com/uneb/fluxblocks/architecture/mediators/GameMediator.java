@@ -2,6 +2,8 @@ package com.uneb.fluxblocks.architecture.mediators;
 
 import com.uneb.fluxblocks.architecture.events.EventType;
 import com.uneb.fluxblocks.ui.screens.GameBoardScreen;
+import com.uneb.fluxblocks.user.UserManager;
+import com.uneb.fluxblocks.game.ranking.RankingManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameMediator {
     private final Map<EventType<?>, NavigableSet<PrioritizedListener<?>>> listeners = new ConcurrentHashMap<>();
     private GameBoardScreen gameBoardScreen;
+    
+    private UserManager userManager;
+    private RankingManager rankingManager;
 
     /**
      * Registra um listener para um tipo específico de evento com prioridade padrão (0).
@@ -82,6 +87,43 @@ public class GameMediator {
     public GameBoardScreen getGameBoardScreen() {
         return gameBoardScreen;
     }
+    
+    /**
+     * Define o UserManager principal do sistema.
+     *
+     * @param userManager A instância do UserManager
+     */
+    public void setUserManager(UserManager userManager) {
+        this.userManager = userManager;
+    }
+
+    /**
+     * Retorna o UserManager principal do sistema.
+     *
+     * @return A instância do UserManager ou null se não definido
+     */
+    public UserManager getUserManager() {
+        return userManager;
+    }
+    
+    /**
+     * Define o RankingManager principal do sistema.
+     *
+     * @param rankingManager A instância do RankingManager
+     */
+    public void setRankingManager(RankingManager rankingManager) {
+        this.rankingManager = rankingManager;
+    }
+
+    /**
+     * Retorna o RankingManager principal do sistema.
+     *
+     * @return A instância do RankingManager ou null se não definido
+     */
+    public RankingManager getRankingManager() {
+        return rankingManager;
+    }
+
 
     /**
      * Interface funcional para definição de listeners de eventos.
