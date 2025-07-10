@@ -31,6 +31,7 @@ public class PauseOverlay {
         this.overlay = new StackPane();
         this.overlay.getStyleClass().add("pause-overlay");
         this.overlay.setPrefSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
+        this.overlay.setFocusTraversable(true);
         
         Rectangle background = new Rectangle(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         background.setFill(Color.rgb(0, 0, 0, 0.4));
@@ -66,6 +67,9 @@ public class PauseOverlay {
         updateButtonSelection();
         
         setupMouseEvents();
+        
+        // Força o foco ao criar
+        this.overlay.requestFocus();
     }
     
     private void setupKeyNavigation() {
@@ -73,6 +77,7 @@ public class PauseOverlay {
             KeyCode code = event.getCode();
             switch (code) {
                 case ESCAPE:
+                    System.out.println("[PauseOverlay] ESC pressionado - fechando overlay"); // LOG para depuração
                     mediator.emit(UiEvents.RESUME_GAME, null);
                     break;
                 case LEFT:
@@ -94,6 +99,9 @@ public class PauseOverlay {
                     break;
             }
         });
+        // Força o foco sempre que o handler é setado
+        this.overlay.setFocusTraversable(true);
+        this.overlay.requestFocus();
     }
     
     private void setupMouseEvents() {
@@ -134,9 +142,12 @@ public class PauseOverlay {
     public void setVisible(boolean visible) {
         overlay.setVisible(visible);
         overlay.setManaged(visible);
-        
         if (visible) {
-            overlay.requestFocus();
+            overlay.setFocusTraversable(true); // Garante que pode receber foco
+            overlay.requestFocus(); // Força o foco sempre
+        } else {
+            // Remove o foco ao esconder
+            overlay.setFocusTraversable(false);
         }
     }
     

@@ -86,6 +86,8 @@ public class GameManager {
         if (gameContainer != null && !gameContainer.getChildren().contains(pauseOverlay.getNode())) {
             gameContainer.getChildren().add(pauseOverlay.getNode());
             pauseOverlay.setVisible(true);
+            inputManager.disableInput(1); // Para single player
+            inputManager.disableInput(2); // Para multiplayer (ignora se não existir)
         }
     }
     
@@ -93,6 +95,12 @@ public class GameManager {
         if (pauseOverlay != null && gameContainer != null) {
             gameContainer.getChildren().remove(pauseOverlay.getNode());
             pauseOverlay.setVisible(false);
+            pauseOverlay.destroy();
+            pauseOverlay = null;
+            inputManager.getHandler(1).setInputEnabled(true);
+            if (inputManager.getHandler(2) != null) {
+                inputManager.getHandler(2).setInputEnabled(true);
+            }
         }
     }
     

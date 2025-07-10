@@ -91,7 +91,6 @@ public class GameController {
         });
         mediator.receiver(GameplayEvents.PAUSE, unused -> togglePause());
         mediator.receiver(GameplayEvents.RESTART, unused -> restart());
-        mediator.receiver(UiEvents.RESUME_GAME, unused -> togglePause());
     }
 
     /**

@@ -82,7 +82,6 @@ public class KeyboardInputHandler implements InputHandler {
 
     @Override
     public void unregisterInputEvents() {
-        // FXGL não tem método direto para remover ações, mas podemos desabilitar
         inputEnabled = false;
     }
 
