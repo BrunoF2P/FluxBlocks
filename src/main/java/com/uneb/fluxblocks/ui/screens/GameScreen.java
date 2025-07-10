@@ -248,6 +248,17 @@ public class GameScreen {
     }
 
     private void setupNextPiecePreview() {
+        // Destrói o componente anterior se existir
+        if (this.nextPieceComponent != null) {
+            this.nextPieceComponent.destroy();
+        }
+        
+        // Limpa o container
+        if (nextPiecePreview != null) {
+            nextPiecePreview.getChildren().clear();
+        }
+        
+        // Cria o novo componente
         this.nextPieceComponent = new NextPiecePreview(mediator, nextPiecePreview, playerId);
     }
 
@@ -452,6 +463,7 @@ public class GameScreen {
 
         if (nextPieceComponent != null) {
             nextPieceComponent.destroy();
+            nextPieceComponent = null;
         }
 
         if (timeDisplay != null) {
@@ -465,6 +477,11 @@ public class GameScreen {
 
         if (gameBoardScreen != null) {
             FloatingTextEffect.clearAllEffects(gameBoardScreen.getEffectsLayer());
+        }
+        
+        // Limpa o container da preview
+        if (nextPiecePreview != null) {
+            nextPiecePreview.getChildren().clear();
         }
     }
 
