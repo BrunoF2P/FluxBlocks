@@ -215,4 +215,42 @@ public class GameStatistics {
     public int getLinesCleared() {
         return gameState.getLinesCleared();
     }
+    
+    /**
+     * Retorna o nível atual do jogo.
+     */
+    public int getLevel() {
+        return gameState.getCurrentLevel();
+    }
+    
+    /**
+     * Retorna o tempo de jogo em milissegundos.
+     */
+    public long getGameTimeMs() {
+        return gameState.getGameTimeMs();
+    }
+
+    /**
+     * Limpa os recursos do GameStatistics, removendo os listeners do mediator.
+     */
+    public void cleanup() {
+        // Remove os listeners registrados no registerEvents()
+        mediator.removeReceiver(InputEvents.KEY_PRESSED, ev -> {
+            if (ev.playerId() == playerId) incrementKeysPressed();
+        });
+        mediator.removeReceiver(UiEvents.PIECE_LANDED_NORMAL, ev -> {
+            if (ev.playerId() == playerId) incrementPiecesPlaced();
+        });
+        mediator.removeReceiver(UiEvents.PIECE_LANDED_HARD, ev -> {
+            if (ev.playerId() == playerId) incrementPiecesPlaced();
+        });
+        mediator.removeReceiver(UiEvents.PIECE_LANDED_SOFT, ev -> {
+            if (ev.playerId() == playerId) incrementPiecesPlaced();
+        });
+        mediator.removeReceiver(GameplayEvents.LINE_CLEARED, ev -> {
+            if (ev.playerId() == playerId) {
+                recordLinesCleared(ev.lineCleared());
+            }
+        });
+    }
 } 
