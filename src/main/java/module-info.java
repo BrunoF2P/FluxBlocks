@@ -4,7 +4,8 @@ open module com.uneb.fluxblocks {
     requires javafx.media;
     requires javafx.graphics;
     requires java.desktop;
-
+    requires java.sql;
+    
     requires transitive com.fasterxml.jackson.databind;
     requires transitive com.fasterxml.jackson.core;
     requires transitive com.almasb.fxgl.all;
@@ -25,5 +26,9 @@ open module com.uneb.fluxblocks {
     exports com.uneb.fluxblocks.piece.entities;
     exports com.uneb.fluxblocks.piece.movement;
     exports com.uneb.fluxblocks.game.scoring;
+    exports com.uneb.fluxblocks.game.ranking;
+    exports com.uneb.fluxblocks.game.ranking.dao;
+    exports com.uneb.fluxblocks.user;
+    exports com.uneb.fluxblocks.user.dao;
     exports com.uneb.fluxblocks.piece;
 }
