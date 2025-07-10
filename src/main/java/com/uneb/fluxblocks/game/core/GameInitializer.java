@@ -14,10 +14,12 @@ public final class GameInitializer {
         GameMediator mediator = new GameMediator();
 
         new UIScreenHandler(gameScene, mediator);
+        
+        new GameStartListener(mediator);
 
         FXGL.getGameTimer().runOnceAfter(() -> {
             mediator.emit(UiEvents.START, null);
-        }, Duration.millis(100));
+        }, Duration.millis(50));
 
         return mediator;
     }
